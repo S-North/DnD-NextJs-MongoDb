@@ -1,0 +1,79 @@
+.btn {
+    background-color: green;
+    color: ghostwhite;
+}
+
+.mainpanel {
+    display: flex;
+    flex-direction: column;
+    gap: 1ch;
+    width: 100%;
+    background-image: url(/images/full-bloom.png);
+}
+
+.title {
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 5px grey;
+    padding: 1ch;
+}
+
+.abilityrow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 1ch;
+}
+
+.abilityrow h2 {
+    margin: 0;
+    padding: 0;
+}
+
+.abilitybox {
+    /* padding: 1ch; */
+    display: flex;
+    flex-direction: column;
+    gap: 0.5ch;
+    text-align: center;
+}
+
+.traits {
+    display: flex;
+    flex-direction: column;
+    gap: 1ch;
+    padding: 0.5ch 1ch;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 5px grey;
+    border: none;
+}
+
+.trait {
+    display: inline-block;
+
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1ch;
+    padding: 0.5ch 1ch;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 5px grey;
+    border: none;
+}
+
+.action {
+    display: grid;
+    grid-template-columns: 20% 60% 20%;
+    /* grid-template-rows: ; */
+    row-gap: 1ch;
+}
+
+.targets {
+    display: grid;
+    grid-template-columns: 5% 60% 20%;
+    row-gap: 1ch;
+    justify-items: left;
+
+}
