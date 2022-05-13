@@ -93,16 +93,16 @@ The structure for the data is as follows (this will be updated as features are a
             "cr": float,
             "traits": [
                 {
-                    name: string,
-                    description: string
+                    "name": string,
+                    "description": string
                 }
             ],
             "actions": [
                 {
-                    name: string,
-                    description: string,
-                    attack: {
-                        toHit: int32,
+                    "name": string,
+                    "description": string,
+                    "attack": {
+                        "toHit": int32,
                         
                     }
                 }
