@@ -9,7 +9,7 @@ import CharacterForm from '../../../components/forms/CharacterForm'
 
 
 const Campaign = ({campaign}) => {
-    const api = 'http://localhost:3000/api/'
+    const api = '/api/'
 
     const [ adventures, setAdventures ] = useState([])
     const [ encounters, setEncounters ] = useState([])
@@ -145,20 +145,16 @@ const Campaign = ({campaign}) => {
     })
 
     const acknowledgement = await response.json()
-    console.log(acknowledgement)
     if (acknowledgement && acknowledgement.acknowledged && acknowledgement.deletedCount > 0) {
         setAdventures([...adventures.filter(adventure => { return adventure._id !== item._id})])
     }
   } 
 
   const updateCharacter = async (character, collection) => {
-      console.log(collection)
-      console.log(character)
       updateCharacter = null
 
       // if no _id, its a new item
     if (!character._id) {
-        console.log('its a new item')
         const response = await fetch(`${api}characters`, {
             method: "POST",
             body: JSON.stringify(
@@ -184,7 +180,6 @@ const Campaign = ({campaign}) => {
     }
     // if theres an _id, then its an edit
     else if (character._id) {
-        console.log('edit this item')
         const response = await fetch(`${api}characters`, {
             method: "POST",
             body: JSON.stringify(
@@ -220,7 +215,6 @@ const Campaign = ({campaign}) => {
     })
 
     const acknowledgement = await response.json()
-    console.log(acknowledgement)
     if (acknowledgement && acknowledgement.acknowledged && acknowledgement.deletedCount > 0) {
         setCharacters([...characters.filter(c => { return c._id !== character._id})])
     }

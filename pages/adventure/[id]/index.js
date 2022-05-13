@@ -8,7 +8,7 @@ import { ObjectId } from 'mongodb'
 
 
 const Adventure = ({adventure}) => {
-    const api = 'http://localhost:3000/api/'
+    const api = '/api/'
     const [ encounters, setEncounters ] = useState([])
     const [ selected, setSelected ] = useState();
     const [ modal, setModal ] = useState({"type": "none", "on": false})

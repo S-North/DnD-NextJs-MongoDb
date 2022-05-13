@@ -1,6 +1,6 @@
 import { connectToDatabase } from '../../../utils/mongodb'
 import { useState, useEffect } from 'react'
-import { abilityModifier, diceRoll, xpToLevel, displayCrAsFraction } from '../../../utils/utils'
+import { abilityModifier, diceRoll, xpToLevel, displayCrAsFraction, calculateProficiencyBonus } from '../../../utils/utils'
 
 import styles from '../../../styles/CombatantDetails.module.css'
 import { FaWindowClose, FaBackward, FaForward  } from 'react-icons/fa'
@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 
 const Encounter = ({initialEncounter}) => {
-    const api = 'http://localhost:3000/api/'
+    const api = '/api/'
     const [encounter, setEncounter] = useState(initialEncounter);
     const [characters, setCharacters] = useState();
     const [campaign, setCampaign] = useState({});
@@ -77,7 +77,7 @@ const Encounter = ({initialEncounter}) => {
       const combatant = encounter.initiative[encounter.turn]
       // console.log(combatant)
 
-      if (characters && encounter && encounter.turn !== undefined) {
+      if (characters && encounter && encounter.turn !== undefined && encounter.mode === 'running') {
         console.log(combatant)
         switch (true) {
           case combatant.enemy == 'pc':
@@ -275,14 +275,7 @@ const Encounter = ({initialEncounter}) => {
     };
   
     const displayCombatant = (combatant) => {
-      switch (true) {
-        case combatant.enemy === "monster":
-          setSelected(encounter.monsters.filter((m) => m.id === combatant.id)[0]);
-          break;
-        case combatant.enemy === "pc":
-          setSelected(characters.filter((c) => c.id === combatant.id)[0]);
-          break;
-      }
+      setSelected(combatant);
     };
 
     const changeHP = (combatant) => {
@@ -829,15 +822,15 @@ const Combatant = ({
         }>
           <div className="initiative" style={{ backgroundColor: "green", color: "white", width: "40px" }}>{combatant.init}</div>
           <div className="details" style={{width: "100%"}}
-            // onClick={() => {
-            //   combatant.enemy === "monster"
-            //     ? displayCombatant(
-            //         encounter.monsters.filter((m) => m.id === combatant.id)[0]
-            //       )
-            //     : displayCombatant(
-            //         characters.list.filter((c) => c.id === combatant.id)[0]
-            //       );
-            // }}
+            onClick={() => {
+              combatant.enemy === "monster"
+                ? displayCombatant(
+                    encounter.monsters.filter((m) => m._id === combatant._id)[0]
+                  )
+                : displayCombatant(
+                    characters.filter((c) => c._id === combatant._id)[0]
+                  );
+            }}
           >
             <h2>{details.name}</h2>
             <p>Invisible, Blinded</p>
@@ -861,35 +854,38 @@ const CombatantDetails = ({ combatant, doDamage }) => {
   return (
     <>
     <div className={styles.mainpanel}>
+
       <div className={styles.title}>
         <h3>{combatant.name}</h3>
       </div>
+
+      <div className={styles.detailscontainer}>
 
         <div className={styles.abilityrow}>
 
           <div className={styles.abilitybox}>
             <h2>Str</h2>
-            <button className={styles.btn}
+            <button className={styles.btn} title="Athletics"
               onClick={() => {
                 window.alert(diceRoll(1, 20, abilityModifier(combatant.str))[2]);
               }}
             >
               {combatant.str}
             </button>
-            <button className={styles.btn}>Save</button>
+            <button className={styles.btn}>{(combatant.saves && combatant.saves.includes('Str')) ? abilityModifier(combatant.str) + (calculateProficiencyBonus(14)) : abilityModifier(combatant.str)}</button>
             {combatant.skills && combatant.skills.includes('Athletics') && <button className={styles.btn}>Athletics</button>}
           </div>
 
           <div className={styles.abilitybox}>
             <h2>Dex</h2>
-            <button className={styles.btn}
+            <button className={styles.btn} title="Acrobatics, Sleight of Hand, Stealth"
               onClick={() => {
                 window.alert(diceRoll(1, 20, abilityModifier(combatant.dex))[2]);
               }}
             >
               {combatant.dex}
             </button>
-            <button className={styles.btn}>Save</button>
+            <button className={styles.btn}>{(combatant.saves && combatant.saves.includes('Dex')) ? abilityModifier(combatant.dex) * 2 : abilityModifier(combatant.dex)}</button>
             {combatant.skills && combatant.skills.includes('Acrobatics') && <button className={styles.btn}>Acrobatics</button>}
             {combatant.skills && combatant.skills.includes('Sleight of Hand') && <button className={styles.btn}>Sleight of Hand</button>}
             {combatant.skills && combatant.skills.includes('Stealth') && <button className={styles.btn}>Stealth</button>}
@@ -904,19 +900,19 @@ const CombatantDetails = ({ combatant, doDamage }) => {
             >
               {combatant.con}
             </button>
-            <button className={styles.btn}>Save</button>
+            <button className={styles.btn}>{(combatant.saves && combatant.saves.includes('Con')) ? abilityModifier(combatant.con) * 2 : abilityModifier(combatant.con)}</button>
           </div>
 
           <div className={styles.abilitybox}>
             <h2>Int</h2>
-            <button className={styles.btn}
+            <button className={styles.btn}  title='Arcana, History, Investigation, Nature, Religion'
               onClick={() => {
                 window.alert(diceRoll(1, 20, abilityModifier(combatant.int))[2]);
               }}
             >
               {combatant.int}
             </button>
-            <button className={styles.btn}>Save</button>
+            <button className={styles.btn}>{(combatant.saves && combatant.saves.includes('Int')) ? abilityModifier(combatant.int) * 2 : abilityModifier(combatant.int)}</button>
             {combatant.skills && combatant.skills.includes('Arcana') && <button className={styles.btn}>Arcana</button>}
             {combatant.skills && combatant.skills.includes('History') && <button className={styles.btn}>History</button>}
             {combatant.skills && combatant.skills.includes('Investigation') && <button className={styles.btn}>Investigation</button>}
@@ -926,14 +922,14 @@ const CombatantDetails = ({ combatant, doDamage }) => {
 
           <div className={styles.abilitybox}>
             <h2>Wis</h2>
-            <button className={styles.btn}
+            <button className={styles.btn} title='Animal Handling, Insight, Medicine, Perception, Survival'
               onClick={() => {
                 window.alert(diceRoll(1, 20, abilityModifier(combatant.wis))[2]);
               }}
             >
               {combatant.wis}
             </button>
-            <button className={styles.btn}>Save</button>
+            <button className={styles.btn}>{(combatant.saves && combatant.saves.includes('Wis')) ? abilityModifier(combatant.wis) * 2 : abilityModifier(combatant.wis)}</button>
             {combatant.skills && combatant.skills.includes('Animal Handling') && <button className={styles.btn}>Animal Handling</button>}
             {combatant.skills && combatant.skills.includes('Insight') && <button className={styles.btn}>Insight</button>}
             {combatant.skills && combatant.skills.includes('Medicine') && <button className={styles.btn}>Medicine</button>}
@@ -943,14 +939,14 @@ const CombatantDetails = ({ combatant, doDamage }) => {
 
           <div className={styles.abilitybox}>
             <h2>Cha</h2>
-            <button className={styles.btn}
+            <button className={styles.btn} title='Deception, Intimidation, Performance, Persuasion'
               onClick={() => {
                 window.alert(diceRoll(1, 20, abilityModifier(combatant.cha))[2]);
               }}
             >
               {combatant.cha}
             </button>
-            <button className={styles.btn}>Save</button>
+            <button className={styles.btn}>{(combatant.saves && combatant.saves.includes('Cha')) ? abilityModifier(combatant.cha) * 2 : abilityModifier(combatant.cha)}</button>
             {combatant.skills && combatant.skills.includes('Deception') && <button className={styles.btn}>Deception</button>}
             {combatant.skills && combatant.skills.includes('Intimidation') && <button className={styles.btn}>Intimidation</button>}
             {combatant.skills && combatant.skills.includes('Performance') && <button className={styles.btn}>Performance</button>}
@@ -960,7 +956,7 @@ const CombatantDetails = ({ combatant, doDamage }) => {
 
         {combatant.traits &&
           <div className={styles.traits}>
-            <h2>Actions</h2>
+            <h2>Traits</h2>
             {combatant.traits && combatant.traits.map((trait) => (
               <div className={styles.trait}>
                 <h2>{trait.name}</h2>
@@ -971,6 +967,7 @@ const CombatantDetails = ({ combatant, doDamage }) => {
         
         {combatant.actions &&
         <div className={styles.actions}>
+          <h2>Actions</h2>
           {combatant.actions && combatant.actions.map((action) => (
 
               <div key={action.name} className={styles.action}>
@@ -1006,6 +1003,7 @@ const CombatantDetails = ({ combatant, doDamage }) => {
             ))}
 
         </div>}
+        </div>
       </div>
     </>
   );
@@ -1114,25 +1112,35 @@ const DoAttack = ({tempCombatant, encounter, characters}) => {
   }, [tempCombatant, encounter, characters])
 
   useEffect(() => {
+    // focus the first checkbox on first load, so we can use the keyboard to select items
+    const firstCheckbox = document.getElementsByClassName('target-checkbox')
+    firstCheckbox.length > 0 && firstCheckbox[0].focus()
+    return () => {}
+  }, [])
+
+  useEffect(() => {
     console.log(targets)
+    const storeHits = []
     if ( targets && targets.length > 0 && toHitRoll ) {
       targets.forEach(target => {
         const combatant = combatants.filter(c => c._id === target)[0]
         if (parseInt(toHitRoll[0]) == 20) {
           console.log(`critical hit, hits all`);
-          setCombatantsHit([...combatantsHit, combatant])
+          storeHits.push(combatant)
           setCriticalHit(true)
         }
         else if (parseInt(toHitRoll[0]) == 1) {
           console.log("critical miss, misses all")
+          setCriticalMiss(true)
         }
         else if (toHitRoll[2] >= parseInt(combatant.ac)) {
           console.log(`hit ${combatant.name}`);
-          setCombatantsHit([...combatantsHit, combatant])
+          storeHits.push(combatant)
         } 
         else console.log(`didn't hit ${combatant.name}`)
       })
     }
+    setCombatantsHit(storeHits)
   
     return () => {}
   }, [toHitRoll, targets])
@@ -1143,17 +1151,19 @@ const DoAttack = ({tempCombatant, encounter, characters}) => {
       <h2>{`${tempCombatant.attacker.name} uses ${tempCombatant.attack.name}`}</h2>
       <p>{tempCombatant.attack.description}</p>
       <hr></hr>
+      
       {/* <p>The to hit is {tempCombatant.attack.attack}</p> */}
 
+      {toHitRoll === undefined &&<>
       <h2>Targets</h2>
       {encounter &&
         <div>
           {encounter.initiative.map(target => (
             <div key={target._id} className={styles.targets}>
-              <input type='checkbox' 
+              <input type='checkbox' className='target-checkbox'
                 checked={targets.includes(target._id)} 
                 onChange={(e) => {targets.includes(target._id) 
-                  ? setTargets([...targets.filter(t => t._id !== e.target.value._id)]) 
+                  ? setTargets([...targets.filter(t => t !== target._id)]) 
                   : setTargets([...targets, target._id])}}></input>
               
               <p>{target.name}</p>
@@ -1161,16 +1171,52 @@ const DoAttack = ({tempCombatant, encounter, characters}) => {
             </div>
           ))}
         </div>
-      
       }
+        <button className={styles.btn} onClick={() => {setToHitRoll(diceRoll(1,20,tempCombatant.attack.attack))}}>{tempCombatant.attack.attack}</button>
+      </>}
       
-      <button onClick={() => {setToHitRoll(diceRoll(1,20,tempCombatant.attack.attack))}}>{tempCombatant.attack.attack}</button>
+      
+      <br></br>
       {toHitRoll &&
       <>
-      
-      <p>{`You rolled ${toHitRoll[0]} with a bonus ${toHitRoll[1]}. Your total is ${toHitRoll[2]}`}</p>
+        <p>{`You rolled ${toHitRoll[0]} with a bonus ${toHitRoll[1]}. Your total is ${toHitRoll[2]}`}</p>
+        {criticalMiss && <h2>Its a critical Miss!!</h2>}
+        {combatantsHit && combatantsHit.length > 0 &&
+        <>
+          {combatantsHit.map(combatant => (
+            <h2>{`You hit ${combatant.name}`}</h2>
+          ))}
+          {criticalHit && <h2>Its a critical Hit!!</h2>}
+
+          {tempCombatant.attack.damage1 &&
+            <>
+            <br></br>
+            <button>{tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1.hdSides}+{tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}</button>
+            </>
+          }
+
+          {tempCombatant.attack.damage2 && tempCombatant.attack.damage2.hdDice &&
+            <>
+            <br></br>
+            <button>{tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2.hdSides}+{tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}</button>
+            </>
+          }
+
+          {tempCombatant.attack.damage3 && tempCombatant.attack.damage3.hdDice &&
+            <>
+            <br></br>
+            <button>{tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2.hdSides}+{tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}</button>
+            </>
+          }
+        
+        </>
+        }
       </>
       }
+
+      <div className='flex-row'>
+        <button onClick={() => {setToHitRoll(undefined), setCombatantsHit([]), setCriticalHit(false), setCriticalMiss(false)}}>Clear Variables</button>
+      </div>
     </>
   );
 }
