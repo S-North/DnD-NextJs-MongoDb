@@ -1,14 +1,18 @@
 import { connectToDatabase } from '../../../utils/mongodb'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, createContext } from 'react'
 import { abilityModifier, diceRoll, xpToLevel, displayCrAsFraction, calculateProficiencyBonus } from '../../../utils/utils'
 
 import styles from '../../../styles/CombatantDetails.module.css'
-import { FaWindowClose, FaBackward, FaForward  } from 'react-icons/fa'
 import { ObjectId } from 'mongodb'
-import {MonsterList, MonsterForm} from '../../monsters/index'
-import Nav from '../../../components/Nav'
-import { v4 as uuidv4 } from 'uuid'
+import InitiativeList from '../../../components/encounter/InitiativeList';
+import AddCharacter from '../../../components/encounter/AddCharacter';
+import AddMonster from '../../../components/encounter/AddMonster';
+import EditMonsters from '../../../components/encounter/EditMonsters';
+import RollInitiative from '../../../components/encounter/RollInitiative';
+import DamageCalculator from '../../../components/encounter/DamageCalculator';
+import EncounterList from '../../../components/encounter/EncounterList'
 
+export const EncounterContext = createContext()
 
 const Encounter = ({initialEncounter}) => {
     const api = '/api/'
@@ -93,6 +97,21 @@ const Encounter = ({initialEncounter}) => {
     }, [encounter.turn, characters])
     
     
+    const initiativeItemToFullStats = (initItem) => {
+      if (characters) {
+        switch (true) {
+          default:
+              break;
+          case initItem.enemy === "monster":
+              return encounter.monsters.filter((f) => f._id === initItem._id)[0];
+              break;
+          case initItem.enemy === "pc":
+              return characters.filter((f) => f._id === initItem._id)[0];
+
+      }
+      }
+    }
+
     const selectMonster = (monster) => {
         // utility function to handle setting the selected item state. Should propably rename as this is used for monsters, characters, npcs, etc
         setSelected(monster);
@@ -137,7 +156,11 @@ const Encounter = ({initialEncounter}) => {
                       name: m.name
                   }
               ))],
-              monsters: [...encounter.monsters, ...monsters]
+              monsters: [...encounter.monsters, ...monsters.map(m => (
+                {
+                    ...m,
+                    enemy: "monster"
+                }))]
           }
         }),
         headers: {"Content-type": "application/json; charset=UTF-8"}
@@ -156,7 +179,11 @@ const Encounter = ({initialEncounter}) => {
                     name: m.name
                 }
             ))],
-            monsters: [...encounter.monsters, ...monsters]
+            monsters: [...encounter.monsters, ...monsters.map(m => (
+              {
+                  ...m,
+                  enemy: "monster"
+              }))]
         }
         )
         setModal({on: false, type: ""})
@@ -189,20 +216,71 @@ const Encounter = ({initialEncounter}) => {
             }
     }
     
-    const editCombatant = async (monster) => {
-      // this is only for monsters. updates the encounter.initiative & encounter.monsters
-      // identify the collection and document then update the initiative & monsters
-      
+    const editCharacter = async (character, updated) => {
+      // updates the selected character in the characters collection
+      // {character} is an object containing the full stats of the character, updated is an object containing the keys and values to update
+      // update should be an object containing the changed fields in the character e.g. {currentHp: 15, conditions: [...conditions, 'blinded']}
+      console.log(character)
+      console.log(updated)
+      const response = await fetch(`${api}characters`, {
+        method: "POST",
+        body: JSON.stringify(
+            {
+            action: 'editone',
+            data: {
+              _id: character._id,
+              ...updated
+          }
+        }),
+        headers: {"Content-type": "application/json; charset=UTF-8"}
+        })
+        const encCharacters = await response.json()
+        if (encCharacters.acknowledged && encCharacters.modifiedCount > 0) {
+        setCharacters(
+          [
+            ...characters.filter(c => c._id !== character._id),
+            {...character, ...updated}
+          ]
+        )
+        }
     };
-  
-    const editCharacter = (character) => {
-      // updates the selected character in context.characters
-      editItem("characters", character, character.id);
-      setSelected({});
-    };
+
+    const editMonster = async (monster, update) => {
+      // {monster} is an object containing the full stats of the monster
+      // updated is an object containing the keys and values to update
+      // update should be an object containing the changed fields in the monster e.g. {currentHp: 15, conditions: [...conditions, 'blinded']}
+      const response = await fetch(`/api/encounters`, {
+          method: "POST",
+          body: JSON.stringify(
+              {
+              action: 'editone',
+              data: {
+                _id: encounter._id,
+                ...encounter,
+                monsters: [
+                  ...encounter.monsters.filter(m => m._id !== monster._id),
+                  {...monster, ...update}
+                ]
+              }
+          }),
+          headers: {"Content-type": "application/json; charset=UTF-8"}
+        })
+        const updateStatus = await response.json();
+        if (updateStatus.acknowledged && updateStatus.modifiedCount === 1) {
+          setEncounter(
+            {
+              ...encounter,
+              monsters: [
+                ...encounter.monsters.filter(m => m._id !== monster._id),
+                {...monster, ...update}
+              ]
+            }
+          )
+        }
+      }
   
     const saveInitiative = async (initiative) => {
-      // update the encounter in firestore
+      console.log(initiative)
       // update the encounter with the initiative rolls, then set the encounter to "running"
       const response = await fetch(`${api}encounters`, {
           method: "POST",
@@ -228,6 +306,7 @@ const Encounter = ({initialEncounter}) => {
           turn: 0
         })
       setModal({ on: false, type: "" });
+      setSelected(initiativeItemToFullStats(initiative[0]))
     };
 
     const editEncounter = async (update) => {
@@ -247,6 +326,8 @@ const Encounter = ({initialEncounter}) => {
         const updateStatus = await response.json()
         setEncounter({...encounter, ...update})
       }
+
+      
   
     const incrementInitiative = (direction) => {
       // console.log(`length: ${encounter.initiative.length} turn: ${encounter.turn}`)
@@ -279,6 +360,7 @@ const Encounter = ({initialEncounter}) => {
     };
 
     const changeHP = (combatant) => {
+      console.log('here i am')
       setTempCombatant(combatant)
       setModal({on: true, type: 'HpCalculator'})
     }
@@ -297,6 +379,7 @@ const Encounter = ({initialEncounter}) => {
     }
     
     return (
+      <EncounterContext.Provider value={{encounter, setEncounter, characters, setCharacters, selected, setSelected, modal, setModal, initiativeItemToFullStats}}>
        <>
   
        {/* modal window for popup forms */}
@@ -311,25 +394,25 @@ const Encounter = ({initialEncounter}) => {
               </span>
 
               {modal.type === "addPC" && (
-                <AddCharacter characters={characters} encounter={encounter} addCharacters={addCharacters} initiative={initiative} setInitiative={setInitiative} setModal={setModal} clearView={setSelected}></AddCharacter>
+                <AddCharacter addCharacters={addCharacters}></AddCharacter>
               )}
 
               {modal.type === "addMonster" && (
                   <div className="list-columns one-column">
-                    <AddMonster setSelected={setSelected} setModal={setModal}></AddMonster>
+                    <AddMonster></AddMonster>
                   </div>
               )}
 
               {modal.type === "editMonsters" && (
-                  <EditMonsters selected={selected} setSelected={setSelected} addMonsters={addMonsters} setModal={setModal}></EditMonsters>
+                  <EditMonsters addMonsters={addMonsters}></EditMonsters>
               )}
 
               {modal.type === "rollInitiative" && (
-                  <RollInitiative encounter={encounter} characters={characters} setModal={setModal} saveInitiative={saveInitiative}></RollInitiative>
+                  <RollInitiative saveInitiative={saveInitiative}></RollInitiative>
               )}
 
               {modal.type === "HpCalculator" && (
-                <DamageCalculator tempCombatant={tempCombatant} characters={characters} monsters={encounter.monsters} editEncounter={editEncounter} setCampaign={setCampaign}></DamageCalculator>
+                <DamageCalculator targets={tempCombatant} editMonster={editMonster} editCharacter={editCharacter} setCampaign={setCampaign}></DamageCalculator>
               )}
 
               {modal.type === "doAttack" && (
@@ -345,97 +428,12 @@ const Encounter = ({initialEncounter}) => {
         <section>
             {/* the edit list of combatants */}
             {encounter && encounter.mode === "editing" && (
-            <div className="one-column">
-              <div className="flex-row" style={{ justifyContent: "flex-end" }}>
-                {/* <h2>Combatants</h2> */}
-                {characters && (
-                    <button className="blue" 
-                        onClick={() => {
-                            setModal({ type: "addPC", on: true });
-                        }}> Add PC
-                    </button>
-                )}
-
-                <button className="blue"
-                    onClick={() => {
-                        setModal({ type: "addNPC", on: true });
-                    }}> Add NPC
-                </button>
-
-                <button className="blue"
-                    onClick={() => {
-                        setModal({ type: "addMonster", on: true });
-                    }}>Add Monster
-                </button>
-
-                <button className="green"
-                    onClick={() => {
-                        setModal({ type: "rollInitiative", on: true });
-                    }}> Run
-                </button>
-              </div>
-
-              {characters && encounter && encounter.initiative.map((combatant) => (
-                  <>
-                    {combatant.enemy === "pc" && (
-                      <div key={combatant._id}>
-                        <InitiativeItem
-                          combatant={combatant}
-                          encounter={encounter}
-                          campaign={campaign}
-                          action={selectMonster}
-                          characters={characters}
-                          deleteCombatant={deleteCombatant}
-                        ></InitiativeItem>
-                      </div>
-                    )}
-                  </>
-                ))}
-
-              {encounter &&
-                encounter.initiative.map((combatant) => (
-                  <>
-                    {combatant.enemy === "monster" && (
-                      <div key={combatant._id}>
-                        <InitiativeItem
-                          combatant={combatant}
-                          encounter={encounter}
-                          campaign={campaign}
-                          action={selectMonster}
-                          characters={characters}
-                          deleteCombatant={deleteCombatant}
-                        ></InitiativeItem>
-                      </div>
-                    )}
-                  </>
-                ))}
-            </div>
+              <InitiativeList displayItem={selectMonster} deleteItem={deleteCombatant} initiativeItemToFullStats={initiativeItemToFullStats}></InitiativeList>
           )}
 
           {/* running initiative list */}
           {encounter && encounter.mode === "running" && (
-            <div className="one-column">
-              <div className="flex-row">
-                <h3>{`Round: ${encounter.round + 1} Turn: ${
-                  encounter.turn + 1
-                }`}</h3>
-                <button onClick={ () => { incrementInitiative("back") } }
-                >
-                  <FaBackward />
-                </button>
-                <button onClick={ () => { editEncounter({mode: 'editing'})}}> Edit </button>
-                <button onClick={() => { incrementInitiative("forward")}}> <FaForward /> </button>
-              </div>
-
-              {/* <p>initiative list</p> */}
-              <CombatantList
-                encounter={encounter}
-                characters={characters}
-                displayCombatant={displayCombatant}
-                setSelected={setSelected}
-                changeHP={changeHP}
-              ></CombatantList>
-            </div>
+            <EncounterList incrementInitiative={incrementInitiative} editEncounter={editEncounter} displayCombatant={displayCombatant} changeHP={changeHP}></EncounterList>
           )}
 
         {selected && <div className="column-wide">
@@ -444,412 +442,12 @@ const Encounter = ({initialEncounter}) => {
 
         </section>
        </>
+       </EncounterContext.Provider>
     );
 }
 
 export default Encounter
 
-const InitiativeItem = ({ encounter, combatant, action, deleteCombatant, characters }) => {
-    const [item, setItem] = useState();
-  
-    useEffect(() => {
-        switch (true) {
-            default:
-                break;
-            case combatant.enemy === "monster":
-                setItem(encounter.monsters.filter((f) => f._id === combatant._id)[0]);
-                break;
-            case combatant.enemy === "pc":
-                setItem(characters.filter((f) => f._id === combatant._id)[0]);
-        }
-  
-        return () => {};
-    }, [encounter]);
-  
-    return (
-        <>
-            {item && (
-                <div className="list-item">
-                    <div style={{ cursor: "pointer", width: "100%" }}
-                        onClick={() => {action(item);}}>
-        
-                    <h2>{item.name}</h2>
-                    {item.cr && <p>CR: {displayCrAsFraction(item.cr)}</p>}
-                    {item.enemy === 'pc' && <p>Level: {xpToLevel(item.xp)}</p>}
-                    </div>
-        
-                    <FaWindowClose color="red" style={{ cursor: "pointer" }}
-                        onClick={() => { deleteCombatant(combatant)}}>
-                    </FaWindowClose>
-                </div>
-            )}
-        </>
-    );
-  };
-
-const AddCharacter = ({ characters, encounter, setModal, addCharacters }) => {
-  const pcsInInitiative = encounter.initiative
-    .filter((pc) => {return pc.enemy === "pc"})
-    .map((id) => id._id);
-  const pcsNotInInitiative = characters.filter((pc) => {
-    return !pcsInInitiative.includes(pc._id);
-  });
-  const [selected, setSelected] = useState([]);
-
-  const handleSelect = (e, player) => {
-    if (e.target.checked) {
-      setSelected([...selected, player]);
-    } else {
-      setSelected(
-        selected.filter((character) => {
-          return character.id !== player.id;
-        })
-      );
-    }
-  };
-
-  const handleSubmit = (selected) => {
-    const data = selected.map((pc) => ({
-      name: pc.name,
-      _id: pc._id,
-      enemy: "pc",
-      init: 0,
-    }));
-    addCharacters(data);
-    setModal({ on: false, type: null });
-  };
-
-  return (
-      <>
-      <div className='flex-row'>
-          <h2>Character List</h2>
-          {pcsNotInInitiative.length > 0 && <button className='green' value="Add All" onClick={
-              () => handleSubmit(pcsNotInInitiative)
-              }>Add All</button>}
-
-      </div>
-      {pcsNotInInitiative.length > 0 ?
-        pcsNotInInitiative.map((pc) => (
-          <div key={pc._id} className="flex-row">
-            <div className="flex-checkboxes">
-              <div className="checkboxs">
-                <input type="checkbox"
-                  onChange={(e) => {handleSelect(e, pc)}}
-                />
-                <p>{pc.name}</p>
-              </div>
-            </div>
-          </div>
-        ))
-      : <p>There are no additional campaign characters to add</p>}
-      {pcsNotInInitiative.length > 0 && <button value="Add Selected" onClick={() => handleSubmit(selected)}>Add Selected</button>}
-    </>
-  );
-};
-  
-const AddMonster = ({ setSelected, setModal }) => {
-  const choseMonster = (monster) => {
-    const getMonsters = async () => {
-      const api = 'http://localhost:3000/api/'
-      const response = await fetch(`${api}monsters`, {
-        method: "POST",
-        body: JSON.stringify(
-            {
-            action: 'query',
-            data: {_id: monster._id}
-        }),
-        headers: {"Content-type": "application/json; charset=UTF-8"}
-      })
-      const allMonsters = await response.json()
-      if (allMonsters.length > 0) setSelected(allMonsters[0]);
-      setModal({ type: "editMonsters", on: true });
-    }
-    getMonsters()
-  };
-
-  return (
-    <>
-      <MonsterList setSelected={choseMonster} setModal={() => {console.log("dummy function")}}></MonsterList>
-    </>
-  );
-};
-
-const EditMonsters = ({ selected, setSelected, addMonsters, setModal }) => {
-  const [repeat, setRepeat] = useState();
-
-  const dbUpdate = (monster) => {
-    if (!repeat | typeof repeat !== 'string' | repeat > 10) {return}
-    // selected is updated monster edited in the form.
-    // repeat is how many of the edited monsters to add to the initiative
-    const monsters = [];
-    for (let i = 0; i < parseInt(repeat); i++) {
-      monsters.push({
-        ...monster,
-        currentHp: monster.maxHp,
-        source: monster._id,
-        _id: uuidv4(),
-        name: `${monster.name} ${i + 1}`,
-      });
-    }
-    addMonsters(monsters);
-    setModal({ on: false, type: null });
-    setSelected({});
-  };
-
-  return (
-    <>
-      <form className="flex-row">
-        <label htmlFor="numberToAdd">
-          How Many of these monsters do you want to add?
-        </label>
-        <input
-          id="numberToAdd"
-          type="number"
-          required
-          value={repeat}
-          min="1"
-          max="10"
-          onChange={(e) => {
-            setRepeat(e.target.value);
-          }}
-        />
-      </form>
-      <MonsterForm selected={selected} setSelected={setSelected} update={dbUpdate}></MonsterForm>
-    </>
-  );
-};
-
-const RollInitiative = ({ encounter, setModal, saveInitiative }) => {
-  const [initiative, setInitiative] = useState([]);
-  const [sources, setSources] = useState([]);
-
-  useEffect(() => {
-    setInitiative(encounter.initiative); // populate initiative state with existing data
-
-    // get a list of all monster types
-    const s = [];
-    encounter.initiative.forEach((v) => {
-      if (v.source && !s.includes(v.source)) {
-        s.push(v.source);
-      }
-    });
-    setSources(s);
-    return () => {};
-  }, [encounter]);
-
-  // const rollPlayer = (id) => {
-  //     // roll a d20, add dex bonus, update the initiative. id = the characters id to roll on
-  //     const init = encounter.initiative.filter((p) => { return p.id === id})[0]
-  //     const roll = diceRoll(1,20,abilityModifier(characters.list.filter((p) => { return p.id === id})[0].dex))
-  //     setInitiative([...encounter.initiative.filter(f => { return f.id !== id}), {...init, "id": id, "init": roll[2]}])
-  // }
-
-  const rollMonster = (id) => {
-    // roll a d20, add dex bonus, update the initiative. id = the monsters id to roll on
-    const init = initiative.filter((m) => {
-      return m._id === id;
-    })[0];
-    const roll = diceRoll(
-      1,
-      20,
-      abilityModifier(
-        encounter.monsters.filter((m) => {
-          return m._id === id;
-        })[0].dex
-      )
-    );
-    setInitiative([
-      ...initiative.filter((f) => {
-        return f._id !== id;
-      }),
-      { ...init, _id: id, init: roll[2] },
-    ]);
-  };
-
-  const rollMonsters = (id) => {
-    // roll all monster source groups. a d20 for each monster source group, then add individual bonus to the roll, update the initiative
-    const init = initiative.filter((m) => {
-      return m.enemy === "monster";
-    });
-    const update = [
-      ...initiative.filter((f) => {
-        return f.enemy !== "monster";
-      }),
-    ];
-    sources.forEach((s) => {
-      const roll = diceRoll(1, 20, 0);
-      // /(`source group ${s} dice roll = ${roll[2]}`)
-      init
-        .filter((m) => {
-          return m.source === s;
-        })
-        .forEach((m) => {
-          update.push({
-            ...m,
-            init:
-              roll[2] +
-              abilityModifier(
-                encounter.monsters.filter((f) => {
-                  return f._id === m._id;
-                })[0].dex
-              ),
-          });
-        });
-    });
-    setInitiative([...update]);
-  };
-
-  const rollG = (gid) => {
-    // roll a single monster source group. gid is the source id of the monsters
-    const init = initiative.filter((m) => {return m.source === gid});
-    const roll = diceRoll(1, 20, abilityModifier(encounter.monsters.filter((m) => { return m.source === gid})[0].dex));
-    const update = [];
-    init.forEach((m) => {update.push({ ...m, init: roll[2] })});
-    setInitiative([...initiative.filter((f) => {return f.source !== gid}), ...update]);
-  };
-
-  return (
-    <>
-      <h2>Roll Initiative</h2>
-
-      {/* section for player characters, enter initiative rolls here */}
-      {initiative.filter((p) => {return p.enemy === "pc"})
-        .sort((a, b) => (a._id > b._id ? 1 : -1)) // sorting on strings from here https://stackoverflow.com/a/43572944
-        .map((p) => (
-          <div key={p._id} className="flex-row">
-            <div style={{ width: "30ch" }}>{p.name}</div>
-            {/* <input 
-                        type="button" 
-                        value={abilityModifier(characters.list.filter((player) => { return player.id === p.id})[0].dex)} 
-                        onClick={() => {rollPlayer(p.id)}} 
-                        className="btn green" 
-                        style={{"width": "10ch"}}/> */}
-            <input type="number" id={p.id} name={p.id}
-              value={p.init}
-              onChange={(e) => setInitiative([...initiative.filter((f) => {return f._id !== p._id}), { ...p, init: e.target.value }])}
-              style={{ width: "5ch" }}
-            />
-          </div>
-        ))}
-
-      <input type="button" className="btn green"
-        value="roll monsters"
-        onClick={(e) => {rollMonsters()}} />
-
-      {sources.map((g) => (
-        <div key={g}>
-          <hr />
-          {initiative.filter((c) => { return c.source === g })
-            .sort((a, b) => (a.name > b.name ? 1 : -1)) // sorting on strings from here https://stackoverflow.com/a/43572944
-            .map((c) => (
-              <div key={c._id} className="flex-row">
-                <div style={{ width: "30ch" }}>
-                  {encounter.monsters.filter((m) => { return m._id === c._id })[0].name}
-                </div>
-                <input type="button" className="btn green" style={{ width: "10ch" }}
-                  value={abilityModifier(encounter.monsters.filter((m) => { return m._id === c._id })[0].dex)}
-                  onClick={() => {rollMonster(c._id, c.source)}}                  
-                />
-                <p>{c.init}</p>
-              </div>
-            ))}
-          {/* <div className="flex-row">
-                        <input className="btn green" type="button" value="Roll Group" onClick={() => {rollG(g)}}></input>
-                    </div> */}
-        </div>
-      ))}
-      <hr />
-
-      <input type="button" className="btn green"
-        value="Save"
-        onClick={ (e) => { saveInitiative( initiative ) } }
-      />
-    </>
-  );
-};
-
-const CombatantList = ({ encounter, characters, displayCombatant, setSelected, changeHP }) => {
-  useEffect(() => {
-    setSelected(encounter.initiative[encounter.turn]);
-    return () => {};
-  }, []);
-
-  return (
-    <>
-      {/* sort the initiative list, highest init to lowest */}
-      {encounter.initiative
-        .sort((a, b) => b.init - a.init)
-        .map((combatant, index) => (
-          <div key={combatant._id}>
-            <Combatant
-              combatant={combatant}
-              index={index}
-              encounter={encounter}
-              characters={characters}
-              displayCombatant={displayCombatant}
-              changeHP={changeHP}
-            ></Combatant>
-          </div>
-        ))}
-    </>
-  );
-};
-
-const Combatant = ({
-  combatant,
-  index,
-  characters,
-  displayCombatant,
-  encounter,
-  changeHP
-}) => {
-  const [details, setDetails] = useState();
-
-  useEffect(() => {
-    if (characters && combatant && combatant.enemy === "pc") {
-      setDetails(characters.filter((c) => c._id === combatant._id)[0]);
-    } else if (combatant && combatant.enemy === "monster")
-      setDetails(encounter.monsters.filter((m) => m._id === combatant._id)[0]);
-    return () => {};
-  }, [combatant, characters]);
-
-  return (
-    <>
-      {details && (
-        <div key={details.id} className="combatant-item" style={encounter.turn === index 
-          ? { backgroundColor: "lightgreen" }
-          : { backgroundColor: "white" }
-        }>
-          <div className="initiative" style={{ backgroundColor: "green", color: "white", width: "40px" }}>{combatant.init}</div>
-          <div className="details" style={{width: "100%"}}
-            onClick={() => {
-              combatant.enemy === "monster"
-                ? displayCombatant(
-                    encounter.monsters.filter((m) => m._id === combatant._id)[0]
-                  )
-                : displayCombatant(
-                    characters.filter((c) => c._id === combatant._id)[0]
-                  );
-            }}
-          >
-            <h2>{details.name}</h2>
-            <p>Invisible, Blinded</p>
-          </div>
-
-          <div className="hitpoints" style={{cursor: "pointer"}} onClick={() => { changeHP(combatant)} }
-          >
-            <h2>
-              {details.maxHp}
-              {details.maxHP}/{details.maxHp}
-              {details.maxHP}
-            </h2>
-          </div>
-        </div>
-      )}
-    </>
-  );
-};
-  
 const CombatantDetails = ({ combatant, doDamage }) => {
   return (
     <>
@@ -1009,77 +607,77 @@ const CombatantDetails = ({ combatant, doDamage }) => {
   );
 };
 
-const DamageCalculator = ({characters, monsters, tempCombatant, editEncounter, setCampaign}) => {
-  const [ combatant, setCombatant ] = useState()
-  const [ damage, setDamage ] = useState(0)
+// const DamageCalculator = ({characters, monsters, targets, editEncounter, setCampaign}) => {
+//   const [ combatant, setCombatant ] = useState()
+//   const [ damage, setDamage ] = useState(0)
 
-  useEffect(() => {
-    if (tempCombatant && characters && monsters) {
-      console.log(tempCombatant)
-      switch (tempCombatant.enemy) {
-        case 'pc':
-          console.log('pc')
-          setCombatant(characters.filter(character => character._id === tempCombatant._id)[0])
-          break
-        case 'monster':
-          console.log('monster')
-          setCombatant(monsters.filter(monster => monster._id === tempCombatant._id)[0])
-          break
+//   useEffect(() => {
+//     if (tempCombatant && characters && monsters) {
+//       console.log(tempCombatant)
+//       switch (tempCombatant.enemy) {
+//         case 'pc':
+//           console.log('pc')
+//           setCombatant(characters.filter(character => character._id === tempCombatant._id)[0])
+//           break
+//         case 'monster':
+//           console.log('monster')
+//           setCombatant(monsters.filter(monster => monster._id === tempCombatant._id)[0])
+//           break
 
-      }
-    }
+//       }
+//     }
   
-    return () => {}
-  }, [tempCombatant, characters, monsters])
+//     return () => {}
+//   }, [tempCombatant, characters, monsters])
 
-  const applyDamage = (addRremove, amount) => {
-    switch (addRremove) {
-      case 'damage':
-        const damageTotal = combatant.currentHp - amount
-        damageTotal < 0 
-          ? setCombatant({...combatant, currentHp: 0}) 
-          : setCombatant({...combatant, currentHp: damageTotal})
-          break
-      case 'heal':
-        const healTotal = combatant.currentHp + amount
-        healTotal > combatant.maxHp 
-          ? setCombatant({...combatant, currentHp: combatant.maxHp}) 
-          : setCombatant({...combatant, currentHp: healTotal})
-    }
-  }
+//   const applyDamage = (addRremove, amount) => {
+//     switch (addRremove) {
+//       case 'damage':
+//         const damageTotal = combatant.currentHp - amount
+//         damageTotal < 0 
+//           ? setCombatant({...combatant, currentHp: 0}) 
+//           : setCombatant({...combatant, currentHp: damageTotal})
+//           break
+//       case 'heal':
+//         const healTotal = combatant.currentHp + amount
+//         healTotal > combatant.maxHp 
+//           ? setCombatant({...combatant, currentHp: combatant.maxHp}) 
+//           : setCombatant({...combatant, currentHp: healTotal})
+//     }
+//   }
   
-  return (
-    <div id='damage-calculator'>
-      <h2>Damage Calculator</h2>
+//   return (
+//     <div id='damage-calculator'>
+//       <h2>Damage Calculator</h2>
 
-      {combatant && 
-      <div>
-        <h2>{combatant.name}</h2>
-        <div className='flex-row'>
-          <input 
-            type='number' 
-            max={combatant.maxHP} 
-            min='0' 
-            value={combatant.currentHp} 
-            onChange={(e) => setCombatant({...combatant, currentHp: parseInt(e.target.value)})}>
-          </input>
-        </div>
+//       {combatant && 
+//       <div>
+//         <h2>{combatant.name}</h2>
+//         <div className='flex-row'>
+//           <input 
+//             type='number' 
+//             max={combatant.maxHP} 
+//             min='0' 
+//             value={combatant.currentHp} 
+//             onChange={(e) => setCombatant({...combatant, currentHp: parseInt(e.target.value)})}>
+//           </input>
+//         </div>
 
-        <form className='flex-row'>
-          <button onClick={(e) => {e.preventDefault(); damage > 0 && setDamage(damage - 1)}}>{"<"}</button>
-          <input
-            type='number'
-            value={damage}
-            onChange={(e) => {setDamage(parseInt(e.target.value))}}
-            ></input>
-          <button onClick={(e) => {e.preventDefault(); setDamage(damage + 1)}}>{">"}</button>
-          <button onClick={(e) => {e.preventDefault(); applyDamage('heal', damage)}}>Heal</button>
-          <button onClick={(e) => {e.preventDefault(); applyDamage('damage', damage)}}>Damage</button>
-        </form>
-      </div>}
-    </div>
-  );
-}
+//         <form className='flex-row'>
+//           <button onClick={(e) => {e.preventDefault(); damage > 0 && setDamage(damage - 1)}}>{"<"}</button>
+//           <input
+//             type='number'
+//             value={damage}
+//             onChange={(e) => {setDamage(parseInt(e.target.value))}}
+//             ></input>
+//           <button onClick={(e) => {e.preventDefault(); setDamage(damage + 1)}}>{">"}</button>
+//           <button onClick={(e) => {e.preventDefault(); applyDamage('heal', damage)}}>Heal</button>
+//           <button onClick={(e) => {e.preventDefault(); applyDamage('damage', damage)}}>Damage</button>
+//         </form>
+//       </div>}
+//     </div>
+//   );
+// }
 
 const DoAttack = ({tempCombatant, encounter, characters}) => {
   const [ toHitRoll, setToHitRoll ] = useState();
@@ -1155,24 +753,43 @@ const DoAttack = ({tempCombatant, encounter, characters}) => {
       {/* <p>The to hit is {tempCombatant.attack.attack}</p> */}
 
       {toHitRoll === undefined &&<>
-      <h2>Targets</h2>
-      {encounter &&
+      {encounter && combatants && 
         <div>
-          {encounter.initiative.map(target => (
-            <div key={target._id} className={styles.targets}>
-              <input type='checkbox' className='target-checkbox'
-                checked={targets.includes(target._id)} 
-                onChange={(e) => {targets.includes(target._id) 
-                  ? setTargets([...targets.filter(t => t !== target._id)]) 
-                  : setTargets([...targets, target._id])}}></input>
-              
-              <p>{target.name}</p>
-              <p>{target.enemy}: </p>
-            </div>
-          ))}
+          <details open className={styles.details}>
+            <summary className={styles.summary}>PC Targets</summary>
+            {combatants.filter(i => i.enemy === 'pc').map(target => (
+              <div key={target._id} className={styles.targets}>
+                <input type='checkbox' className='target-checkbox'
+                  checked={targets.includes(target._id)} 
+                  onChange={(e) => {targets.includes(target._id) 
+                    ? setTargets([...targets.filter(t => t !== target._id)]) 
+                    : setTargets([...targets, target._id])}}></input>
+                
+                <p>{target.name}</p>
+                <p>AC: {target.ac}: </p>
+              </div>
+            ))}
+          </details>
+
+          <details open  className={styles.details}>
+            <summary className={styles.summary}>Monsters</summary>
+            {combatants.filter(i => i.enemy === 'monster').map(target => (
+              <div key={target._id} className={styles.targets}>
+                <input type='checkbox' className='target-checkbox'
+                  checked={targets.includes(target._id)} 
+                  onChange={(e) => {targets.includes(target._id) 
+                    ? setTargets([...targets.filter(t => t !== target._id)]) 
+                    : setTargets([...targets, target._id])}}></input>
+                
+                <p>{target.name}</p>
+                <p>AC: {target.ac}: </p>
+              </div>
+            ))}
+          </details>
         </div>
       }
-        <button className={styles.btn} onClick={() => {setToHitRoll(diceRoll(1,20,tempCombatant.attack.attack))}}>{tempCombatant.attack.attack}</button>
+        <br></br>
+        <button className={styles.btn} onClick={() => {setToHitRoll(diceRoll(1,20,tempCombatant.attack.attack))}}>To Hit: {tempCombatant.attack.attack}</button>
       </>}
       
       
@@ -1215,7 +832,7 @@ const DoAttack = ({tempCombatant, encounter, characters}) => {
       }
 
       <div className='flex-row'>
-        <button onClick={() => {setToHitRoll(undefined), setCombatantsHit([]), setCriticalHit(false), setCriticalMiss(false)}}>Clear Variables</button>
+        <button className={styles.clearbutton} onClick={() => {setToHitRoll(undefined), setCombatantsHit([]), setCriticalHit(false), setCriticalMiss(false)}}>Clear Variables</button>
       </div>
     </>
   );

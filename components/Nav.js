@@ -8,14 +8,14 @@ const Nav = () => {
     const path = pathname.split("/")[1]
     const id = query.id
     const api = 'http://localhost:3000/api/'
-    console.log(path)
-    console.log(id)
+    // console.log(path)
+    // console.log(id)
     const [ campaign, setCampaign ] = useState()
     const [ adventure, setAdventure ] = useState()
     const [ encounter, setEncounter ] = useState()
 
     const getEncounter = async (id) => {
-        console.log(`get encounter with id: ${id}`)
+        // console.log(`get encounter with id: ${id}`)
         const encounterRes = await fetch(`${api}encounters`, {
             method: "POST",
             body: JSON.stringify(
@@ -23,16 +23,16 @@ const Nav = () => {
                 headers: {"Content-type": "application/json; charset=UTF-8"}
             })
             const encounterJson = await encounterRes.json()
-            console.log(encounterJson)
-            if (encounterJson && encounterJson.length > 0) {console.log(`id: ${id}`);console.log(encounterJson); setEncounter(encounterJson[0])}
+            // console.log(encounterJson)
+            if (encounterJson && encounterJson.length > 0) {setEncounter(encounterJson[0])}
     }
 
     useEffect(() => {
-        console.log(path)
-        console.log(id)
+        // console.log(path)
+        // console.log(id)
 
         if (isReady && !path) {
-            console.log('no path')
+            // console.log('no path')
             setCampaign({})
             setAdventure({})
             setEncounter({})
@@ -41,7 +41,7 @@ const Nav = () => {
         if (isReady && id && path === "campaign") {
             console.log(`get campaign with id: ${id}`)
             const getCampaign = async (id) => {
-                console.log(`get campaign with id: ${id}`)
+                // console.log(`get campaign with id: ${id}`)
                 const campaignRes = await fetch(`${api}campaigns`, {
                     method: "POST",
                     body: JSON.stringify(
@@ -58,7 +58,7 @@ const Nav = () => {
 
         if (isReady && id && path === "adventure") {
             const getAdventure = async (id) => {
-                console.log(`get adventure with id: ${id}`)
+                // console.log(`get adventure with id: ${id}`)
                 const adventureRes = await fetch(`${api}adventures`, {
                     method: "POST",
                     body: JSON.stringify(
@@ -66,13 +66,13 @@ const Nav = () => {
                         headers: {"Content-type": "application/json; charset=UTF-8"}
                     })
                     const adventureJson = await adventureRes.json()
-                    console.log(adventureJson)
+                    // console.log(adventureJson)
 
                     if (adventureJson && adventureJson.length > 0) {
                         setAdventure(adventureJson[0])
 
                         const getCampaign = async (id) => {
-                            console.log(`get campaign with id: ${id}`)
+                            // console.log(`get campaign with id: ${id}`)
                             const campaignRes = await fetch(`${api}campaigns`, {
                                 method: "POST",
                                 body: JSON.stringify(
@@ -90,7 +90,7 @@ const Nav = () => {
         }
 
         if (isReady && path === "encounter" && isReady) {
-            console.log(`get encounter with id: ${id}`)
+            // console.log(`get encounter with id: ${id}`)
             getEncounter(id)
         }
     
