@@ -8,6 +8,7 @@ import BasicForm from '../../components/forms/BasicForm'
 import monsterManual from '../../utils/monsterManual'
 import { importMonster } from '../../utils/import'
 import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, monsterTemplate } from '../../utils/Forms'
+import styles from '../../styles/Monsters.module.css'
 
 
 export default function Monsters({ }) {
@@ -103,8 +104,10 @@ const MonsterList = ({ addMonster, editMonster, deleteMonster, setSelected, setM
   const [ minCr, setminCr ] = useState(0)
   const [ maxCr, setMaxCr ] = useState(30)
   const [ type, setType ] = useState()
+  const [ sortName, setSortName ] = useState('asc')
+  const [ sortCr, setSortCr ] = useState('off')
   const [ query, setQuery ] = useState(
-    {}
+    {minCr: minCr, maxCr: maxCr, search: search}
   )
 
   // pagination state
@@ -114,13 +117,15 @@ const MonsterList = ({ addMonster, editMonster, deleteMonster, setSelected, setM
   const [ itemsPerPage, setItemsPerPage ] = useState(10)
 
   useEffect(() => {
+      if (type === 'none') {setQuery({})}
     const getMonsters = async () => {
       const response = await fetch(`${api}monsters`, {
         method: "POST",
         body: JSON.stringify(
             {
             action: 'minilist',
-            data: {minCr: minCr, maxCr: maxCr, search: search}
+            data: {minCr: minCr, maxCr: maxCr, search: search, type: type},
+            sort: {name: sortName, cr: sortCr}
         }),
         headers: {"Content-type": "application/json; charset=UTF-8"}
       })
@@ -131,7 +136,7 @@ const MonsterList = ({ addMonster, editMonster, deleteMonster, setSelected, setM
     getMonsters()
 
     return () => {} 
-  }, [minCr, maxCr, search])
+  }, [minCr, maxCr, search, sortName, sortCr, type])
 
   useEffect(() => {
     // Fetch items from another resources.
@@ -149,6 +154,24 @@ const MonsterList = ({ addMonster, editMonster, deleteMonster, setSelected, setM
     );
     setItemOffset(newOffset);
   };
+
+  const handleSort = (button) => {
+    switch (button) {
+        case 'name':
+            console.log('clicked name')
+            setSortCr('off')
+            if (sortName === 'off') setSortName('asc')
+            if (sortName === 'asc') setSortName('desc')
+            if (sortName === 'desc') setSortName('asc')
+            break
+        case 'cr':
+            console.log('clicked cr')
+            setSortName('off')
+            if (sortCr === 'off') setSortCr('asc')
+            if (sortCr === 'asc') setSortCr('desc')
+            if (sortCr === 'desc') setSortCr('asc')
+    }
+  }
 
   const getMonster = async (monster) => {
     console.log(monster)
@@ -168,12 +191,11 @@ const MonsterList = ({ addMonster, editMonster, deleteMonster, setSelected, setM
 
   return (
       <>
-      <div className="flex-row">
-          {<button className="green" onClick={() => {setSelected(monsterTemplate); setModal({on:true, view: "edit"})}}>New Monster</button>}
-      </div>
-
+      <div className={styles.monster_filter_container}>
+          {<button className={styles.btn_add_new_monster} onClick={() => {setSelected(monsterTemplate); setModal({on:true, view: "edit"})}}>New Monster</button>}
+      
       {/* filtering the results */}
-      <details>
+      <details open>
           <summary>Filter & Search</summary>
           <div className="flex-row">
                 <input type="text" placeholder="search" value={search} onChange={(e) => setSearch(e.target.value)}></input>
@@ -187,12 +209,29 @@ const MonsterList = ({ addMonster, editMonster, deleteMonster, setSelected, setM
                         <option key={cr} value={cr}>{displayCrAsFraction(cr)}</option>
                     ))}
                 </select>
-
           </div>
+          <div className="flex-row">
+          <select value={type} onChange={(e) => {setType(e.target.value)}} style={{}}>
+                {['none', ...types].map(type => (
+                    <option key={type} value={type}>{type}</option>
+                ))}
+            </select>
+            <input type='button' 
+                value={sortName} 
+                onClick={(e) => {handleSort('name')}} 
+                style={sortName !== 'off' ? {width: '10ch', backgroundColor: 'green', color: 'white'} : {width: '10ch', backgroundColor: 'grey', color: 'white'}} title={sortName} />
+            <input type='button' 
+                value={sortCr} 
+                onClick={(e) => {handleSort('cr')}} 
+                style={sortCr !== 'off' ? {width: '10ch', backgroundColor: 'green', color: 'white'} : {width: '10ch', backgroundColor: 'grey', color: 'white'}} title={sortCr} />
+          
+          </div>  
       </details>
+      </div>
       
+      <div class={styles.item_list}>
       {currentItems && currentItems.map(monster => (
-          <div key={monster._id} className="list-item">
+          <div key={monster._id} className={styles.list_item}>
               <div key={monster.id} style={{cursor: "pointer", width: "100%"}} onClick={() => {setSelected(monster); setModal({on:true, view: "view"})}}>
                   <div className="link">
                           <h2>{monster.name}</h2>
@@ -216,6 +255,8 @@ const MonsterList = ({ addMonster, editMonster, deleteMonster, setSelected, setM
               </div>
           </div>
       ))}
+      </div>
+
       {monsters && monsters.length > itemsPerPage && <div id='pagination-controls'>
         <ReactPaginate
           breakLabel="..."

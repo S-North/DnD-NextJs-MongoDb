@@ -2,7 +2,8 @@ import { connectToDatabase } from '../../../utils/mongodb'
 import { useState, useEffect, createContext } from 'react'
 import { abilityModifier, diceRoll, xpToLevel, displayCrAsFraction, calculateProficiencyBonus } from '../../../utils/utils'
 
-import styles from '../../../styles/CombatantDetails.module.css'
+import styles from '../../../styles/CombatantDetails.module.css';
+import encounterStyle from '../../../styles/Encounter.module.css'
 import { ObjectId } from 'mongodb'
 import InitiativeList from '../../../components/encounter/InitiativeList';
 import AddCharacter from '../../../components/encounter/AddCharacter';
@@ -10,7 +11,8 @@ import AddMonster from '../../../components/encounter/AddMonster';
 import EditMonsters from '../../../components/encounter/EditMonsters';
 import RollInitiative from '../../../components/encounter/RollInitiative';
 import DamageCalculator from '../../../components/encounter/DamageCalculator';
-import EncounterList from '../../../components/encounter/EncounterList'
+import EncounterList from '../../../components/encounter/EncounterList';
+
 
 export const EncounterContext = createContext()
 
@@ -398,7 +400,7 @@ const Encounter = ({initialEncounter}) => {
               )}
 
               {modal.type === "addMonster" && (
-                  <div className="list-columns one-column">
+                  <div className={encounterStyle.monster_select}>
                     <AddMonster></AddMonster>
                   </div>
               )}

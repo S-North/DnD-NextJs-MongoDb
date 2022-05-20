@@ -1,0 +1,24 @@
+.monster_filter_container {
+    display: flex;
+    gap: 1ch;
+    min-height: 6ch;
+}
+
+.btn_add_new_monster {
+    background-color: var(--green);
+    color: var(--paper);
+    align-self:center;
+    justify-content: baseline;
+}
+
+.item_list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5ch;
+}
+
+.item_list .list_item {
+    background-color: var(--paper);
+    padding: 0.5ch 1ch 0.5ch 1ch;
+    box-shadow: var(--box-shadow)
+}

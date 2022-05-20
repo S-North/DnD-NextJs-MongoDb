@@ -233,10 +233,13 @@ section {
 
 /* The Close Button */
 .close {
-  color: #aaa;
+  color: var(--paper);
   float: right;
   font-size: 28px;
   font-weight: bold;
+  background-color: var(--red);
+  padding: 5px;
+  margin: 0 0 0 5px;
 }
 
 .close:hover,
