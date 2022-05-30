@@ -2,15 +2,21 @@ import { connectToDatabase } from '../../../utils/mongodb'
 import { useState, useEffect, createContext } from 'react'
 import { abilityModifier, diceRoll, xpToLevel, displayCrAsFraction, calculateProficiencyBonus } from '../../../utils/utils'
 
-import styles from '../../../styles/CombatantDetails.module.css'
+import styles from '../../../styles/CombatantDetails.module.css';
+import encounterStyle from '../../../styles/Encounter.module.css'
 import { ObjectId } from 'mongodb'
+
+import { MonsterForm } from '../../monsters';
+import CharacterForm from '../../../components/forms/CharacterForm'
 import InitiativeList from '../../../components/encounter/InitiativeList';
 import AddCharacter from '../../../components/encounter/AddCharacter';
 import AddMonster from '../../../components/encounter/AddMonster';
 import EditMonsters from '../../../components/encounter/EditMonsters';
 import RollInitiative from '../../../components/encounter/RollInitiative';
 import DamageCalculator from '../../../components/encounter/DamageCalculator';
-import EncounterList from '../../../components/encounter/EncounterList'
+import EncounterList from '../../../components/encounter/EncounterList';
+import DoAttack from '../../../components/encounter/DoAttack';
+
 
 export const EncounterContext = createContext()
 
@@ -245,10 +251,23 @@ const Encounter = ({initialEncounter}) => {
         }
     };
 
+
+
     const editMonster = async (monster, update) => {
       // {monster} is an object containing the full stats of the monster
       // updated is an object containing the keys and values to update
       // update should be an object containing the changed fields in the monster e.g. {currentHp: 15, conditions: [...conditions, 'blinded']}
+
+      // console.log(monster)
+      // console.log(update)
+      const initiativeItem = encounter.initiative.filter(i => i._id === monster._id)
+
+      if (!update) update = monster
+      // console.log(update)
+
+      const updated = {...monster, ...update}
+      // console.log(updated)
+
       const response = await fetch(`/api/encounters`, {
           method: "POST",
           body: JSON.stringify(
@@ -259,7 +278,7 @@ const Encounter = ({initialEncounter}) => {
                 ...encounter,
                 monsters: [
                   ...encounter.monsters.filter(m => m._id !== monster._id),
-                  {...monster, ...update}
+                  updated
                 ]
               }
           }),
@@ -272,7 +291,7 @@ const Encounter = ({initialEncounter}) => {
               ...encounter,
               monsters: [
                 ...encounter.monsters.filter(m => m._id !== monster._id),
-                {...monster, ...update}
+                updated
               ]
             }
           )
@@ -325,10 +344,8 @@ const Encounter = ({initialEncounter}) => {
         })
         const updateStatus = await response.json()
         setEncounter({...encounter, ...update})
-      }
-
-      
-  
+    }
+ 
     const incrementInitiative = (direction) => {
       // console.log(`length: ${encounter.initiative.length} turn: ${encounter.turn}`)
       switch (direction) {
@@ -393,33 +410,24 @@ const Encounter = ({initialEncounter}) => {
                 }}>&times;
               </span>
 
-              {modal.type === "addPC" && (
-                <AddCharacter addCharacters={addCharacters}></AddCharacter>
-              )}
+              {modal.type === "addPC" && <AddCharacter addCharacters={addCharacters}></AddCharacter> }
 
               {modal.type === "addMonster" && (
-                  <div className="list-columns one-column">
+                  <div className={encounterStyle.monster_select}>
                     <AddMonster></AddMonster>
                   </div>
               )}
 
-              {modal.type === "editMonsters" && (
-                  <EditMonsters addMonsters={addMonsters}></EditMonsters>
-              )}
+              {modal.type === "editMonsters" && ( <EditMonsters addMonsters={addMonsters}></EditMonsters> )}
 
-              {modal.type === "rollInitiative" && (
-                  <RollInitiative saveInitiative={saveInitiative}></RollInitiative>
-              )}
+              {modal.type === "editCombatant" && selected && selected.enemy === 'monster' && <MonsterForm selected={selected} setSelected={setSelected} update={ editMonster }></MonsterForm> }
+              {modal.type === "editCombatant" && selected && selected.enemy === 'pc' && <CharacterForm data={selected} update={ editMonster }></CharacterForm> }
 
-              {modal.type === "HpCalculator" && (
-                <DamageCalculator targets={tempCombatant} editMonster={editMonster} editCharacter={editCharacter} setCampaign={setCampaign}></DamageCalculator>
-              )}
+              {modal.type === "rollInitiative" && ( <RollInitiative saveInitiative={saveInitiative}></RollInitiative> )}
 
-              {modal.type === "doAttack" && (
-                <>
-                {tempCombatant && <DoAttack tempCombatant={tempCombatant} encounter={encounter} characters={characters}></DoAttack>}
-                </>
-              )}
+              {modal.type === "HpCalculator" && ( <DamageCalculator targets={tempCombatant} editMonster={editMonster} editCharacter={editCharacter} setCampaign={setCampaign}></DamageCalculator> )}
+
+              {modal.type === "doAttack" && tempCombatant && <DoAttack tempCombatant={tempCombatant} encounter={encounter} characters={characters}></DoAttack> }
 
             </div>
           </div>
@@ -428,7 +436,7 @@ const Encounter = ({initialEncounter}) => {
         <section>
             {/* the edit list of combatants */}
             {encounter && encounter.mode === "editing" && (
-              <InitiativeList displayItem={selectMonster} deleteItem={deleteCombatant} initiativeItemToFullStats={initiativeItemToFullStats}></InitiativeList>
+              <InitiativeList displayItem={(selected) => { setSelected(selected); setModal({on: true, type: 'editCombatant'})}} deleteItem={deleteCombatant} initiativeItemToFullStats={initiativeItemToFullStats}></InitiativeList>
           )}
 
           {/* running initiative list */}
@@ -455,6 +463,9 @@ const CombatantDetails = ({ combatant, doDamage }) => {
 
       <div className={styles.title}>
         <h3>{combatant.name}</h3>
+        <div className={styles.title_buttons}>
+          <button>Add Condition</button>
+        </div>
       </div>
 
       <div className={styles.detailscontainer}>
@@ -571,13 +582,13 @@ const CombatantDetails = ({ combatant, doDamage }) => {
               <div key={action.name} className={styles.action}>
                 <h2>{action.name}</h2>
                 <p>{action.description}</p>
-                {action.attack && action.attack > 0 ? (
+                {(action.attack && action.attack > 0) | action.damage1.hdDice ? (
                   <button className={styles.btn}
                     onClick={() => {
                       doDamage({_id: combatant._id, name: combatant.name, enemy: combatant.enemy}, action)
                     }}
                   >
-                    +{action.attack}
+                    Do Attack
                   </button>
                 ): <></>}
                 {action.damage && (
@@ -606,237 +617,6 @@ const CombatantDetails = ({ combatant, doDamage }) => {
     </>
   );
 };
-
-// const DamageCalculator = ({characters, monsters, targets, editEncounter, setCampaign}) => {
-//   const [ combatant, setCombatant ] = useState()
-//   const [ damage, setDamage ] = useState(0)
-
-//   useEffect(() => {
-//     if (tempCombatant && characters && monsters) {
-//       console.log(tempCombatant)
-//       switch (tempCombatant.enemy) {
-//         case 'pc':
-//           console.log('pc')
-//           setCombatant(characters.filter(character => character._id === tempCombatant._id)[0])
-//           break
-//         case 'monster':
-//           console.log('monster')
-//           setCombatant(monsters.filter(monster => monster._id === tempCombatant._id)[0])
-//           break
-
-//       }
-//     }
-  
-//     return () => {}
-//   }, [tempCombatant, characters, monsters])
-
-//   const applyDamage = (addRremove, amount) => {
-//     switch (addRremove) {
-//       case 'damage':
-//         const damageTotal = combatant.currentHp - amount
-//         damageTotal < 0 
-//           ? setCombatant({...combatant, currentHp: 0}) 
-//           : setCombatant({...combatant, currentHp: damageTotal})
-//           break
-//       case 'heal':
-//         const healTotal = combatant.currentHp + amount
-//         healTotal > combatant.maxHp 
-//           ? setCombatant({...combatant, currentHp: combatant.maxHp}) 
-//           : setCombatant({...combatant, currentHp: healTotal})
-//     }
-//   }
-  
-//   return (
-//     <div id='damage-calculator'>
-//       <h2>Damage Calculator</h2>
-
-//       {combatant && 
-//       <div>
-//         <h2>{combatant.name}</h2>
-//         <div className='flex-row'>
-//           <input 
-//             type='number' 
-//             max={combatant.maxHP} 
-//             min='0' 
-//             value={combatant.currentHp} 
-//             onChange={(e) => setCombatant({...combatant, currentHp: parseInt(e.target.value)})}>
-//           </input>
-//         </div>
-
-//         <form className='flex-row'>
-//           <button onClick={(e) => {e.preventDefault(); damage > 0 && setDamage(damage - 1)}}>{"<"}</button>
-//           <input
-//             type='number'
-//             value={damage}
-//             onChange={(e) => {setDamage(parseInt(e.target.value))}}
-//             ></input>
-//           <button onClick={(e) => {e.preventDefault(); setDamage(damage + 1)}}>{">"}</button>
-//           <button onClick={(e) => {e.preventDefault(); applyDamage('heal', damage)}}>Heal</button>
-//           <button onClick={(e) => {e.preventDefault(); applyDamage('damage', damage)}}>Damage</button>
-//         </form>
-//       </div>}
-//     </div>
-//   );
-// }
-
-const DoAttack = ({tempCombatant, encounter, characters}) => {
-  const [ toHitRoll, setToHitRoll ] = useState();
-  const [ targets, setTargets ] = useState([]);
-  const [ combatants, setCombatants ] = useState();
-  const [ combatantsHit, setCombatantsHit ] = useState([]);
-  const [ criticalHit, setCriticalHit ] = useState(false);
-  const [ criticalMiss, setCriticalMiss ] = useState(false);
-
-  useEffect(() => {
-    const combatList = []
-    if (encounter && characters) {
-      console.log(encounter.initiative)
-      console.log(encounter.monsters)
-      console.log(characters)
-
-      encounter.initiative.forEach(combatant => {
-        switch (combatant.enemy) {
-          case 'monster':
-            combatList.push( encounter.monsters.filter( monster => monster._id === combatant._id )[0] )
-            break
-          case 'pc':
-            combatList.push( characters.filter( pc => pc._id === combatant._id)[0])
-        }
-      })
-    }
-    setCombatants(combatList)
-  
-    return () => {}
-  }, [tempCombatant, encounter, characters])
-
-  useEffect(() => {
-    // focus the first checkbox on first load, so we can use the keyboard to select items
-    const firstCheckbox = document.getElementsByClassName('target-checkbox')
-    firstCheckbox.length > 0 && firstCheckbox[0].focus()
-    return () => {}
-  }, [])
-
-  useEffect(() => {
-    console.log(targets)
-    const storeHits = []
-    if ( targets && targets.length > 0 && toHitRoll ) {
-      targets.forEach(target => {
-        const combatant = combatants.filter(c => c._id === target)[0]
-        if (parseInt(toHitRoll[0]) == 20) {
-          console.log(`critical hit, hits all`);
-          storeHits.push(combatant)
-          setCriticalHit(true)
-        }
-        else if (parseInt(toHitRoll[0]) == 1) {
-          console.log("critical miss, misses all")
-          setCriticalMiss(true)
-        }
-        else if (toHitRoll[2] >= parseInt(combatant.ac)) {
-          console.log(`hit ${combatant.name}`);
-          storeHits.push(combatant)
-        } 
-        else console.log(`didn't hit ${combatant.name}`)
-      })
-    }
-    setCombatantsHit(storeHits)
-  
-    return () => {}
-  }, [toHitRoll, targets])
-  
-  
-  return (
-    <>
-      <h2>{`${tempCombatant.attacker.name} uses ${tempCombatant.attack.name}`}</h2>
-      <p>{tempCombatant.attack.description}</p>
-      <hr></hr>
-      
-      {/* <p>The to hit is {tempCombatant.attack.attack}</p> */}
-
-      {toHitRoll === undefined &&<>
-      {encounter && combatants && 
-        <div>
-          <details open className={styles.details}>
-            <summary className={styles.summary}>PC Targets</summary>
-            {combatants.filter(i => i.enemy === 'pc').map(target => (
-              <div key={target._id} className={styles.targets}>
-                <input type='checkbox' className='target-checkbox'
-                  checked={targets.includes(target._id)} 
-                  onChange={(e) => {targets.includes(target._id) 
-                    ? setTargets([...targets.filter(t => t !== target._id)]) 
-                    : setTargets([...targets, target._id])}}></input>
-                
-                <p>{target.name}</p>
-                <p>AC: {target.ac}: </p>
-              </div>
-            ))}
-          </details>
-
-          <details open  className={styles.details}>
-            <summary className={styles.summary}>Monsters</summary>
-            {combatants.filter(i => i.enemy === 'monster').map(target => (
-              <div key={target._id} className={styles.targets}>
-                <input type='checkbox' className='target-checkbox'
-                  checked={targets.includes(target._id)} 
-                  onChange={(e) => {targets.includes(target._id) 
-                    ? setTargets([...targets.filter(t => t !== target._id)]) 
-                    : setTargets([...targets, target._id])}}></input>
-                
-                <p>{target.name}</p>
-                <p>AC: {target.ac}: </p>
-              </div>
-            ))}
-          </details>
-        </div>
-      }
-        <br></br>
-        <button className={styles.btn} onClick={() => {setToHitRoll(diceRoll(1,20,tempCombatant.attack.attack))}}>To Hit: {tempCombatant.attack.attack}</button>
-      </>}
-      
-      
-      <br></br>
-      {toHitRoll &&
-      <>
-        <p>{`You rolled ${toHitRoll[0]} with a bonus ${toHitRoll[1]}. Your total is ${toHitRoll[2]}`}</p>
-        {criticalMiss && <h2>Its a critical Miss!!</h2>}
-        {combatantsHit && combatantsHit.length > 0 &&
-        <>
-          {combatantsHit.map(combatant => (
-            <h2>{`You hit ${combatant.name}`}</h2>
-          ))}
-          {criticalHit && <h2>Its a critical Hit!!</h2>}
-
-          {tempCombatant.attack.damage1 &&
-            <>
-            <br></br>
-            <button>{tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1.hdSides}+{tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}</button>
-            </>
-          }
-
-          {tempCombatant.attack.damage2 && tempCombatant.attack.damage2.hdDice &&
-            <>
-            <br></br>
-            <button>{tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2.hdSides}+{tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}</button>
-            </>
-          }
-
-          {tempCombatant.attack.damage3 && tempCombatant.attack.damage3.hdDice &&
-            <>
-            <br></br>
-            <button>{tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2.hdSides}+{tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}</button>
-            </>
-          }
-        
-        </>
-        }
-      </>
-      }
-
-      <div className='flex-row'>
-        <button className={styles.clearbutton} onClick={() => {setToHitRoll(undefined), setCombatantsHit([]), setCriticalHit(false), setCriticalMiss(false)}}>Clear Variables</button>
-      </div>
-    </>
-  );
-}
 
 export async function getServerSideProps(context) {
     const {db} = await connectToDatabase()

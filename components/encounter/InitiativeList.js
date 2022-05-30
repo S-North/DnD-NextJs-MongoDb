@@ -3,6 +3,9 @@ import { EncounterContext } from "../../pages/encounter/[id]";
 import { FaWindowClose } from 'react-icons/fa'
 import { xpToLevel, displayCrAsFraction, calculateEncounterDifficulty } from "../../utils/utils";
 
+// Initiative list is used to add and remove people to an encounter in deit mode (before the encounter is run).
+// If you want the list of combatants shown while the encounter is running, you need EncounterList.js
+
 export function InitiativeItem ({init, displayItem, deleteItem}) {
     const encounter = useContext(EncounterContext)
     const action = (init) => {console.log(init)}
@@ -16,7 +19,7 @@ export function InitiativeItem ({init, displayItem, deleteItem}) {
                 <div style={{ cursor: "pointer", width: "100%" }}
                     onClick={() => {displayItem(combatant);}}>
 
-                <h2>{init.name}</h2>
+                <h2>{combatant.name}</h2>
                 {combatant.cr && <p>CR: {displayCrAsFraction(combatant.cr)}</p>}
                 {init.enemy === 'pc' && <p>Level: {xpToLevel(combatant.xp)}</p>}
                 </div>
