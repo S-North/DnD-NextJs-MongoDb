@@ -1,9 +1,9 @@
-import connectToDatabase from '../../utils/mongodb'
+import connectToDatabase from '../../../utils/mongodb'
 import { useState, useEffect } from 'react'
-import { truncate } from '../../utils/utils'
+import { truncate } from '../../../utils/utils'
 import Link from 'next/link'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
-import BasicForm from '../../components/forms/BasicForm'
+import BasicForm from '../../../components/forms/BasicForm'
 
 
 export default function Monster({ }) {

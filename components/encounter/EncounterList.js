@@ -2,6 +2,10 @@ import { useContext, useState, useEffect } from "react";
 import { EncounterContext } from "../../pages/encounter/[id]";
 import { FaBackward, FaForward  } from 'react-icons/fa'
 
+
+// Encounter list is the list of combatants shown while the encounter is running.
+// If you want the list of combatants shown while editing the encounter, you need InitiativeList.js
+
 export default function EncounterList ({displayCombatant, changeHP, incrementInitiative, editEncounter}) {
     const encounter = useContext(EncounterContext)
     function getExpandedStats (combatant) {
@@ -52,8 +56,8 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                                 );
                             }}
                         >
-                            <h2>{combatant.name}</h2>
-                            <p>{getExpandedStats(combatant).conditions}</p>
+                            <h2>{getExpandedStats(combatant).name}</h2>
+                            {getExpandedStats(combatant).conditions && Array.isArray(getExpandedStats(combatant).conditions) && <p>{getExpandedStats(combatant).conditions.join(", ")}</p>}
                         </div>
 
                         <div className="hitpoints" style={{cursor: "pointer"}} onClick={() => { changeHP([combatant])} }>

@@ -8,15 +8,15 @@ const CharacterForm = ({data, updateFnc}) => {
         "description": "",
         "class": classes[0],
         "race": races[0],
-        "str": "",
-        "dex": "",
-        "con": "",
-        "int": "",
-        "wis": "",
-        "cha": "",
-        "ac": "",
-        "maxHp": "",
-        "currentHP": "",
+        "str": 10,
+        "dex": 10,
+        "con": 10,
+        "int": 10,
+        "wis": 10,
+        "cha": 10,
+        "ac": 0,
+        "maxHp": 0,
+        "currentHP": 0,
     });
 
     useEffect(() => {
@@ -54,78 +54,78 @@ const CharacterForm = ({data, updateFnc}) => {
                     </div>
                     <div className="flex-row">
                         <input
-                            name='Name' 
+                            name='str' 
                             type='number'
                             required
                             placeholder="str"
                             value={ character.str }
-                            onChange={e => setCharacter({...character, "str": e.target.value})}
+                            onChange={e => setCharacter({...character, "str": parseInt(e.target.value)})}
                         />
                         <input
-                            name='Name' 
+                            name='dex' 
                             type='number'
                             required
                             placeholder={character.dex}
                             value={character.dex}
-                            onChange={e => setCharacter({...character, "dex": e.target.value})}
+                            onChange={e => setCharacter({...character, "dex": parseInt(e.target.value)})}
                         />
                         <input
-                            name='Name' 
+                            name='con' 
                             type='number'
                             required
                             placeholder={character.con}
                             value={character.con}
-                            onChange={e => setCharacter({...character, "con": e.target.value})}
+                            onChange={e => setCharacter({...character, "con": parseInt(e.target.value)})}
                         />
                         <input
-                            name='Name' 
+                            name='int' 
                             type='number'
                             required
                             placeholder={character.int}
                             value={character.int}
-                            onChange={e => setCharacter({...character, "int": e.target.value})}
+                            onChange={e => setCharacter({...character, "int": parseInt(e.target.value)})}
                         />
                         <input
-                            name='Name' 
+                            name='wis' 
                             type='number'
                             required
                             placeholder={character.wis}
                             value={character.wis}
-                            onChange={e => setCharacter({...character, "wis": e.target.value})}
+                            onChange={e => setCharacter({...character, "wis": parseInt(e.target.value)})}
                         />
                         <input
-                            name='Name' 
+                            name='cha' 
                             type='number'
                             required
                             placeholder={character.cha}
                             value={character.cha}
-                            onChange={e => setCharacter({...character, "cha": e.target.value})}
+                            onChange={e => setCharacter({...character, "cha": parseInt(e.target.value)})}
                         />
                     </div>
                     <div className="flex-row">
                         <input
-                            name='Name' 
+                            name='maxhp' 
                             type='number'
                             required
                             placeholder={character.maxHp}
                             value={character.maxHp}
-                            onChange={e => setCharacter({...character, "maxHp": e.target.value})}
+                            onChange={e => setCharacter({...character, "maxHp": parseInt(e.target.value)})}
                         />
                         <input
-                            name='Name' 
+                            name='ac' 
                             type='number'
                             required
                             placeholder={character.ac}
                             value={character.ac}
-                            onChange={e => setCharacter({...character, "ac": e.target.value})}
+                            onChange={e => setCharacter({...character, "ac": parseInt(e.target.value)})}
                         />
                         <input
-                            name='Name' 
+                            name='xp' 
                             type='number'
                             required
                             placeholder={character.xp}
                             value={character.xp}
-                            onChange={e => setCharacter({...character, "xp": e.target.value})}
+                            onChange={e => setCharacter({...character, "xp": parseInt(e.target.value)})}
                         />
                     </div>
                     <textarea
