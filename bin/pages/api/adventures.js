@@ -1,4 +1,4 @@
-import connectToDatabase from '../../utils/mongodb'
+import { connectToDatabase } from '../../utils/mongodb'
 import { ObjectId } from 'mongodb'
 
 export default async function handler(req, res) {
@@ -8,30 +8,29 @@ export default async function handler(req, res) {
   let response = {}
 
   if (method === 'POST' && body.action === 'query') {
-    console.log('get queried characters')
+    console.log('get queried adventures')
     if (body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
-    console.log(body.data)
-    response = await db.collection("characters").find(body.data).toArray()
+    response = await db.collection("adventures").find(body.data).toArray()
   }
 
   if (method === 'POST' && body.action === 'deleteone') {
-    console.log('delete characters')
+    console.log('delete adventure')
     const id = new ObjectId(body.data._id)
-    response = await db.collection('characters').deleteOne({_id: id});
+    response = await db.collection('adventures').deleteOne({_id: id});
   }
 
   if (method === 'POST' && body.action === 'addone') {
-    console.log('add 1 characters')
+    console.log('add 1 adventure')
     console.log(body.data)
-    response = await db.collection("characters").insertOne(body.data);
+    response = await db.collection("adventures").insertOne(body.data);
 
     console.log(response)
   }
 
   if (method === 'POST' && body.action === 'editone') {
-    console.log('edit 1 characters')
+    console.log('edit 1 adventure')
     const id = new ObjectId(body.data._id)
-    response = await db.collection("characters").updateOne({_id: id}, {$set: {...body.data, _id: id}});
+    response = await db.collection("adventures").updateOne({_id: id}, {$set: {...body.data, _id: id}});
 
     console.log(response)
   }

@@ -1,0 +1,61 @@
+.btn_next {
+    background-color: green;
+    color: ghostwhite;
+    float: right;
+}
+
+.clearbutton {
+    position: absolute;
+    bottom: 1ch;
+    right: 1ch;
+    background-color: rgb(181, 50, 50);
+    color: ghostwhite;
+}
+
+.title_section {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 1ch;
+    margin-bottom: 1ch;
+}
+
+.main_panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 5px grey;
+    padding: 0.38ch 1ch;
+    display: flex;
+    justify-content: space-between;
+}
+
+.targets {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5ch;
+}
+
+.target {
+    display: grid;
+    grid-template-columns: 30px 70% 30%;
+    column-gap: 1ch;
+    justify-items: left;
+    padding-left: 1.5ch;
+}
+
+.details {
+    background-color: rgba(255, 255, 255, 0.7);
+    padding-bottom: 1ch;
+    margin-bottom: 1ch; 
+}
+.summary {
+    cursor: pointer;
+    background-color: rgba(240, 240, 240, 0.788);
+    padding: 0.5ch;
+    margin-bottom: 1ch;
+    box-shadow: 0 0 5px grey;
+}

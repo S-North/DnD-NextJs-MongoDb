@@ -1,4 +1,4 @@
-import connectToDatabase from '../../../utils/mongodb'
+import { connectToDatabase } from '../../../utils/mongodb'
 import { useState, useEffect } from 'react'
 import { truncate } from '../../../utils/utils'
 import Link from 'next/link'

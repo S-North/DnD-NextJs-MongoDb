@@ -1,0 +1,73 @@
+.monster_filter_container {
+    display: flex;
+    gap: 1ch;
+    min-height: 6ch;
+}
+
+.btn_add_new_monster {
+    background-color: var(--green);
+    color: var(--paper);
+    align-self:center;
+    justify-content: baseline;
+}
+
+.item_list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5ch;
+}
+
+.item_list .list_item {
+    display: flex;
+    background-color: var(--paper);
+    padding: 0 0.5ch;
+    box-shadow: var(--box-shadow)
+}
+
+.item_text {
+    cursor: pointer; 
+    width: 100%;
+}
+
+.action_form {
+    display: grid;
+    column-gap: 1ch;
+    align-items:center;
+    grid-template-areas: 
+    'name name name name name name'
+    'description description description description description description '
+    'lblToHit chkToHit toHit . . .'
+    'dmg1Label dmg1Chk dmg1Option1 dmg1Option2 dmg1Option3 dmg1Option4'
+    'dmg2Label dmg2Chk dmg2Option1 dmg2Option2 dmg2Option3 dmg2Option4'
+    'dmg3Label dmg3Chk dmg3Option1 dmg3Option2 dmg3Option3 dmg3Option4'
+    '. . . . . save';
+}
+
+.action_name { grid-area: name; }
+.action_description { grid-area: description; }
+
+.action_lblToHit { grid-area: lblToHit; }
+.action_chkToHit { grid-area: chkToHit; }
+.action_toHit { grid-area: toHit; }
+
+.action_dmg1Label { grid-area: dmg1Label; }
+.action_dmg1Chk { grid-area: dmg1Chk; }
+.action_dmg1Option1 { grid-area: dmg1Option1; }
+.action_dmg1Option2 { grid-area: dmg1Option2; }
+.action_dmg1Option3 { grid-area: dmg1Option3; }
+.action_dmg1Option4 { grid-area: dmg1Option4; }
+
+.action_dmg2Label { grid-area: dmg2Label; }
+.action_dmg2Chk { grid-area: dmg2Chk; }
+.action_dmg2Option1 { grid-area: dmg2Option1; }
+.action_dmg2Option2 { grid-area: dmg2Option2; }
+.action_dmg2Option3 { grid-area: dmg2Option3; }
+.action_dmg2Option4 { grid-area: dmg2Option4; }
+
+.action_dmg3Label { grid-area: dmg3Label; }
+.action_dmg3Chk { grid-area: dmg3Chk; }
+.action_dmg3Option1 { grid-area: dmg3Option1; }
+.action_dmg3Option2 { grid-area: dmg3Option2; }
+.action_dmg3Option3 { grid-area: dmg3Option3; }
+.action_dmg3Option4 { grid-area: dmg3Option4; }
+.action_save { grid-area: save;}

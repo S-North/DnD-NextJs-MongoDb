@@ -18,7 +18,7 @@ if (!MONGODB_DB) {
 let cached = global.mongo
 if (!cached) cached = global.mongo = {}
 
-export default async function connectToDatabase() {
+export async function connectToDatabase() {
   if (cached.conn) return cached.conn
   if (!cached.promise) {
     const conn = {}
