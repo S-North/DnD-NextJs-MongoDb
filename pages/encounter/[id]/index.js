@@ -1,4 +1,4 @@
-import { connectToDatabase } from '../../../utils/mongodb'
+import connectToDatabase from '../../../utils/mongodb'
 import { useState, useEffect, createContext } from 'react'
 import { abilityModifier, diceRoll, xpToLevel, displayCrAsFraction, calculateProficiencyBonus } from '../../../utils/utils'
 

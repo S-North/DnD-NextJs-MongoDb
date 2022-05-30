@@ -7,7 +7,7 @@ import BasicForm from '../../../components/forms/BasicForm'
 
 
 export default function Monster({ }) {
-  const api = 'http://localhost:3000/api/'
+  const api = '/api/'
   const [ campaigns, setCampaigns ] = useState([])
   const [ encounters, setEncounters ] = useState([])
   const [ selected, setSelected ] =useState();
