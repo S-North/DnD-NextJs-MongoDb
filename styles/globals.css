@@ -75,6 +75,8 @@ a {
   text-decoration: none;
 }
 
+
+
 @media (max-width: 500px) {
   body {
     background-size: auto 150%;

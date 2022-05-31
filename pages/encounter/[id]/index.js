@@ -1,4 +1,6 @@
 import connectToDatabase from '../../../utils/mongodb'
+import { ObjectId } from 'mongodb'
+
 import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
 
 import { useState, useEffect, createContext } from 'react'
@@ -6,7 +8,6 @@ import { abilityModifier, diceRoll, xpToLevel, displayCrAsFraction, calculatePro
 
 import styles from '../../../styles/CombatantDetails.module.css';
 import encounterStyle from '../../../styles/Encounter.module.css'
-import { ObjectId } from 'mongodb'
 
 import { MonsterForm } from '../../monsters';
 import CharacterForm from '../../../components/forms/CharacterForm'
@@ -18,6 +19,7 @@ import RollInitiative from '../../../components/encounter/RollInitiative';
 import DamageCalculator from '../../../components/encounter/DamageCalculator';
 import EncounterList from '../../../components/encounter/EncounterList';
 import DoAttack from '../../../components/encounter/DoAttack';
+import Nav from '../../../components/Nav';
 
 
 export const EncounterContext = createContext()
@@ -399,6 +401,7 @@ const Encounter = ({initialEncounter}) => {
     return (
       <EncounterContext.Provider value={{encounter, setEncounter, characters, setCharacters, selected, setSelected, modal, setModal, initiativeItemToFullStats}}>
        <>
+       <Nav location='encounter'></Nav>
   
        {/* modal window for popup forms */}
        {modal.on && (
@@ -450,10 +453,6 @@ const Encounter = ({initialEncounter}) => {
         </div>}
 
         </section>
-
-        <footer>
-          <p style={{color: "ghostwhite"}}>Welcome {user.name}</p>
-        </footer>
        </>
        </EncounterContext.Provider>
     );
