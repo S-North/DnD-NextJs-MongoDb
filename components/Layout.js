@@ -5,7 +5,6 @@ const Layout = ({children}) => {
         <>
         
         {/* <Toolbar></Toolbar> */}
-        <Nav></Nav>
         <main>{children}</main>
         </>
     )

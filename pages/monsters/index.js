@@ -10,6 +10,7 @@ import { importMonster } from '../../utils/import'
 import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, monsterTemplate } from '../../utils/Forms'
 import styles from '../../styles/Monsters.module.css'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0';
+import Nav from '../../components/Nav'
 
 
 export default withPageAuthRequired(function Monsters({ }) {
@@ -92,6 +93,7 @@ export default withPageAuthRequired(function Monsters({ }) {
   
   return (
     <>
+        <Nav location='monsters'></Nav>
         {/* modal window */}
         {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}

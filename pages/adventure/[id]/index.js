@@ -7,11 +7,13 @@ import Link from 'next/link'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
 import BasicForm from '../../../components/forms/BasicForm'
 import { ObjectId } from 'mongodb'
+import Nav from '../../../components/Nav';
 
 
 const Adventure = ({adventure}) => {
     const api = '/api/'
     const [ encounters, setEncounters ] = useState([])
+    const [ campaign, setCampaign ] = useState()
     const [ selected, setSelected ] = useState();
     const [ modal, setModal ] = useState({"type": "none", "on": false})
     
@@ -32,9 +34,26 @@ const Adventure = ({adventure}) => {
               setEncounters(allencounters)
         }
         getEncounters()
+
+        const getCampaign = async () => {
+            const response = await fetch(`${api}campaigns`, {
+                method: "POST",
+                body: JSON.stringify(
+                    {
+                    action: 'query',
+                    data: {_id: adventure.campaignId}
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+              }
+              })
+              const campaign = await response.json(response)
+              setCampaign(campaign[0])
+        }
+        getCampaign()
   
       return () => {}
-    }, [])
+    }, [adventure])
     
     const updateEncounters = async (mongoCollection, item) => {
         const newEncounters = null
@@ -116,6 +135,7 @@ const Adventure = ({adventure}) => {
     
     return (
        <>
+       <Nav location='adventure' campaign={campaign} adventure={adventure}></Nav>
        {/* modal window */}
        {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}

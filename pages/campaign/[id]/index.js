@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
 import BasicForm from '../../../components/forms/BasicForm'
 import CharacterForm from '../../../components/forms/CharacterForm'
+import Nav from '../../../components/Nav';
 
 
 export default withPageAuthRequired(function Campaign({campaign}) {
@@ -223,6 +224,7 @@ export default withPageAuthRequired(function Campaign({campaign}) {
     
     return (
        <>
+       <Nav location='campaign' campaign={campaign}></Nav>
        {/* modal window */}
        {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}

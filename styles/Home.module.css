@@ -43,3 +43,12 @@
   background-color: var(--red);
   color: var(--paper);
 }
+
+.link {
+  color: rgb(53, 50, 58);
+  text-decoration: underline;
+}
+
+.link:hover {
+  color: rgb(8, 8, 9);
+}

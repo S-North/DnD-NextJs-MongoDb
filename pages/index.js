@@ -1,7 +1,7 @@
 import connectToDatabase from '../utils/mongodb'
 import Link from 'next/link';
-import { useState, useEffect } from 'react'
-import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
+import { useUser } from '@auth0/nextjs-auth0';
+import Nav from '../components/Nav';
 import styles from '../styles/Home.module.css'
 
 export default function Home({ }) {
@@ -10,6 +10,8 @@ export default function Home({ }) {
   
   return (
     <>
+        <Nav location='home'></Nav>
+
         <section>
             {!user && <div className="one-column">
                 <h2 className={styles.column_title}>Login</h2>
@@ -22,7 +24,7 @@ export default function Home({ }) {
             </div>}
 
             {user &&<div className="one-column">
-                <h2 className={styles.column_title}>Welcome {user.given_name}</h2>
+                <h2 className={styles.column_title}>Welcome {user.given_name} {user.nickname}</h2>
                 <div className={styles.card}>
                   <p>Please go to the campaigns page to create and view campaigns</p>
                   <Link href='/campaigns'><button className={styles.button_green}>Campaigns page</button></Link>
@@ -40,7 +42,8 @@ export default function Home({ }) {
                 <h2>Expect Bugs</h2>
                 <p>This application is in alpha, which means it is not ready for production use. If you have access to the application it is for testing purposes only.</p>
                 <p>Expect bugs and unfinished features.</p>
-                <p>The developers would appreciate it if you can report any bugs you find to the<Link href='https://github.com/S-North/DnD-NextJs-MongoDb/issues'> Github page here.</Link></p>
+                <p>The developers would appreciate it if you can report any bugs you find to the<Link href='https://github.com/S-North/DnD-NextJs-MongoDb/issues'><a className={styles.link}> Github page here.</a></Link></p>
+                <p>Or if you don't have direct access to this private repo, <Link href='https://discord.gg/Xfbn67J6H9'><a className={styles.link}>join the discord</a></Link></p>
               </div>
             </div>
         </section>
