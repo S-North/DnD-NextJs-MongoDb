@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import navStyles from '../styles/Nav.module.css'
 import { useRouter } from "next/router";
 
-const Nav = ({campaign, adventure, encounter}) => {
+const Nav = ({campaign, adventure, encounter, user}) => {
     const { query, pathname, isReady } = useRouter()
     const path = pathname.split("/")[1]
     const id = query.id
@@ -15,14 +15,13 @@ const Nav = ({campaign, adventure, encounter}) => {
             <nav>
                 <h2></h2>
                 <Link href='/'>Home</Link>
-                {path && path === "campaigns" &&<Link href={`/campaigns`}>&gt; Campaigns</Link>}
+                {user &&<Link href={`/campaigns`}>Campaigns</Link>}
                 {path && path === "monsters" && <Link href={`/monsters`}>&gt; Monsters</Link>}
                 {path && path === "equipment" && <Link href={`/equipment`}>&gt; Equipment</Link>}
                 {path && path === "spells" && <Link href={`/spells`}>&gt; Spells</Link>}
                 
                 {campaign && path && ['campaign', 'adventure', 'encounter'].includes(path) && 
                     <>
-                    <Link href={`/campaigns`}>&gt; Campaigns</Link>
                     
                     <Link style={{cursor: "pointer"}} className="tooltip" href={`/campaign/${campaign._id}`}>
                         <>

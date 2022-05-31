@@ -12,6 +12,7 @@ import Nav from '../../../components/Nav';
 
 const Adventure = ({adventure}) => {
     const api = '/api/'
+    const { user, error, isLoading } = useUser();
     const [ encounters, setEncounters ] = useState([])
     const [ campaign, setCampaign ] = useState()
     const [ selected, setSelected ] = useState();
@@ -24,7 +25,7 @@ const Adventure = ({adventure}) => {
                 body: JSON.stringify(
                     {
                     action: 'query',
-                    data: {adventureId: adventure._id}
+                    data: {adventureId: adventure._id, userId: user.id}
                 }),
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"
@@ -72,7 +73,9 @@ const Adventure = ({adventure}) => {
                     initiative: [],
                     monsters: [],
                     campaignId: adventure.campaignId, 
-                    adventureId: adventure._id}
+                    adventureId: adventure._id,
+                    userId: user.sub
+                }
             }),
             headers: {
                 "Content-type": "application/json; charset=UTF-8"
@@ -135,7 +138,7 @@ const Adventure = ({adventure}) => {
     
     return (
        <>
-       <Nav location='adventure' campaign={campaign} adventure={adventure}></Nav>
+       <Nav location='adventure' campaign={campaign} adventure={adventure} user={user}></Nav>
        {/* modal window */}
        {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}
