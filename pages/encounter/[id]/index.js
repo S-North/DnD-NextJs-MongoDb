@@ -408,6 +408,7 @@ const Encounter = ({initialEncounter}) => {
     };
   
     const displayCombatant = (combatant) => {
+      console.log(combatant)
       setSelected(combatant);
     };
 

@@ -20,22 +20,13 @@ const Nav = ({campaign, adventure, encounter, user}) => {
                 {path && path === "equipment" && <Link href={`/equipment`}>&gt; Equipment</Link>}
                 {path && path === "spells" && <Link href={`/spells`}>&gt; Spells</Link>}
                 
-                {campaign && path && ['campaign', 'adventure', 'encounter'].includes(path) && 
-                    <>
+                {campaign && path && ['campaign', 'adventure', 'encounter'].includes(path) && <Link href={`/campaign/${campaign._id}`}><a>&gt; {campaign.name}</a></Link>}
+
                     
-                    <Link style={{cursor: "pointer"}} className="tooltip" href={`/campaign/${campaign._id}`}>
-                        <>
-                        <span >&gt; {campaign.name}</span>
-                        {/* <span className="tooltiptext">&gt; {campaign.description}</span> */}
-                        </>
-                    </Link>
-                    </>}
-                {campaign && campaign.id && location === "campaign" && <p style={{"color": "var(--paper)"}} title={campaign.description}>&gt; {campaign.name}</p>}
+
+                {/* {campaign && campaign.id && location === "campaign" && <p style={{"color": "var(--paper)"}} title={campaign.description}>&gt; {campaign.name}</p>} */}
                 
-                {adventure && path && ['adventure', 'encounter'].includes(path) && 
-                    <Link className="tooltip" href={`/adventure/${adventure._id}`}>
-                        <span className="tooltiptext">&gt; {adventure.name}</span>
-                    </Link>}
+                {adventure && path && ['adventure', 'encounter'].includes(path) && <Link href={`/adventure/${adventure._id}`}><a>&gt; {adventure.name}</a></Link>}
                 {adventure && adventure.id && location === "adventure" && <p style={{"color": "var(--paper)"}} title={adventure.description}>&gt; {adventure.name}</p>}
 
                 {encounter && path && ['encounter'].includes(path) &&
