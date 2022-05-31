@@ -94,7 +94,8 @@ nav {
   display: flex;
   align-items: center;
   gap: 1ch;
-  padding-left: 1.5ch;
+  /* padding-left: 1.5ch; */
+  margin-bottom: 1ch;
 }
 
 nav p {
@@ -119,7 +120,7 @@ aside a {
 main {
   /* text-align: center; */
   display: flex;
-  padding: 1ch;
+  /* padding: 1ch; */
   flex-direction: column;
 }
 
@@ -137,6 +138,7 @@ section {
   flex-wrap: wrap;
   gap: 1ch;
   color: black;
+  margin: 0 1ch;
 }
 
 .one-column {

@@ -42,7 +42,8 @@ export default withPageAuthRequired(function Campaign({ }) {
             {
             action: 'query',
             data: {
-                mode: "running"
+                mode: "running",
+                userId: user.sub
             }
         }),
         headers: {
@@ -128,7 +129,7 @@ export default withPageAuthRequired(function Campaign({ }) {
   
   return (
     <>
-        <Nav location='campaigns'></Nav>
+        <Nav location='campaigns' user={user}></Nav>
         {/* modal window */}
         {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}

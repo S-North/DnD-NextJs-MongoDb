@@ -85,6 +85,38 @@ const Encounter = ({initialEncounter}) => {
           getCharacters()
       }
 
+      if (encounter) {
+        const getCamapign = async () => {
+          const response = await fetch(`${api}campaigns`, {
+              method: "POST",
+              body: JSON.stringify(
+                  {
+                  action: 'query',
+                  data: {_id: encounter.campaignId}
+              }),
+              headers: {"Content-type": "application/json; charset=UTF-8"}
+            })
+            const campaign = await response.json()
+            if (campaign.length > 0) setCampaign(campaign[0])
+      }
+      getCamapign()
+
+      const getAdventure = async () => {
+        const response = await fetch(`${api}adventures`, {
+            method: "POST",
+            body: JSON.stringify(
+                {
+                action: 'query',
+                data: {_id: encounter.adventureId}
+            }),
+            headers: {"Content-type": "application/json; charset=UTF-8"}
+          })
+          const adventure = await response.json()
+          if (adventure.length > 0) setAdventure(adventure[0])
+    }
+    getAdventure()
+      }
+
       return () => {}
     }, [encounter])
 
@@ -401,7 +433,7 @@ const Encounter = ({initialEncounter}) => {
     return (
       <EncounterContext.Provider value={{encounter, setEncounter, characters, setCharacters, selected, setSelected, modal, setModal, initiativeItemToFullStats}}>
        <>
-       <Nav location='encounter'></Nav>
+       <Nav location='encounter' user={user} encounter={encounter} campaign={campaign} adventure={adventure}></Nav>
   
        {/* modal window for popup forms */}
        {modal.on && (

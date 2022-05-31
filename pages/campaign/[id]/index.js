@@ -12,7 +12,7 @@ import Nav from '../../../components/Nav';
 
 export default withPageAuthRequired(function Campaign({campaign}) {
     const api = '/api/'
-
+    const { user, error, isLoading } = useUser();
     const [ adventures, setAdventures ] = useState([])
     const [ encounters, setEncounters ] = useState([])
     const [ characters, setCharacters ] = useState([])    
@@ -26,7 +26,7 @@ export default withPageAuthRequired(function Campaign({campaign}) {
                 body: JSON.stringify(
                     {
                     action: 'query',
-                    data: {campaignId: campaign._id}
+                    data: {campaignId: campaign._id, userId: user.sub}
                 }),
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"
@@ -65,7 +65,8 @@ export default withPageAuthRequired(function Campaign({campaign}) {
                     action: 'query',
                     data: {
                         mode: "running",
-                        campaignId: campaign._id
+                        campaignId: campaign._id,
+                        userId: user.id
                     }
                 }),
                 headers: {
@@ -96,7 +97,7 @@ export default withPageAuthRequired(function Campaign({campaign}) {
             body: JSON.stringify(
                 {
                 action: 'addone',
-                data: {...item, campaignId: campaign._id}
+                data: {...item, campaignId: campaign._id, userId: user.sub}
             }),
             headers: {
                 "Content-type": "application/json; charset=UTF-8"
@@ -105,7 +106,7 @@ export default withPageAuthRequired(function Campaign({campaign}) {
         newAdventures = await response.json()
 
         if (newAdventures.acknowledged && newAdventures.insertedId) {
-            setAdventures([...adventures, {...item, _id: newAdventures.insertedId}])
+            setAdventures([...adventures, {...item, _id: newAdventures.insertedId, userId: user.sub}])
             setModal({on: false, type: ""})
           }
     }
@@ -166,7 +167,8 @@ export default withPageAuthRequired(function Campaign({campaign}) {
                     ...character, 
                     campaignId: campaign._id,
                     enemy: 'pc',
-                    currentHp: character.maxHp
+                    currentHp: character.maxHp,
+                    userId: user.id
                 }
             }),
             headers: {
@@ -176,7 +178,14 @@ export default withPageAuthRequired(function Campaign({campaign}) {
         updateCharacter = await response.json()
 
         if (updateCharacter.acknowledged && updateCharacter.insertedId) {
-            setCharacters([...characters, {...character, _id: updateCharacter.insertedId}])
+            setCharacters([
+                ...characters, 
+                {
+                    ...character, 
+                    _id: updateCharacter.insertedId, 
+                    enemy: 'pc',
+                    currentHp: character.maxHp,
+                    userId: user.sub}])
             setModal({on: false, type: ""})
           }
     }
@@ -224,7 +233,7 @@ export default withPageAuthRequired(function Campaign({campaign}) {
     
     return (
        <>
-       <Nav location='campaign' campaign={campaign}></Nav>
+       <Nav location='campaign' campaign={campaign} user={user}></Nav>
        {/* modal window */}
        {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}

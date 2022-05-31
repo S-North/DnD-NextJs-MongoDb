@@ -15,7 +15,7 @@ import Nav from '../../components/Nav'
 
 export default withPageAuthRequired(function Monsters({ }) {
     const api = '/api/'
-    const [ selected, setSelected ] =useState();
+    const [ selected, setSelected ] = useState();
     const [ modal, setModal ] = useState({"type": "none", "on": false})
     const [ updated, setUpdated ] = useState(0)
   

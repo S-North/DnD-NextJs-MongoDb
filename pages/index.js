@@ -10,7 +10,7 @@ export default function Home({ }) {
   
   return (
     <>
-        <Nav location='home'></Nav>
+        <Nav location='home' user={user}></Nav>
 
         <section>
             {!user && <div className="one-column">
