@@ -16,6 +16,7 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                 return encounter.encounter.monsters.filter((f) => f._id === combatant._id)[0];
                 break;
             case combatant.enemy === "pc":
+                console.log(encounter.characters)
                 return encounter.characters.filter((f) => f._id === combatant._id)[0];
         }
     }
@@ -56,7 +57,7 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                                 );
                             }}
                         >
-                            <h2>{getExpandedStats(combatant).name}</h2>
+                            <h2>AC: {getExpandedStats(combatant).ac} {getExpandedStats(combatant).name}</h2>
                             {getExpandedStats(combatant).conditions && Array.isArray(getExpandedStats(combatant).conditions) && <p>{getExpandedStats(combatant).conditions.join(", ")}</p>}
                         </div>
 

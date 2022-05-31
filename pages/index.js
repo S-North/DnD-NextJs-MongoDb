@@ -24,7 +24,7 @@ export default function Home({ }) {
             </div>}
 
             {user &&<div className="one-column">
-                <h2 className={styles.column_title}>Welcome {user.given_name} {user.nickname}</h2>
+                <h2 className={styles.column_title}>Welcome {user.given_name ? user.given_name : user.nickname} {}</h2>
                 <div className={styles.card}>
                   <p>Please go to the campaigns page to create and view campaigns</p>
                   <Link href='/campaigns'><button className={styles.button_green}>Campaigns page</button></Link>
