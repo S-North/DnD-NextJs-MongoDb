@@ -1,5 +1,6 @@
 import connectToDatabase from '../../../utils/mongodb'
 import { ObjectId } from 'mongodb'
+import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
 import { useState, useEffect } from 'react'
 import { truncate } from '../../../utils/utils'
 import Link from 'next/link'
@@ -8,7 +9,7 @@ import BasicForm from '../../../components/forms/BasicForm'
 import CharacterForm from '../../../components/forms/CharacterForm'
 
 
-const Campaign = ({campaign}) => {
+export default withPageAuthRequired(function Campaign({campaign}) {
     const api = '/api/'
 
     const [ adventures, setAdventures ] = useState([])
@@ -307,9 +308,7 @@ const Campaign = ({campaign}) => {
         </section>
        </>
     );
-}
-
-export default Campaign
+})
 
 export async function getServerSideProps(context) {
     const {db} = await connectToDatabase()

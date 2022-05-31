@@ -1,4 +1,6 @@
 import connectToDatabase from '../../../utils/mongodb'
+import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
+
 import { useState, useEffect, createContext } from 'react'
 import { abilityModifier, diceRoll, xpToLevel, displayCrAsFraction, calculateProficiencyBonus } from '../../../utils/utils'
 
@@ -22,6 +24,7 @@ export const EncounterContext = createContext()
 
 const Encounter = ({initialEncounter}) => {
     const api = '/api/'
+    const { user, error, isLoading } = useUser();
     const [encounter, setEncounter] = useState(initialEncounter);
     const [characters, setCharacters] = useState();
     const [campaign, setCampaign] = useState({});
@@ -34,6 +37,8 @@ const Encounter = ({initialEncounter}) => {
     // used during mode: 'running' as temporary storage when adjusting a combatant e.g. changing HP, conditions, etc
     const [ tempCombatant, setTempCombatant ] = useState()
     const [modal, setModal] = useState({ type: "none", on: false });
+
+    console.log(user.name)
 
     useEffect(() => {
       // keybindings for keyboard commands. Needs some more research 
@@ -59,8 +64,7 @@ const Encounter = ({initialEncounter}) => {
  
       return () => {}
     }, [])
-    
-    
+      
     useEffect(() => {
       if (encounter && !characters) {
           const getCharacters = async () => {
@@ -101,8 +105,7 @@ const Encounter = ({initialEncounter}) => {
     
       return () => {}
     }, [encounter.turn, characters])
-    
-    
+      
     const initiativeItemToFullStats = (initItem) => {
       if (characters) {
         switch (true) {
@@ -250,8 +253,6 @@ const Encounter = ({initialEncounter}) => {
         )
         }
     };
-
-
 
     const editMonster = async (monster, update) => {
       // {monster} is an object containing the full stats of the monster
@@ -449,12 +450,16 @@ const Encounter = ({initialEncounter}) => {
         </div>}
 
         </section>
+
+        <footer>
+          <p style={{color: "ghostwhite"}}>Welcome {user.name}</p>
+        </footer>
        </>
        </EncounterContext.Provider>
     );
 }
 
-export default Encounter
+export default withPageAuthRequired(Encounter)
 
 const CombatantDetails = ({ combatant, doDamage }) => {
   return (

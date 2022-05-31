@@ -19,13 +19,15 @@ export default async function handler(req, res) {
 
   // method to add a new document
   if (method === 'POST' && body.action === 'addone') {
-    console.log('get all campaigns')
+    console.log('insert one campaign')
+    console.log(body.data)
     response = await db.collection("campaigns").insertOne(body.data);
   }
 
   // method to edit an existing document
   if (method === 'POST' && body.action === 'editone') {
-    console.log('get all campaigns')
+    console.log('edit one campaign')
+    console.log(body.data)
     const id = new ObjectId(body.data._id)
     response = await db.collection("campaigns").updateOne({_id: id}, {$set: {...body.data, _id: id}});
   }

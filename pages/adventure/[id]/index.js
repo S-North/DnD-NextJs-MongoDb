@@ -1,4 +1,5 @@
 import connectToDatabase from '../../../utils/mongodb'
+import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
 import { useState, useEffect } from 'react'
 import { truncate } from '../../../utils/utils'
 import Link from 'next/link'
@@ -169,7 +170,7 @@ const Adventure = ({adventure}) => {
     );
 }
 
-export default Adventure
+export default withPageAuthRequired(Adventure)
 
 export async function getServerSideProps(context) {
     const {db} = await connectToDatabase()
