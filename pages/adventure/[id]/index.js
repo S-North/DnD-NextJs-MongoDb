@@ -1,8 +1,6 @@
 import connectToDatabase from '../../../utils/mongodb'
-<<<<<<< HEAD
-=======
 import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
->>>>>>> origin/development
+
 import { useState, useEffect } from 'react'
 import { truncate } from '../../../utils/utils'
 import Link from 'next/link'

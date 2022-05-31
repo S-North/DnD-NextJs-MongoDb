@@ -1,9 +1,6 @@
 import connectToDatabase from '../../../utils/mongodb'
-<<<<<<< HEAD
-=======
 import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
 
->>>>>>> origin/development
 import { useState, useEffect, createContext } from 'react'
 import { abilityModifier, diceRoll, xpToLevel, displayCrAsFraction, calculateProficiencyBonus } from '../../../utils/utils'
 
