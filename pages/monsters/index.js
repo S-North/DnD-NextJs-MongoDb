@@ -9,9 +9,10 @@ import monsterManual from '../../utils/monsterManual'
 import { importMonster } from '../../utils/import'
 import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, monsterTemplate } from '../../utils/Forms'
 import styles from '../../styles/Monsters.module.css'
+import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 
 
-export default function Monsters({ }) {
+export default withPageAuthRequired(function Monsters({ }) {
     const api = '/api/'
     const [ selected, setSelected ] =useState();
     const [ modal, setModal ] = useState({"type": "none", "on": false})
@@ -126,7 +127,7 @@ export default function Monsters({ }) {
         </section>
     </>
   )
-}
+})
 
 const MonsterList = ({ addMonster, editMonster, deleteMonster, setSelected, setModal, updated }) => {
   const api = '/api/'
@@ -263,7 +264,7 @@ const MonsterList = ({ addMonster, editMonster, deleteMonster, setSelected, setM
       </details>
       </div>
       
-      <div class={styles.item_list}>
+      <div className={styles.item_list}>
       {currentItems && currentItems.map(monster => (
           <div key={monster._id} className={styles.list_item}>
               <div key={monster.id} className={styles.item_text} onClick={() => {setSelected(monster); setModal({on:true, view: "view"})}}>
