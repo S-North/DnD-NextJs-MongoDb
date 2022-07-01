@@ -3,3 +3,47 @@
     flex-direction: column; */
     width: 100%;
 }
+
+.title {
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 5px grey;
+    padding: 0.38ch 1ch;
+    display: flex;
+    justify-content: space-between;
+    gap: 1ch;
+}
+
+.title__info {
+    width: 100%;
+}
+
+.title__info span {
+    display: inline-block;
+}
+
+#tabs {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    /* gap: 1ch; */
+    min-height: 2ch;
+}
+
+.tab {
+    width: 100%;
+    padding: 1ch;
+    border-radius: 1px;
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+}
+
+.link {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.spellslots {
+    display: flex;
+    text-align: center;
+}

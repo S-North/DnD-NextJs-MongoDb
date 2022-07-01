@@ -44,6 +44,7 @@ export default withPageAuthRequired(function Monsters({ }) {
     }
 
     const editMonster = async (monster) => {
+        console.log(monster)
         if (monster._id) {
             const response = await fetch(`${api}monsters`, {
                 method: "POST",
@@ -341,9 +342,9 @@ const MonsterView = ({ id }) => {
     {monster &&
     <>
       <div className='flex-row'>
+        {monster.picture_url && <img src={monster.picture_url} width="50px"></img>}
         <h3>{`${monster.name}`}</h3>
         <h2>{`( CR ${displayCrAsFraction(monster.cr)} ) XP: ${monster.xp}`}</h2>
-
       </div>
 
       <div className='flex-row' style={{backgroundColor: "rgba(255,255,255,0.7)", padding: "0.5rem", marginBottom: "1ch"}}>
@@ -420,8 +421,15 @@ const MonsterForm = ({ selected, setSelected, update}) => {
   
   
   const editTrait = (trait) => {
-      console.log("edit trait")
+      console.log(trait)
+      trait._id && setItem({...item, traits: [...item.traits.filter(f => f._id !== trait._id), trait]})
+      !trait._id && setItem({...item, traits: [...item.traits, {...trait, _id: uuidv4()}]})
+      setModal({on: false, view: ""}) // close the action form
   }
+
+  const deleteTrait = (traitId) => {
+    setSelected({...selected, traits: [...selected.traits.filter(f => f._id !== traitId)]}) 
+}
   
   const addAction = () => {
       console.log('add action')
@@ -465,11 +473,12 @@ const MonsterForm = ({ selected, setSelected, update}) => {
                       <span className="close" onClick={() => {setModal({"on": false, "type": ""})}}>&times;</span>
 
                       {modal.view === "trait" &&
-                      <>
-                      <h2>Trait Form</h2>
-                      <input type="text" value={item.name}></input>
-                      <textarea rows="10" type="text" value={item.description}></textarea>
-                      </>}
+                        <form className={styles.action_form} id="action-form" onSubmit={(e) => {e.preventDefault(); editTrait(trait)}}>
+                            <h2>Trait Form</h2>
+                            <input type="text" value={trait.name} onChange={(e) => setTrait({...trait, name: e.target.value})}></input>
+                            <textarea rows="10" type="text" value={trait.description} onChange={(e) => setTrait({...trait, description: e.target.value})}></textarea>
+                            <button className={styles.action_save} type='submit'>Save</button>
+                        </form>}
 
                       {modal.view === "action" &&
                       <>
@@ -480,7 +489,7 @@ const MonsterForm = ({ selected, setSelected, update}) => {
                             {/* <input type='checkbox' checked={action.attackEnabled} onChange={(e) => {setAction({...action, attackEnabled: !attackEnabled})}}></input> */}
                             <label className={styles.action_lblToHit}>To Hit</label>
                             <input className={styles.action_chkToHit} type='checkbox'></input>
-                            <input className={styles.action_toHit} type='number' min='0' id='to-hit' value={action.attack}></input>
+                            <input className={styles.action_toHit} type='number' min='0' id='to-hit' value={action.attack} onChange={(e) => {setAction({...action, attack: e.target.value})}}></input>
 
                         {action.damage1 &&
                         <>
@@ -568,6 +577,10 @@ const MonsterForm = ({ selected, setSelected, update}) => {
             <input id="name" type="text" required placeholder="name"
                 value={ selected.name } 
                 onChange={(e) => {setSelected({...selected, "name": e.target.value})}} />
+            <label htmlFor="picture">Picture:</label>
+            <input id="picture" type="text" placeholder="picture url"
+                value={ selected.picture_url } 
+                onChange={(e) => {setSelected({...selected, "picture_url": e.target.value})}} />
 
             <div className="flex-row">
                 <label htmlFor="type">Size:</label>
@@ -832,19 +845,20 @@ const MonsterForm = ({ selected, setSelected, update}) => {
 
         <div style={tabs === "traits" ? {display: "block"} : {display: "none"}}>
           {/* traits */}
-          {selected.traits && <div id="traits" className="list-columns">
-              {selected.traits.map((trait, i) => (
-                  <div className="flex-row" key={i}>
+          {item && item.traits && <div id="traits" className="list-columns">
+              {item.traits.map((trait, i) => (
+                  <div className="flex-row" key={trait._id}>
                       <div className="list-item" style={{textAlign: "left", width: "100%"}}>
-                          <div className="flex-row" style={{cursor: "pointer", width: "100%"}} onClick={() => {setItem(trait); setModal({on: true, view: "trait"})}}>
+                          <div className="flex-row" style={{cursor: "pointer", width: "100%"}} onClick={() => {setTrait(trait); setModal({on: true, view: "trait"})}}>
                               {trait.name && <h2 style={{display: "inline-block", paddingRight: "1ch", width: "15ch", textAlign: "left"}}>{trait.name}: </h2>}
                               {trait.description && <p style={{display: "inline-block", textAlign: "left", width: "100%"}}>{trait.description}</p>}
-                              <FaWindowClose size="20px" color="red" style={{cursor: "pointer", float: "right"}} onClick={() => {window.alert("delete")}}></FaWindowClose>
                           </div>
+                              <FaWindowClose size="20px" color="red" style={{cursor: "pointer", float: "right"}} onClick={() => deleteTrait(trait._id)}></FaWindowClose>
                       </div>
                   </div>
               ))}
-              <br></br>
+              <br />
+            <button type='button' className='btn blue' style={{float: 'right'}} onClick={() => {setTrait({name: "", description: ""}); setModal({on:true, view: "trait"})}}>New Trait</button>
           </div>}
       </div>
       

@@ -8,7 +8,7 @@ function MyApp({ Component, pageProps }) {
     <>
     <UserProvider>
       <Head>
-        <link rel="shortcut icon" href="/shield.jpg" />
+        <link rel="shortcut icon" href="/images/shield.svg" />
         <title>Campaign Tracker</title>
       </Head>
       <Layout>

@@ -16,7 +16,7 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                 return encounter.encounter.monsters.filter((f) => f._id === combatant._id)[0];
                 break;
             case combatant.enemy === "pc":
-                console.log(encounter.characters)
+                // console.log(encounter.characters)
                 return encounter.characters.filter((f) => f._id === combatant._id)[0];
         }
     }
