@@ -2,13 +2,36 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react'
 import navStyles from '../styles/Nav.module.css'
 import { useRouter } from "next/router";
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 const Nav = ({campaign, adventure, encounter, user}) => {
     const { query, pathname, isReady } = useRouter()
     const path = pathname.split("/")[1]
     const id = query.id
-    console.log(path)
-    console.log(id)
+    // console.log(path)
+    // console.log(id)
+
+    useEffect(() => {
+      if (localStorage.sidebar === undefined) {
+        localStorage.sidebar = 'open'
+      }
+    
+      return () => {}
+    }, [])
+
+    const toggleSidebar = (setting) => {
+        console.log(setting, typeof setting)
+        console.log(!setting, typeof setting)
+        switch (setting) {
+            case 'open':
+                localStorage.setItem('sidebar', 'closed')
+                break
+            default:
+                localStorage.setItem('sidebar', 'open')
+
+        }
+    }
+    
     
     return (
         <header>
@@ -35,6 +58,7 @@ const Nav = ({campaign, adventure, encounter, user}) => {
                     </Link>}
                 {encounter && encounter.id && location === "encounter" && <p style={{"color": "var(--paper)"}} title={encounter.description}>&gt; {encounter.name}</p>}
             </nav>
+            {/* <button onClick={(e) => {e.preventDefault(); toggleSidebar(localStorage.sidebar)}}><FaArrowLeft /></button> */}
         </header>
     );
 }

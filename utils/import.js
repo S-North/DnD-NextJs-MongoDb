@@ -330,3 +330,87 @@ export const importMonster = (monster) => {
         spells: parseSpells(monster.spells)
     }
 }
+
+export const importSpell = (spell) => {
+    const parseSchool = (school) => {
+        switch (school) {
+            case 'C':
+                return 'Conjuration'
+            case 'N':
+                return 'Necromancy'
+            case 'EV':
+                return 'Evocation'
+            case 'A':
+                return 'Abjuration'
+            case 'T':
+                return 'Transmutation'
+            case  'D':
+                return 'Divination'
+            case 'EN':
+                return 'Enchantment'
+            default:
+                return 'Illusion'
+        }
+    }
+    const parseComponents = (components) => {
+        if (!components | typeof components !== 'string') return []
+        // components is a comma delimited string containing V, S, M keys. But it also may contain additional commas in the material components section :/
+        const chunks = components.split(',')
+        // console.log(chunks)
+        const array = []
+        chunks?.forEach(chunk => {
+            if (chunk === 'V' | chunk === " V") array.push('Verbal')
+            if (chunk === 'S' | chunk === " S") array.push('Somatic')
+            let regex = / M */
+            if (chunk === 'M' | chunk === " M" | chunk.indexOf(" M ") !== -1) array.push('Material')
+        })
+        return array
+    }
+    const parseMaterials = (components) => {
+        // get the material components. regex for "(anything)"
+        let regex = /\((\w|\d|\s)+\)/
+        const details = regex.exec(components)
+        if (details) return details[0]
+        return ""
+    }
+    const parseRitual = (ritual) => {
+        if (ritual === 'YES') return true
+        else return false
+    }
+    const parseConcentration = (duration) => {
+        if (duration.indexOf('Concentration') !== -1) return true
+        return false
+    }
+    const parseDescription = (description) => {
+        if (!description) return []
+        if (typeof description === 'string') return [description]
+        const array = []
+        if (Array.isArray(description)) description.forEach(text => {
+            if (text?.length > 0) array.push(text)
+        })
+        return array
+    }
+    const parseClasses = (classes) => {
+        if (!classes) return []
+        // classes should be a comma delimited string. We convert to an array of strings
+        const classArray = classes.split(',')
+        const cleanedUp = classArray.map(function(c) {return c.trim()})
+        return cleanedUp
+
+    } 
+
+    return {
+        name: spell.name,
+        level: parseInt(spell.level),
+        school: parseSchool(spell.school),
+        time: spell.time,
+        range: spell.range,
+        components: parseComponents(spell.components),
+        materials: parseMaterials(spell.components),
+        duration: spell.duration,
+        concentration: parseConcentration(spell.duration),
+        classes: parseClasses(spell.classes),
+        ritual: parseRitual(spell.ritual),
+        description: parseDescription(spell.text) // this may be an array, do a function to parse
+    }
+}

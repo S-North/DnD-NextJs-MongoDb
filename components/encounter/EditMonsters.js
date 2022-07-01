@@ -41,7 +41,7 @@ export default function EditMonsters ({ addMonsters }) {
   
     return (
       <>
-        <form onSubmit={(e) => e.preventDefault()} style={{display: 'flex', gap: '1ch', alignItems: 'center'}}>
+        <form onSubmit={(e) => e.preventDefault()} className={styles.align_row}>
           <label htmlFor="numberToAdd" style={{width: '20ch'}}>
             Monsters to add?
           </label>

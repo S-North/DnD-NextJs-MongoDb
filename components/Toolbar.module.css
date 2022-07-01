@@ -1,0 +1,30 @@
+.container {
+    float: right;
+    display: flex;
+    height: 100vh;
+  }
+  
+.container a {
+    color: var(--paper);
+  }
+
+.open_button {
+    background-color: black;
+    width: 20px;
+    opacity: 80%;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.navigation {
+    float: right;
+    min-width: 20ch;
+    background-color: var(--transparent-darker);
+    color: var(--paper);
+    text-align: center;
+    z-index: 5;
+    position: relative;
+}

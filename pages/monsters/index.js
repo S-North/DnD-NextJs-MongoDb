@@ -924,6 +924,7 @@ const MonsterForm = ({ selected, setSelected, update}) => {
   );
 }
 
+export { MonsterList, MonsterForm}
 export async function getServerSideProps(context) {
   try {
     await connectToDatabase
@@ -937,5 +938,3 @@ export async function getServerSideProps(context) {
     }
   }
 }
-
-export { MonsterList, MonsterForm}

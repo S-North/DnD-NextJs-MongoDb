@@ -1,0 +1,30 @@
+.filter_container {
+    display: flex;
+    gap: 1ch;
+    min-height: 6ch;
+}
+
+.btn_add_new {
+    background-color: var(--green);
+    color: var(--paper);
+    align-self:center;
+    justify-content: baseline;
+}
+
+.item_list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5ch;
+}
+
+.item_list .list_item {
+    display: flex;
+    background-color: var(--paper);
+    padding: 0 0.5ch;
+    box-shadow: var(--box-shadow)
+}
+
+.item_text {
+    cursor: pointer; 
+    width: 100%;
+}
