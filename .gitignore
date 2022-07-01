@@ -32,3 +32,4 @@ yarn-error.log*
 # dev files
 monsterManual.js
 PHBSpells.json
+SCAGSpells.json
