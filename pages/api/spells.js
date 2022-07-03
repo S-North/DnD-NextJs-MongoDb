@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   let response = {}
 
   if (method === 'POST' && body.action === 'query') {
-    console.log('get queried adventures')
+    console.log('get queried spell')
     if (body.data && body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
     response = await db.collection("spells").find(body.data).toArray()
   }
@@ -56,8 +56,18 @@ export default async function handler(req, res) {
       .toArray()
   }
 
+  if (method === 'POST' && body.action === 'monster') {
+    // returns all monsters from the collection but with selected fields #projection
+    console.log('get full list of spells for a monster')
+    console.log(body.data)
+    if (body.data && body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
+    response = await db.collection("spells").find(body.data
+      ).collation( { locale: 'en', strength: 2 } ) // case insensitive query using a mongodb index with collation https://www.mongodb.com/docs/manual/core/index-case-insensitive/
+      .toArray()
+  }
+
   if (method == 'POST' && body.action === 'addone') {
-    console.log('add 1 monster')
+    console.log('add 1 spell')
     response = await db.collection("spells").insertOne(body.data);
   }
 

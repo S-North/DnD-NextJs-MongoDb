@@ -7,10 +7,11 @@ import ReactPaginate from 'react-paginate'; // https://www.npmjs.com/package/rea
 import BasicForm from '../../components/forms/BasicForm'
 import monsterManual from '../../utils/monsterManual'
 import { importMonster } from '../../utils/import'
-import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, monsterTemplate } from '../../utils/Forms'
+import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, monsterTemplate, spellSlotLevels } from '../../utils/Forms'
 import styles from '../../styles/Monsters.module.css'
 import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 import Nav from '../../components/Nav'
+import { SpellList } from '../spells'
 
 
 export default withPageAuthRequired(function Monsters({ }) {
@@ -398,71 +399,116 @@ const MonsterView = ({ id }) => {
 }
 
 const MonsterForm = ({ selected, setSelected, update}) => {
-  const [ modal, setModal ] = useState({on: false, view: ""})
-  const [ tabs, setTabs ] = useState("details");
-  const [ item, setItem ] = useState();
-  const [ trait, setTrait ] = useState();
-  const [ action, setAction ] = useState();
-  const actionTemplate = {
-      name: "",
-      description: "",
-      attack: 0,
-      damage1: {enabled: false},
-      damage2: {enabled: false},
-      damage3: {enabled: false},
-      dc: {}}
-  const [ legendary, setLegendary ] = useState();
+    const api = '/api/'
+    const [ modal, setModal ] = useState({on: false, view: ""})
+    const [ tabs, setTabs ] = useState("details");
+    const [ item, setItem ] = useState();
+    const [ trait, setTrait ] = useState();
+    const [ action, setAction ] = useState();
+    const [ spells, setSpells ] = useState()
+    const actionTemplate = {
+        name: "",
+        description: "",
+        attack: 0,
+        damage1: {enabled: false},
+        damage2: {enabled: false},
+        damage3: {enabled: false},
+        dc: {}}
+    const [ legendary, setLegendary ] = useState();
+    const [ monsters, setMonsters ] = useState([]);
 
-  useEffect(() => {
-    if (selected) setItem(selected)
+    useEffect(() => {
+        if (selected) setItem(selected)
+        if (selected?.spells) {
+            const getSpells = async () => {
+                const response = await fetch(`${api}spells`, {
+                  method: "POST",
+                  body: JSON.stringify(
+                      {
+                      action: 'monster',
+                      data: {name: {$in: selected.spells}},
+                      sort: {}
+                  }),
+                  headers: {"Content-type": "application/json; charset=UTF-8"}
+                })
+                const spellList = await response.json()
+                // setItemOffset(0)
+                setSpells(spellList)
+              }
+              getSpells()
+        }
+    
+        return () => {}
+    }, [selected])
   
-    return () => {}
-  }, [selected])
   
+    const editTrait = (trait) => {
+        console.log(trait)
+        trait._id && setItem({...item, traits: [...item.traits.filter(f => f._id !== trait._id), trait]})
+        !trait._id && setItem({...item, traits: [...item.traits, {...trait, _id: uuidv4()}]})
+        setModal({on: false, view: ""}) // close the action form
+    }
+
+    const deleteTrait = (traitId) => {
+        setSelected({...selected, traits: [...selected.traits.filter(f => f._id !== traitId)]}) 
+    }
   
-  const editTrait = (trait) => {
-      console.log(trait)
-      trait._id && setItem({...item, traits: [...item.traits.filter(f => f._id !== trait._id), trait]})
-      !trait._id && setItem({...item, traits: [...item.traits, {...trait, _id: uuidv4()}]})
-      setModal({on: false, view: ""}) // close the action form
-  }
+    const addAction = () => {
+        console.log('add action')
+    }
 
-  const deleteTrait = (traitId) => {
-    setSelected({...selected, traits: [...selected.traits.filter(f => f._id !== traitId)]}) 
-}
-  
-  const addAction = () => {
-      console.log('add action')
-  }
+    const editAction = async (action) => {
+        console.log(action)
+        const damages = {}
+        // add damages if enabled, otherwise just set to disabled with no keys   
+        if (action.damage1.enabled) {
+            damages.damage1 = action.damage1} 
+            else damages.damage1 = {enabled: false}
+        if (action.damage2.enabled) {
+            damages.damage2 = action.damage2} 
+            else damages.damage2 = {enabled: false}
+        if (action.damage3.enabled) {
+            damages.damage3 = action.damage3} 
+            else damages.damage3 = {enabled: false}
 
-  const editAction = async (action) => {
-      console.log(action)
-      const damages = {}
-      // add damages if enabled, otherwise just set to disabled with no keys   
-      if (action.damage1.enabled) {
-          damages.damage1 = action.damage1} 
-          else damages.damage1 = {enabled: false}
-      if (action.damage2.enabled) {
-          damages.damage2 = action.damage2} 
-          else damages.damage2 = {enabled: false}
-      if (action.damage3.enabled) {
-          damages.damage3 = action.damage3} 
-          else damages.damage3 = {enabled: false}
+            console.log(damages)
+        // if there's an id then do an edit, otherwise add a new item to actions with new generated id  
+        action._id && setItem({...item, actions: [...item.actions.filter(f => f._id !== action._id), {...action, ...damages}]})
+        !action._id && setItem({...item, actions: [...item.actions, {...action, _id: uuidv4(), ...damages}]})
+        setModal({on: false, view: ""}) // close the action form
+    }
 
-        console.log(damages)
-      // if there's an id then do an edit, otherwise add a new item to actions with new generated id  
-      action._id && setItem({...item, actions: [...item.actions.filter(f => f._id !== action._id), {...action, ...damages}]})
-      !action._id && setItem({...item, actions: [...item.actions, {...action, _id: uuidv4(), ...damages}]})
-      setModal({on: false, view: ""}) // close the action form
-  }
+    const deleteAction = (actionId) => {
+        setSelected({...selected, actions: [...selected.actions.filter(f => f._id !== actionId)]}) 
+    }
 
-  const deleteAction = (actionId) => {
-      setSelected({...selected, actions: [...selected.actions.filter(f => f._id !== actionId)]}) 
-  }
+    const editLegendary = (legendary) => {
+        console.log("edit legendary")
+    }
 
-  const editLegendary = (legendary) => {
-      console.log("edit legendary")
-  }
+    const setSpellslots = (level, value) => {
+        let spellslots = item.spellSlots
+        if (spellslots === undefined) spellslots = []
+        spellslots[level] = parseInt(value)
+        setItem({...item, spellSlots: spellslots})  
+    }
+
+    const addSpell = (spell) => {
+        console.log(spell)
+        if (item?.spells) {
+            setItem({...item, spells: [...item.spells, spell.name.toLowerCase()]})
+            setSpells([...spells, spell])
+        } else {
+            setItem({...item, spells: [spell.name.toLowerCase()]})
+            setSpells([spell])
+        }
+        
+    }
+
+    const deleteSpell = (spell) => {      
+        setItem({...item, spells: item.spells.filter(f => {return f !== spell.toLowerCase()})})
+        setSpells([...spells.filter(f => {return f.name !== spell})])
+    }
 
   return (
       <>
@@ -470,86 +516,88 @@ const MonsterForm = ({ selected, setSelected, update}) => {
       {modal.on && <div id="modal-window" className="modal">
               {/* Modal content */}
                   <div className="modal-content">
-                      <span className="close" onClick={() => {setModal({"on": false, "type": ""})}}>&times;</span>
+                        <span className="close" onClick={() => {setModal({"on": false, "type": ""})}}>&times;</span>
 
-                      {modal.view === "trait" &&
-                        <form className={styles.action_form} id="action-form" onSubmit={(e) => {e.preventDefault(); editTrait(trait)}}>
-                            <h2>Trait Form</h2>
-                            <input type="text" value={trait.name} onChange={(e) => setTrait({...trait, name: e.target.value})}></input>
-                            <textarea rows="10" type="text" value={trait.description} onChange={(e) => setTrait({...trait, description: e.target.value})}></textarea>
+                        {modal.view === "trait" &&
+                            <form className={styles.action_form} id="action-form" onSubmit={(e) => {e.preventDefault(); editTrait(trait)}}>
+                                <h2>Trait Form</h2>
+                                <input type="text" value={trait.name} onChange={(e) => setTrait({...trait, name: e.target.value})}></input>
+                                <textarea rows="10" type="text" value={trait.description} onChange={(e) => setTrait({...trait, description: e.target.value})}></textarea>
+                                <button className={styles.action_save} type='submit'>Save</button>
+                            </form>}
+
+                        {modal.view === "action" &&
+                        <>
+                        <h2>Action Form</h2>
+                        <form className={styles.action_form} id="action-form" onSubmit={(e) => {e.preventDefault(); editAction(action)}}>
+                            <input required className={styles.action_name} type="text" value={action.name} onChange={(e) => {setAction({...action, name: e.target.value})}}></input>
+                            <textarea className={styles.action_description} rows="10" value={action.description} onChange={(e) => {setAction({...action, description: e.target.value})}}></textarea>
+                                {/* <input type='checkbox' checked={action.attackEnabled} onChange={(e) => {setAction({...action, attackEnabled: !attackEnabled})}}></input> */}
+                                <label className={styles.action_lblToHit}>To Hit</label>
+                                <input className={styles.action_chkToHit} type='checkbox'></input>
+                                <input className={styles.action_toHit} type='number' min='0' id='to-hit' value={action.attack} onChange={(e) => {setAction({...action, attack: e.target.value})}}></input>
+
+                            {action.damage1 &&
+                            <>
+                                <label className={styles.action_dmg1Label}>Damage 1</label>
+                                <input className={styles.action_dmg1Chk} type='checkbox' checked={action.damage1.enabled} onChange={(e) => {setAction({...action, damage1: {...action.damage1, enabled: !action.damage1.enabled}})}}></input>
+                                <input className={styles.action_dmg1Option1} disabled={!action.damage1.enabled} type="number" min="1" required value={action.damage1.hdDice} onChange={(e) => {setAction({...action, damage1: {...action.damage1, hdDice: parseInt(e.target.value)}})}}></input>
+                                <input className={styles.action_dmg1Option2} disabled={!action.damage1.enabled} type="number" min="1" required value={action.damage1.hdSides} onChange={(e) => {setAction({...action, damage1: {...action.damage1, hdSides: parseInt(e.target.value)}})}}></input>
+                                <input className={styles.action_dmg1Option3} disabled={!action.damage1.enabled} type="number" min="0" required value={action.damage1.hdBonus} onChange={(e) => {setAction({...action, damage1: {...action.damage1, hdBonus: parseInt(e.target.value)}})}}></input>
+                                <select className={styles.action_dmg1Option4} disabled={!action.damage1.enabled} value={action.damage1.type} onChange={(e) => {setAction({...action, damage1: {...action.damage1, type: e.target.value}})}}>
+                                    {damageTypes.map((type, i) => (
+                                        <option key={i} value={type}>{type}</option>
+                                        ))}
+                                </select>
+                            </>}
+
+                            {action.damage2 && 
+                            <>
+                                <label className={styles.action_dmg2Label}>Damage 2</label>
+                                <input type='checkbox'
+                                    className={styles.action_dmg2Chk}
+                                    checked={action.damage2.enabled} 
+                                    onChange={(e) => {setAction({...action, damage2: {...action.damage2, enabled: !action.damage2.enabled}})}}></input>
+                                    <input className={styles.action_dmg2Option1} disabled={!action.damage2.enabled} type="number" min="1" required value={action.damage2.hdDice} onChange={(e) => {setAction({...action, damage2: {...action.damage2, hdDice: parseInt(e.target.value)}})}}></input>
+                                <input className={styles.action_dmg2Option2} disabled={!action.damage2.enabled} type="number" min="1" required value={action.damage2.hdSides} onChange={(e) => {setAction({...action, damage2: {...action.damage2, hdSides: parseInt(e.target.value)}})}}></input>
+                                <input className={styles.action_dmg2Option3} disabled={!action.damage2.enabled} type="number" min="0" required value={action.damage2.hdBonus} onChange={(e) => {setAction({...action, damage2: {...action.damage2, hdBonus: parseInt(e.target.value)}})}}></input>
+                                <select className={styles.action_dmg2Option4} disabled={!action.damage2.enabled} value={action.damage2.type} onChange={(e) => {setAction({...action, damage2: {...action.damage2, type: e.target.value}})}}>
+                                    {damageTypes.map((type, i) => (
+                                        <option key={i} value={type}>{type}</option>
+                                        ))}
+                                </select>
+                            </>}
+
+                            {action.damage3 && 
+                            <>
+                                <label className={styles.action_dmg3Label}>Damage 3</label>
+                                <input className={styles.action_dmg3Chk} type='checkbox' checked={action.damage3.enabled}></input>
+                                <input className={styles.action_dmg3Option1} disabled={!action.damage3.enabled} type="number" min="1" required value={action.damage3.hdDice} onChange={(e) => {setAction({...action, damage3: {...action.damage3, hdDice: parseInt(e.target.value)}})}}></input>
+                                <input className={styles.action_dmg3Option2} disabled={!action.damage3.enabled} type="number" min="1" required value={action.damage3.hdSides} onChange={(e) => {setAction({...action, damage3: {...action.damage3, hdSides: parseInt(e.target.value)}})}}></input>
+                                <input className={styles.action_dmg3Option3} disabled={!action.damage3.enabled} type="number" min="0" required value={action.damage3.hdBonus} onChange={(e) => {setAction({...action, damage3: {...action.damage3, hdBonus: parseInt(e.target.value)}})}}></input>
+                                <select className={styles.action_dmg3Option4} disabled={!action.damage3.enabled} value={action.damage3.type} onChange={(e) => {setAction({...action, damage3: {...action.damage3, type: e.target.value}})}}>
+                                    {damageTypes.map((type, i) => (
+                                        <option key={i} value={type}>{type}</option>
+                                    ))}
+                                </select>
+                            </>}
+
                             <button className={styles.action_save} type='submit'>Save</button>
-                        </form>}
+                        </form>
 
-                      {modal.view === "action" &&
-                      <>
-                      <h2>Action Form</h2>
-                      <form className={styles.action_form} id="action-form" onSubmit={(e) => {e.preventDefault(); editAction(action)}}>
-                        <input required className={styles.action_name} type="text" value={action.name} onChange={(e) => {setAction({...action, name: e.target.value})}}></input>
-                        <textarea className={styles.action_description} rows="10" value={action.description} onChange={(e) => {setAction({...action, description: e.target.value})}}></textarea>
-                            {/* <input type='checkbox' checked={action.attackEnabled} onChange={(e) => {setAction({...action, attackEnabled: !attackEnabled})}}></input> */}
-                            <label className={styles.action_lblToHit}>To Hit</label>
-                            <input className={styles.action_chkToHit} type='checkbox'></input>
-                            <input className={styles.action_toHit} type='number' min='0' id='to-hit' value={action.attack} onChange={(e) => {setAction({...action, attack: e.target.value})}}></input>
 
-                        {action.damage1 &&
-                        <>
-                            <label className={styles.action_dmg1Label}>Damage 1</label>
-                            <input className={styles.action_dmg1Chk} type='checkbox' checked={action.damage1.enabled} onChange={(e) => {setAction({...action, damage1: {...action.damage1, enabled: !action.damage1.enabled}})}}></input>
-                            <input className={styles.action_dmg1Option1} disabled={!action.damage1.enabled} type="number" min="1" required value={action.damage1.hdDice} onChange={(e) => {setAction({...action, damage1: {...action.damage1, hdDice: parseInt(e.target.value)}})}}></input>
-                            <input className={styles.action_dmg1Option2} disabled={!action.damage1.enabled} type="number" min="1" required value={action.damage1.hdSides} onChange={(e) => {setAction({...action, damage1: {...action.damage1, hdSides: parseInt(e.target.value)}})}}></input>
-                            <input className={styles.action_dmg1Option3} disabled={!action.damage1.enabled} type="number" min="0" required value={action.damage1.hdBonus} onChange={(e) => {setAction({...action, damage1: {...action.damage1, hdBonus: parseInt(e.target.value)}})}}></input>
-                            <select className={styles.action_dmg1Option4} disabled={!action.damage1.enabled} value={action.damage1.type} onChange={(e) => {setAction({...action, damage1: {...action.damage1, type: e.target.value}})}}>
-                                {damageTypes.map((type, i) => (
-                                    <option key={i} value={type}>{type}</option>
-                                    ))}
-                            </select>
                         </>}
-
-                        {action.damage2 && 
+                        {modal.view === "spell" &&
+                            <SpellList setSelected={addSpell} setModal={setModal} />
+                        }
+                        {modal.view === "legendary" &&
                         <>
-                            <label className={styles.action_dmg2Label}>Damage 2</label>
-                            <input type='checkbox'
-                                className={styles.action_dmg2Chk}
-                                checked={action.damage2.enabled} 
-                                onChange={(e) => {setAction({...action, damage2: {...action.damage2, enabled: !action.damage2.enabled}})}}></input>
-                                <input className={styles.action_dmg2Option1} disabled={!action.damage2.enabled} type="number" min="1" required value={action.damage2.hdDice} onChange={(e) => {setAction({...action, damage2: {...action.damage2, hdDice: parseInt(e.target.value)}})}}></input>
-                            <input className={styles.action_dmg2Option2} disabled={!action.damage2.enabled} type="number" min="1" required value={action.damage2.hdSides} onChange={(e) => {setAction({...action, damage2: {...action.damage2, hdSides: parseInt(e.target.value)}})}}></input>
-                            <input className={styles.action_dmg2Option3} disabled={!action.damage2.enabled} type="number" min="0" required value={action.damage2.hdBonus} onChange={(e) => {setAction({...action, damage2: {...action.damage2, hdBonus: parseInt(e.target.value)}})}}></input>
-                            <select className={styles.action_dmg2Option4} disabled={!action.damage2.enabled} value={action.damage2.type} onChange={(e) => {setAction({...action, damage2: {...action.damage2, type: e.target.value}})}}>
-                                {damageTypes.map((type, i) => (
-                                    <option key={i} value={type}>{type}</option>
-                                    ))}
-                            </select>
+                        <h2>Legendary Form</h2>
+                        <input type="text" value={item.name}></input>
+                        <textarea type="text" rows={10} value={item.text}></textarea>
+                        <input type="number" value={item.cost}></input>
+                        <input type="number" value={item.actions}></input>
                         </>}
-
-                        {action.damage3 && 
-                        <>
-                            <label className={styles.action_dmg3Label}>Damage 3</label>
-                            <input className={styles.action_dmg3Chk} type='checkbox' checked={action.damage3.enabled}></input>
-                            <input className={styles.action_dmg3Option1} disabled={!action.damage3.enabled} type="number" min="1" required value={action.damage3.hdDice} onChange={(e) => {setAction({...action, damage3: {...action.damage3, hdDice: parseInt(e.target.value)}})}}></input>
-                            <input className={styles.action_dmg3Option2} disabled={!action.damage3.enabled} type="number" min="1" required value={action.damage3.hdSides} onChange={(e) => {setAction({...action, damage3: {...action.damage3, hdSides: parseInt(e.target.value)}})}}></input>
-                            <input className={styles.action_dmg3Option3} disabled={!action.damage3.enabled} type="number" min="0" required value={action.damage3.hdBonus} onChange={(e) => {setAction({...action, damage3: {...action.damage3, hdBonus: parseInt(e.target.value)}})}}></input>
-                            <select className={styles.action_dmg3Option4} disabled={!action.damage3.enabled} value={action.damage3.type} onChange={(e) => {setAction({...action, damage3: {...action.damage3, type: e.target.value}})}}>
-                                {damageTypes.map((type, i) => (
-                                    <option key={i} value={type}>{type}</option>
-                                ))}
-                            </select>
-                        </>}
-
-                        <button className={styles.action_save} type='submit'>Save</button>
-                      </form>
-
-
-                      </>}
-
-                      {modal.view === "legendary" &&
-                      <>
-                      <h2>Legendary Form</h2>
-                      <input type="text" value={item.name}></input>
-                      <textarea type="text" rows={10} value={item.text}></textarea>
-                      <input type="number" value={item.cost}></input>
-                      <input type="number" value={item.actions}></input>
-                      </>}
                   </div>
               </div>}
       
@@ -860,7 +908,7 @@ const MonsterForm = ({ selected, setSelected, update}) => {
               <br />
             <button type='button' className='btn blue' style={{float: 'right'}} onClick={() => {setTrait({name: "", description: ""}); setModal({on:true, view: "trait"})}}>New Trait</button>
           </div>}
-      </div>
+        </div>
       
         <div style={tabs === "actions" ? {display: "block"} : {display: "none"}}>
             {/* actions */}
@@ -881,44 +929,53 @@ const MonsterForm = ({ selected, setSelected, update}) => {
             <button type='button' className='btn blue' style={{float: 'right'}} onClick={() => {setAction(actionTemplate); setModal({on:true, view: "action"})}}>New Action</button>
         </div>
 
-      <div style={tabs === "legend" ? {display: "block"} : {display: "none"}}>
-          {/* legendary */}
-          {selected.legendary && <div id="legendary" className="list-columns">
-              {selected.legendary.map((action, i) => (
-                  <div className="flex-row" key={i}>
-                      <div className="list-item" style={{textAlign: "left", width: "100%"}}>
-                          <div className="flex-row" style={{cursor: "pointer", width: "100%"}} onClick={() => {setItem(action); setModal({on: true, view: "legendary"})}}>
-                              {action.name && <h2 style={{display: "inline-block", paddingRight: "1ch", width: "15ch", textAlign: "left"}}>{action.name}: </h2>}
-                              {action.text && <p style={{display: "inline-block", textAlign: "left", width: "100%"}}>{truncate(action.text, 70)}</p>}
-                          </div>
-                          <FaWindowClose size="20px" color="red" style={{cursor: "pointer", float: "right"}} onClick={() => {window.alert("delete")}}></FaWindowClose>
-                      </div>
-                  </div>
-              ))}
-          </div>}
-      </div>
+        <div style={tabs === "legend" ? {display: "block"} : {display: "none"}}>
+            {/* legendary */}
+            {selected.legendary && <div id="legendary" className="list-columns">
+                {selected.legendary.map((action, i) => (
+                    <div className="flex-row" key={i}>
+                        <div className="list-item" style={{textAlign: "left", width: "100%"}}>
+                            <div className="flex-row" style={{cursor: "pointer", width: "100%"}} onClick={() => {setItem(action); setModal({on: true, view: "legendary"})}}>
+                                {action.name && <h2 style={{display: "inline-block", paddingRight: "1ch", width: "15ch", textAlign: "left"}}>{action.name}: </h2>}
+                                {action.text && <p style={{display: "inline-block", textAlign: "left", width: "100%"}}>{truncate(action.text, 70)}</p>}
+                            </div>
+                            <FaWindowClose size="20px" color="red" style={{cursor: "pointer", float: "right"}} onClick={() => {window.alert("delete")}}></FaWindowClose>
+                        </div>
+                    </div>
+                ))}
+            </div>}
+        </div>
 
-      <div style={tabs === "spells" ? {display: "block"} : {display: "none"}}>
-        {/* spell slots */}
-        {selected.spellSlots && <div id="spellslots">
-              <ol>
-                  {selected.spellSlots.map((slot, i) => (
-                      <li key={i}>{slot}</li>
-                  ))}
-              </ol>
-              <br></br>
-          </div>}
+        <div style={tabs === "spells" ? {display: "block"} : {display: "none"}}>
+            {/* spell slots */}
+            <form className={styles.spellslots_container}>
+                {spellSlotLevels.map((level, index) => (
+                    <label htmlFor={level}>{level}
+                    <input id={level} type='number' value={item?.spellSlots && item?.spellSlots[index]} onChange={(e) => setSpellslots(index, e.target.value)}></input>
+                </label>
+                ))}
+                <button onClick={(e) => {e.preventDefault(), setModal({on: true, view: 'spell'})}}>New Spell</button>
+            </form>
 
-          {/* spells */}
-          {selected.spells && <div id="spells">
-              <ul>
-                  {selected.spells.map((spell, i) => (
-                      <li key={i}>{spell}</li>
-                  ))}
-              </ul>
-              <br></br>
-          </div>}
-      </div>
+            {/* spells */}
+            {spells && 
+            <div id="spells" className={styles.spell_list}>
+
+                    {spells
+                    .sort((a, b) => {return a.level - b.level})
+                    .map((spell, i) => (
+                        <div key={i._id} className={styles.spell_line}>
+                        <div className={styles.delete_button} onClick={() => deleteSpell(spell.name)}>
+                            <FaWindowClose color='red' size='1.5em'/>
+                            </div>
+                        <div title={spell.description}>
+                            <strong>{spell.name}:</strong> Level <strong>{spell.level}</strong> {spell.school}</div>
+                        </div>
+                    ))}
+
+                <br></br>
+            </div>}
+        </div>
       </form>}
       </>
   );

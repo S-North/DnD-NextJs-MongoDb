@@ -1,0 +1,29 @@
+.title {
+    padding: 1ch;
+    min-height: 3rem;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1ch;
+}
+
+.form_line {
+    display: flex;
+    /* gap: 1.5ch; */
+    align-items: baseline;
+}
+
+.form_line label {
+    padding-left: 1ch;
+    padding-right: 2ch;
+}
+
+.label {
+    min-width: 10rem;
+}
+
+.ReactTags__tags {
+    padding: 1ch;
+}

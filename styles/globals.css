@@ -432,3 +432,27 @@ button:hover {
   color: ghostwhite;
   padding: 0.5ch 1ch;
 }
+
+/* React Tags */
+.ReactTags__tags {
+  padding: 1ch;
+  width: 100%;
+  /* display: flex;
+  justify-content: space-between; */
+}
+
+.ReactTags__selected {
+  display: flex;
+  gap: 1ch;
+  margin-bottom: 1ch;
+}
+
+.ReactTags__tag {
+  padding-left: 1ch;
+  background-color: white;
+  box-shadow: var(--box-shadow);
+}
+
+.ReactTags__tag button {
+  margin-left: 1ch;
+}

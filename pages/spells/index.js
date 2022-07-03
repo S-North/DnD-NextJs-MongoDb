@@ -2,10 +2,11 @@ import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 import { useState, useEffect } from 'react';
 import Nav from '../../components/Nav';
 import styles from '../../styles/Spells.module.css'
-import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, monsterTemplate, schools, spellLevels } from '../../utils/Forms'
+import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, monsterTemplate, schools, spellSlotLevels } from '../../utils/Forms'
 import { truncate, abilityModifier, diceRoll, crToXp, displayCrAsFraction } from '../../utils/utils'
 import ReactPaginate from 'react-paginate'; // https://www.npmjs.com/package/react-paginate
 import spellBook from '../../spells.json'
+import SpellForm from '../../components/spells/SpellForm';
 import { importSpell } from '../../utils/import';
 
 export default withPageAuthRequired(function Spells({ }) {
@@ -37,9 +38,20 @@ export default withPageAuthRequired(function Spells({ }) {
     return(
         <>
         <Nav location='spells'></Nav>
+        {/* modal window */}
+        {modal.on && 
+        <div id="modal-window" className="modal">
+            <div className="modal-content">
+                <span className="close" onClick={() => {setModal({"on": false, "view": "none"})}}>&times;</span>
+                {modal.view === "edit" &&
+                    <>
+                        <SpellForm selected={selected} />
+                    </>}
+            </div>
+        </div>}
         <section>
             <div className="one-column">
-                <SpellList />
+                <SpellList setSelected={setSelected} setModal={setModal}/>
             </div>
 
             <div className="one-column">
@@ -51,7 +63,7 @@ export default withPageAuthRequired(function Spells({ }) {
     )
 })
 
-const SpellList = ({ addMonster, editMonster, deleteMonster, setSelected, setModal, updated }) => {
+const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, updated }) => {
     const api = '/api/'
     const [ spells, setSpells ] = useState([]);
   
@@ -130,26 +142,10 @@ const SpellList = ({ addMonster, editMonster, deleteMonster, setSelected, setMod
       }
     }
   
-    const getMonster = async (monster) => {
-      console.log(monster)
-      const response = await fetch(`${api}monsters`, {
-        method: "POST",
-        body: JSON.stringify(
-            {
-            action: 'query',
-            data: {_id: monster._id}
-        }),
-        headers: {"Content-type": "application/json; charset=UTF-8"}
-      })
-      const selectedMonster = await response.json()
-      console.log(selectedMonster)
-      if (selectedMonster && selectedMonster.length > 0) setSelected(selectedMonster[0]); setModal({on:true, view: "edit"})
-    }
-  
     return (
         <>
         <div className={styles.filter_container}>
-            {<button className={styles.btn_add_new} onClick={() => {setSelected(monsterTemplate); setModal({on:true, view: "edit"})}}>New Spell</button>}
+            {<button className={styles.btn_add_new} onClick={() => {setSelected({}); setModal({on:true, view: "edit"})}}>New Spell</button>}
         
         {/* filtering the results */}
         <details open>
@@ -157,12 +153,12 @@ const SpellList = ({ addMonster, editMonster, deleteMonster, setSelected, setMod
             <div className="flex-row">
                   <input type="text" placeholder="search" value={search} onChange={(e) => setSearch(e.target.value)}></input>
                   <select value={minLevel} onChange={(e) => {setminLevel(parseFloat(e.target.value))}} style={{width: '10ch'}}>
-                      {spellLevels.map(level => (
+                      {[0, ...spellSlotLevels].map(level => (
                           <option key={level} value={level}>{displayCrAsFraction(level)}</option>
                       ))}
                   </select>
                   <select value={maxLevel} onChange={(e) => {setMaxLevel(parseFloat(e.target.value))}} style={{width: '10ch'}}>
-                      {spellLevels.map(level => (
+                      {spellSlotLevels.map(level => (
                           <option key={level} value={level}>{displayCrAsFraction(level)}</option>
                       ))}
                   </select>
@@ -189,7 +185,7 @@ const SpellList = ({ addMonster, editMonster, deleteMonster, setSelected, setMod
         <div className={styles.item_list}>
         {currentItems && currentItems.map(spell => (
             <div key={spell._id} className={styles.list_item}>
-                <div className={styles.item_text} onClick={() => {setSelected(spell); setModal({on:true, view: "view"})}}>
+                <div className={styles.item_text} onClick={() => {setSelected(spell); setModal({on: true, view: "edit"})}}>
                     <div className="link">
                             <h2>{spell.name}</h2>
                             <div style={{display: "flex"}}>
@@ -199,12 +195,12 @@ const SpellList = ({ addMonster, editMonster, deleteMonster, setSelected, setMod
                     </div>
                 </div>
                 <div className='actions'>
-                    {deleteMonster && <FaWindowClose 
+                    {deleteItem && <FaWindowClose 
                         style={{"cursor": "pointer"}} 
                         color="red"
                         onClick={() => {deleteMonster("monsters", monster._id)}} />}
   
-                    {editMonster && <FaEdit
+                    {editItem && <FaEdit
                         style={{"cursor": "pointer"}} 
                         color="grey"
                         onClick={() => {getMonster(monster)}} />}
@@ -226,10 +222,8 @@ const SpellList = ({ addMonster, editMonster, deleteMonster, setSelected, setMod
             activeClassName='active-page'
           />
         </div>}
-        {/* <div className="flex-row">
-            <button className="blue" onClick={() => {prev()}}>Prev</button>
-            <button className="blue" onClick={() => {next()}}>Next</button>
-        </div> */}
         </>
     );
-  }
+}
+
+export { SpellList }
