@@ -67,6 +67,9 @@ export default function SpellForm ({selected}) {
             })
             const spellResponse = await response.json()
             console.log(spellResponse)
+            if (spellResponse.insertedId) {
+                
+            }
             // if (spellResponse && spellResponse.length > 0 ) setItem(spellResponse[0])
           }
           saveSpell()
