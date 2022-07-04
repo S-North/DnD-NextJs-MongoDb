@@ -75,7 +75,7 @@ The structure for the data is as follows (this will be updated as features are a
             "size": string,
             "ac": int32,
             "hitDice": [int32, int32, int32],
-            "speed": int32,
+            "speed": ["string", "string"],
             "strength": int32,
             "dexterity": int32,
             "constitution": int32,
