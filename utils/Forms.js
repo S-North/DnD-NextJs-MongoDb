@@ -40,7 +40,7 @@ const monsterTemplate = {
       "hdSides": 8,
       "hdBonus": 0
     },
-    "speed": 30,
+    "speed": [],
     "str": 10,
     "dex": 10,
     "con": 10,

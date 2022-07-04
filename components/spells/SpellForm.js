@@ -3,7 +3,7 @@ import styles from './SpellForm.module.css'
 import { schools, spellSlotLevels, spellClasses } from "../../utils/Forms"
 import { WithContext as ReactTags } from 'react-tag-input';
 
-export default function SpellForm ({selected}) {
+export default function SpellForm ({selected, setModal, updated, setUpdated}) {
     const api = '/api/'
     const [ item, setItem ] = useState({
         name: '',
@@ -31,13 +31,19 @@ export default function SpellForm ({selected}) {
                 body: JSON.stringify(
                     {
                     action: 'query',
-                    data: {_id: item._id}
+                    data: {_id: selected._id}
                 }),
                 headers: {"Content-type": "application/json; charset=UTF-8"}
               })
               const spellResponse = await response.json()
   
-              if (spellResponse && spellResponse.length > 0 ) setItem(spellResponse[0])
+              if (spellResponse && spellResponse.length > 0 ) {
+                setTags(spellResponse[0].classes.map(tag => (
+                    {id: tag,
+                    text: tag}
+                )))
+                setItem(spellResponse[0])
+            }
             }
             getSpell()
         }
@@ -67,12 +73,12 @@ export default function SpellForm ({selected}) {
             })
             const spellResponse = await response.json()
             console.log(spellResponse)
-            if (spellResponse.insertedId) {
-                
+            if (spellResponse.insertedId | spellResponse.modifiedCount > 0) {
+                setUpdated(updated+1)
+                setModal({on: false, view: 'none'})
             }
-            // if (spellResponse && spellResponse.length > 0 ) setItem(spellResponse[0])
           }
-          saveSpell()
+        saveSpell()
     }
 
     // react tag component state and functions
@@ -162,11 +168,11 @@ export default function SpellForm ({selected}) {
                 </div>
                 <div className={styles.form_line}>
                     <label className={styles.label} htmlFor="concentration">Concentration</label>
-                    <input id="concentration" type="checkbox" value={item.concentration} onChange={(e) => setItem({...item, concentration: !item.concentration})}></input>
+                    <input id="concentration" type="checkbox" checked={item.concentration} value={item.concentration} onChange={(e) => setItem({...item, concentration: !item.concentration})}></input>
                 </div>
                 <div className={styles.form_line}>
                     <label className={styles.label} htmlFor="ritual">Ritual</label>
-                    <input id="ritual" type="checkbox" value={item.ritual} onChange={(e) => setItem({...item, ritual: !item.ritual})}></input>
+                    <input id="ritual" type="checkbox" checked={item.ritual} value={item.ritual} onChange={(e) => setItem({...item, ritual: !item.ritual})}></input>
                 </div>
                 <div className={styles.form_line}>
                     <ReactTags
@@ -177,10 +183,9 @@ export default function SpellForm ({selected}) {
                         handleAddition={handleAddition}
                         handleDrag={handleDrag}
                         handleTagClick={handleTagClick}
-                        inputFieldPosition="bottom"
+                        inputFieldPosition="top"
                         autocomplete
                         autofocus={false}
-                        inline={true}
                         clearAll={false}
                         placeholder={"e.g. Wizard, Sorcerer, Cleric, Rogue (Arcane Trickster)"}
                     />

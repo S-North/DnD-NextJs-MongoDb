@@ -45,7 +45,7 @@ export const importMonster = (monster) => {
     }
 
     const splitHitdice = (string) => {
-        console.log(damageDice)
+        // console.log(damageDice)
         const damageDice = /(\d+)(d)(\d+)( ?)(\+?)( ?)([\d]+)?/gi // find patterns of type [numbers d numbers] and [numbers d numbers + numbers]
         let newString = damageDice.exec(string)[0]
 
@@ -99,7 +99,7 @@ export const importMonster = (monster) => {
     }
 
     const parseActions = (actions) => {
-        console.log(actions)
+        // console.log(actions)
         if (!actions) return []
         const data = []
         const removePlus = /\+/
@@ -109,12 +109,12 @@ export const importMonster = (monster) => {
         // sometimes actions is an array of objects, sometimes its a single object (gad nabbit!!!)
         if (Array.isArray(actions) === false) actions = [actions]
 
-        console.log(actions)
+        // console.log(actions)
 
         // process each action
         if (actions.length > 0) {
             actions.forEach(action => {
-                console.log(action)
+                // console.log(action)
     
                 let name = ""
                 let description = ""
@@ -144,7 +144,7 @@ export const importMonster = (monster) => {
     
                 // try to parse any damages in the description, only adds the first 3 found.
                 const damagesText = description.match(damageDice)
-                console.log(damagesText)
+                // console.log(damagesText)
                 // console.log(damagesText)
                 const damages = []
                 if (damagesText && damagesText.length > 0) {
@@ -294,6 +294,22 @@ export const importMonster = (monster) => {
         return parseInt(cr)
     }
 
+    const parseSpeed = (speedString) => {
+        // speed is a comma separated string. The forst element is always walk. Additional elements start with keyword e.g. climb, followed by spped in feet
+        // e.g. "30 ft., burrow 20 ft.", "30 ft., climb 30 ft."
+
+        if (speedString && typeof speedString === 'string') {
+            const speeds = speedString.split(',')
+            // let speed = {}
+            const speed = []
+            speeds.forEach((element, index) => {
+                if (index === 0) speed.push(`walk ${element.trim()}`)
+                else speed.push(element.trim())
+            })
+            return speed          
+        }
+    }
+
     return {
         name: monster.name,
         size: getSize(monster.size),
@@ -305,7 +321,7 @@ export const importMonster = (monster) => {
         ac: parseInt(monster.ac.split(/\s+/)[0]),
         hitDice: splitHitdice(monster.hp),
         maxHp: parseInt(monster.hp.split(' ')[0]),
-        speed: 0, // need to parse this e.g. "walk 40 ft."
+        speed: parseSpeed(monster.speed), // need to parse this e.g. "walk 40 ft."
         str: parseInt(monster.str),
         dex: parseInt(monster.dex),
         con: parseInt(monster.con),
@@ -357,22 +373,32 @@ export const importSpell = (spell) => {
         // components is a comma delimited string containing V, S, M keys. But it also may contain additional commas in the material components section :/
         const chunks = components.split(',')
         // console.log(chunks)
-        const array = []
+        const items = {
+            verbal: false,
+            somatic: false,
+            material: false,
+            materials: ""
+        }
         chunks?.forEach(chunk => {
-            if (chunk === 'V' | chunk === " V") array.push('Verbal')
-            if (chunk === 'S' | chunk === " S") array.push('Somatic')
+            if (chunk === 'V' | chunk === " V") items.verbal = true
+            if (chunk === 'S' | chunk === " S") items.somatic = true
             let regex = / M */
-            if (chunk === 'M' | chunk === " M" | chunk.indexOf(" M ") !== -1) array.push('Material')
+            if (chunk === 'M' | chunk === " M" | chunk.indexOf(" M ") !== -1) items.material = true
         })
-        return array
-    }
-    const parseMaterials = (components) => {
-        // get the material components. regex for "(anything)"
+
         let regex = /\((\w|\d|\s)+\)/
         const details = regex.exec(components)
-        if (details) return details[0]
-        return ""
+        console.log(details)
+        if (details) items.materials = details[0]
+        return items
     }
+    // const parseMaterials = (components) => {
+    //     // get the material components. regex for "(anything)"
+    //     let regex = /\((\w|\d|\s)+\)/
+    //     const details = regex.exec(components)
+    //     if (details) return details[0]
+    //     return ""
+    // }
     const parseRitual = (ritual) => {
         if (ritual === 'YES') return true
         else return false
@@ -406,7 +432,7 @@ export const importSpell = (spell) => {
         time: spell.time,
         range: spell.range,
         components: parseComponents(spell.components),
-        materials: parseMaterials(spell.components),
+        // materials: parseMaterials(spell.components), 
         duration: spell.duration,
         concentration: parseConcentration(spell.duration),
         classes: parseClasses(spell.classes),

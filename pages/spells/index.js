@@ -8,6 +8,7 @@ import ReactPaginate from 'react-paginate'; // https://www.npmjs.com/package/rea
 import spellBook from '../../spells.json'
 import SpellForm from '../../components/spells/SpellForm';
 import { importSpell } from '../../utils/import';
+import { FaWindowClose, FaEdit } from 'react-icons/fa';
 
 export default withPageAuthRequired(function Spells({ }) {
     const api = '/api/'
@@ -45,13 +46,13 @@ export default withPageAuthRequired(function Spells({ }) {
                 <span className="close" onClick={() => {setModal({"on": false, "view": "none"})}}>&times;</span>
                 {modal.view === "edit" &&
                     <>
-                        <SpellForm selected={selected} />
+                        <SpellForm selected={selected} setModal={setModal}updated={updated} setUpdated={setUpdated} />
                     </>}
             </div>
         </div>}
         <section>
             <div className="one-column">
-                <SpellList setSelected={setSelected} setModal={setModal}/>
+                <SpellList selected={selected} setSelected={setSelected} setModal={setModal} deleteItem={true} editItem={true}/>
             </div>
 
             <div className="one-column">
@@ -63,9 +64,10 @@ export default withPageAuthRequired(function Spells({ }) {
     )
 })
 
-const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, updated }) => {
+const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, selected }) => {
     const api = '/api/'
     const [ spells, setSpells ] = useState([]);
+    const [ updated, setUpdated ] = useState(1)
   
     // manage the query state
     const [ search, setSearch ] = useState("")
@@ -141,6 +143,23 @@ const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, updat
               if (sortLevel === 'desc') setSortLevel('asc')
       }
     }
+
+    const deleteSpell = async (collection, _id) => {
+        if (_id) {
+            const response = await fetch(`${api}spells`, {
+                method: "POST",
+                body: JSON.stringify(
+                    {
+                    action: 'deleteone',
+                    data: {_id: _id}
+                }),
+                headers: {"Content-type": "application/json; charset=UTF-8"}
+              })
+              const confirmation = await response.json()
+              console.log(confirmation)
+              setUpdated(updated+1)
+        }
+    }
   
     return (
         <>
@@ -198,12 +217,12 @@ const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, updat
                     {deleteItem && <FaWindowClose 
                         style={{"cursor": "pointer"}} 
                         color="red"
-                        onClick={() => {deleteMonster("monsters", monster._id)}} />}
+                        onClick={() => {deleteSpell("spells", spell._id)}} />}
   
                     {editItem && <FaEdit
                         style={{"cursor": "pointer"}} 
                         color="grey"
-                        onClick={() => {getMonster(monster)}} />}
+                        onClick={() => {setSelected(spell); setModal({on: true, view: "edit"})}} />}
   
                 </div>
             </div>

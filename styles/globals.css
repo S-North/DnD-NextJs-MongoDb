@@ -433,7 +433,7 @@ button:hover {
   padding: 0.5ch 1ch;
 }
 
-/* React Tags */
+/* React Tags https://www.npmjs.com/package/react-tag-input */
 .ReactTags__tags {
   padding: 1ch;
   width: 100%;
@@ -455,4 +455,8 @@ button:hover {
 
 .ReactTags__tag button {
   margin-left: 1ch;
+}
+
+.ReactTags__tagInput {
+  width: 100%;
 }

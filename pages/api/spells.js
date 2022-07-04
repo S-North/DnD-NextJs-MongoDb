@@ -87,10 +87,10 @@ export default async function handler(req, res) {
   }
 
   if (method === 'POST' && body.action === 'deleteone') {
-    console.log('delete monster')
-    const id = new ObjectId(body.data._id)
-    console.log(id)
-    response = await db.collection('spells').deleteOne({_id: id});
+    console.log('delete spell')
+    const _id = new ObjectId(body.data._id)
+    console.log(_id)
+    response = await db.collection('spells').deleteOne({_id: _id});
   }
 
   console.log(response)
