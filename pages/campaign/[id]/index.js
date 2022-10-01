@@ -280,7 +280,7 @@ export default withPageAuthRequired(function Campaign({campaign}) {
 
             <div className="one-column">
                 <h2>Characters</h2>
-                <button className="green" onClick={() => {setSelected({"name": "", "description": ""}, setModal({"on": true, "type": "characters"}))}}>New</button>
+                <button className="green" onClick={() => {setSelected({}), setModal({"on": true, "type": "characters"})}}>New</button>
 
                 {characters.map(character => (
                     <div key={character._id} className="list-item">

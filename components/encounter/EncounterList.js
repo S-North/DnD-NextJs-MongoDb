@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext } from "react";
 import { EncounterContext } from "../../pages/encounter/[id]";
 import { FaBackward, FaForward  } from 'react-icons/fa'
 
@@ -7,17 +7,20 @@ import { FaBackward, FaForward  } from 'react-icons/fa'
 // If you want the list of combatants shown while editing the encounter, you need InitiativeList.js
 
 export default function EncounterList ({displayCombatant, changeHP, incrementInitiative, editEncounter}) {
-    const encounter = useContext(EncounterContext)
+    const context = useContext(EncounterContext)
+    // console.log(encounter)
+
     function getExpandedStats (combatant) {
+        console.log(combatant)
         switch (true) {
             default:
                 break;
             case combatant.enemy === "monster":
-                return encounter.encounter.monsters.filter((f) => f._id === combatant._id)[0];
+                return context.encounter.monsters.filter((f) => f._id === combatant._id)[0];
                 break;
             case combatant.enemy === "pc":
                 // console.log(encounter.characters)
-                return encounter.characters.filter((f) => f._id === combatant._id)[0];
+                return context.characters.filter((f) => f._id === combatant._id)[0];
         }
     }
 
@@ -25,8 +28,8 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
     return (
         <div className="one-column">
               <div className="flex-row">
-                <h3>{`Round: ${encounter.encounter.round + 1} Turn: ${
-                  encounter.encounter.turn + 1
+                <h3>{`Round: ${context.encounter.round + 1} Turn: ${
+                  context.encounter.turn + 1
                 }`}</h3>
                 <button onClick={ () => { incrementInitiative("back") } }
                 >
@@ -36,11 +39,11 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                 <button onClick={() => { incrementInitiative("forward")}}> <FaForward /> </button>
               </div>
 
-              {encounter.encounter.initiative && encounter.characters && encounter.encounter.initiative
+              {context?.encounter?.initiative && context?.characters && context.encounter.initiative
                 .sort((a, b) => b.init - a.init)
                 .map((combatant, index) => (
                     <div key={combatant._id}>
-                        <div key={combatant.id} className="combatant-item" style={encounter.encounter.turn === index 
+                        <div key={combatant.id} className="combatant-item" style={context.encounter.turn === index 
                             ? { backgroundColor: "lightgreen" }
                             : { backgroundColor: "white" }
                         }>
@@ -50,10 +53,10 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                             onClick={() => {
                             combatant.enemy === "monster"
                                 ? displayCombatant(
-                                    encounter.encounter.monsters.filter((m) => m._id === combatant._id)[0]
+                                    context.encounter.monsters.filter((m) => m._id === combatant._id)[0]
                                 )
                                 : displayCombatant(
-                                    encounter.characters.filter((c) => c._id === combatant._id)[0]
+                                    context.characters.filter((c) => c._id === combatant._id)[0]
                                 );
                             }}
                         >

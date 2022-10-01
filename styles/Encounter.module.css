@@ -51,3 +51,28 @@
 .vulnerabilites {
     padding: 1ch
 }
+
+.spell_line {
+    display: flex;
+    justify-content: space-between; 
+    gap: 1ch;
+    padding: 0.5ch;
+    align-items: center;
+}
+
+.spell_line:hover {
+    background-color: rgb(202, 206, 214);
+}
+
+.spell_title {
+}
+
+.spell_cast_buttons {
+    display: flex;
+    gap: 1ch;
+}
+
+.spell_cast_button {
+    background-color: var(--green);
+    color: var(--paper);
+}

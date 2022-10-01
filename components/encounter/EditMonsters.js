@@ -21,7 +21,7 @@ export default function EditMonsters ({ addMonsters }) {
           currentHp: monster.maxHp,
           source: monster._id,
           _id: uuidv4(),
-          name: `${monster.name} ${i + 1}`,
+          name: `${monster.name} ${i + 1}`
         });
       }
       addMonsters(monsters);

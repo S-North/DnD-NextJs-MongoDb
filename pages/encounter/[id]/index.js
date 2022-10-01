@@ -1,9 +1,10 @@
 import connectToDatabase from "../../../utils/mongodb";
 import { ObjectId } from "mongodb";
+import { v4 as uuidv4 } from 'uuid'
 
 import { withPageAuthRequired, useUser } from "@auth0/nextjs-auth0";
 
-import { useState, useEffect, createContext } from "react";
+import { useState, useEffect, createContext, useContext, useRef } from "react";
 import {
    abilityModifier,
    diceRoll,
@@ -13,6 +14,7 @@ import {
    truncate,
    crToXp,
 } from "../../../utils/utils";
+import { conditions } from "../../../utils/Forms";
 
 import styles from "../../../styles/CombatantDetails.module.css";
 import encounterStyle from "../../../styles/Encounter.module.css";
@@ -28,6 +30,16 @@ import DamageCalculator from "../../../components/encounter/DamageCalculator";
 import EncounterList from "../../../components/encounter/EncounterList";
 import DoAttack from "../../../components/encounter/DoAttack";
 import Nav from "../../../components/Nav";
+
+import Select from 'react-select'
+
+import { Menubar } from 'primereact/menubar'
+import { Menu } from 'primereact/menu';
+import { Button } from 'primereact/button';
+import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
+import "primereact/resources/primereact.min.css";                  //core css
+import "primeicons/primeicons.css";                                //icons
+ 
 
 export const EncounterContext = createContext();
 
@@ -47,7 +59,7 @@ const Encounter = ({ initialEncounter }) => {
    const [tempCombatant, setTempCombatant] = useState();
    const [modal, setModal] = useState({ type: "none", on: false });
 
-   console.log(user.name);
+   // console.log(user.name);
 
    useEffect(() => {
       // keybindings for keyboard commands. Needs some more research
@@ -141,7 +153,7 @@ const Encounter = ({ initialEncounter }) => {
          encounter.turn !== undefined &&
          encounter.mode === "running"
       ) {
-         console.log(combatant);
+         // console.log(combatant);
          switch (true) {
             case combatant.enemy == "pc":
                setSelected(
@@ -179,6 +191,17 @@ const Encounter = ({ initialEncounter }) => {
       }
    };
 
+   const getCombatantStats = async (combatant) => {
+      if (encounter.monsters.map(monster => {return monster._id}).includes(combatant._id)) {
+         // return encounter.monsters.filter(monster => monster._id = combatant._id)[0]
+         // console.log(encounter.monsters.filter(monster => monster._id = combatant._id)[0])
+         return encounter.monsters.filter(monster => monster._id = combatant._id)[0]
+      } 
+      if (characters.map(character => {return character._id}).includes(combatant._id)) {
+         // console.log(characters.filter(character => character._id = combatant._id)[0])
+         return characters.filter(character => character._id = combatant._id)[0]
+      } else return selected
+   }
    const selectMonster = (monster) => {
       // utility function to handle setting the selected item state. Should propably rename as this is used for monsters, characters, npcs, etc
       setSelected(monster);
@@ -203,6 +226,32 @@ const Encounter = ({ initialEncounter }) => {
             initiative: [...encounter.initiative, ...charactersList],
          });
          setModal({ on: false, type: "" });
+      }
+   };
+
+   const editCharacter = async (character, updated) => {
+      // updates the selected character in the characters collection
+      // {character} is an object containing the full stats of the character, updated is an object containing the keys and values to update
+      // update should be an object containing the changed fields in the character e.g. {currentHp: 15, conditions: [...conditions, 'blinded']}
+      console.log(character);
+      console.log(updated);
+      const response = await fetch(`${api}characters`, {
+         method: "POST",
+         body: JSON.stringify({
+            action: "editone",
+            data: {
+               _id: character._id,
+               ...updated,
+            },
+         }),
+         headers: { "Content-type": "application/json; charset=UTF-8" },
+      });
+      const encCharacters = await response.json();
+      if (encCharacters.acknowledged && encCharacters.modifiedCount > 0) {
+         setCharacters([
+            ...characters.filter((c) => c._id !== character._id),
+            { ...character, ...updated },
+         ]);
       }
    };
 
@@ -262,40 +311,6 @@ const Encounter = ({ initialEncounter }) => {
       setModal({ on: false, type: "" }); // close the form window
    };
 
-   const deleteCombatant = async (combatant) => {
-      const response = await fetch(`${api}encounters`, {
-         method: "POST",
-         body: JSON.stringify({
-            action: "editone",
-            data: {
-               ...encounter,
-               initiative: [
-                  ...encounter.initiative.filter(
-                     (i) => i._id !== combatant._id
-                  ),
-               ],
-               monsters: [
-                  ...encounter.monsters.filter((i) => i._id !== combatant._id),
-               ],
-            },
-         }),
-         headers: { "Content-type": "application/json; charset=UTF-8" },
-      });
-      const encCharacters = await response.json();
-      if (encCharacters.acknowledged && encCharacters.modifiedCount > 0) {
-         setEncounter({
-            ...encounter,
-            initiative: [
-               ...encounter.initiative.filter((i) => i._id !== combatant._id),
-            ],
-            monsters: [
-               ...encounter.monsters.filter((i) => i._id !== combatant._id),
-            ],
-         });
-         setModal({ on: false, type: "" });
-      }
-   };
-
    const editMonster = async (monster, update) => {
       // {monster} is an object containing the full stats of the monster
       // updated is an object containing the keys and values to update
@@ -341,32 +356,40 @@ const Encounter = ({ initialEncounter }) => {
       setModal({ type: "none", on: false });
    };
 
-   const editCharacter = async (character, updated) => {
-      // updates the selected character in the characters collection
-      // {character} is an object containing the full stats of the character, updated is an object containing the keys and values to update
-      // update should be an object containing the changed fields in the character e.g. {currentHp: 15, conditions: [...conditions, 'blinded']}
-      console.log(character);
-      console.log(updated);
-      const response = await fetch(`${api}characters`, {
+   const deleteCombatant = async (combatant) => {
+      const response = await fetch(`${api}encounters`, {
          method: "POST",
          body: JSON.stringify({
             action: "editone",
             data: {
-               _id: character._id,
-               ...updated,
+               ...encounter,
+               initiative: [
+                  ...encounter.initiative.filter(
+                     (i) => i._id !== combatant._id
+                  ),
+               ],
+               monsters: [
+                  ...encounter.monsters.filter((i) => i._id !== combatant._id),
+               ],
             },
          }),
          headers: { "Content-type": "application/json; charset=UTF-8" },
       });
       const encCharacters = await response.json();
       if (encCharacters.acknowledged && encCharacters.modifiedCount > 0) {
-         setCharacters([
-            ...characters.filter((c) => c._id !== character._id),
-            { ...character, ...updated },
-         ]);
+         setEncounter({
+            ...encounter,
+            initiative: [
+               ...encounter.initiative.filter((i) => i._id !== combatant._id),
+            ],
+            monsters: [
+               ...encounter.monsters.filter((i) => i._id !== combatant._id),
+            ],
+         });
+         setModal({ on: false, type: "" });
       }
    };
-
+   
    const saveInitiative = async (initiative) => {
       console.log(initiative);
       // update the encounter with the initiative rolls, then set the encounter to "running"
@@ -464,6 +487,180 @@ const Encounter = ({ initialEncounter }) => {
       setModal({ on: true, type: "doAttack" });
    };
 
+   const [ editButton, setEditButton ] = useState({state: 'Edit', icons: 'pi pi-fw pi-wrench'})
+
+   const editEncounterState = () => {
+      // console.log(encounterState.state)
+      if (encounter.mode == 'editing') {
+         setEncounter({...encounter, mode: 'running'})
+         setEditButton({state: 'Edit', icons: 'pi pi-fw pi-wrench'})
+         setModal({ type: "rollInitiative", on: true })
+      } else if (encounter.mode == 'running') {
+         setEncounter({...encounter, mode: 'editing'})
+         setEditButton({state: 'Run', icons: 'pi pi-fw pi-play'})
+      }
+   }
+
+   const saveMonster = async (monster) => {
+      monster._id = uuidv4() // mot mongodb id format?? https://orangematter.solarwinds.com/2019/12/22/what-is-mongodbs-id-field-and-how-to-use-it/
+      console.log(monster)
+      console.log(campaign)
+      let monsterList = []
+      if (campaign.monsters && Array.isArray(campaign.monsters)) {
+         console.log('monster array present')
+         monsterList = [...campaign.monsters, monster]
+      }
+      console.log(monsterList)
+      // const response = await fetch(`${api}campaigns`, {
+      //    method: "POST",
+      //    body: JSON.stringify({
+      //       action: "editone",
+      //       data: {
+      //          ...campaign,
+      //          monsters: [...campaign.monsters, monster]
+      //       },
+      //    }),
+      //    headers: { "Content-type": "application/json; charset=UTF-8" },
+      // });
+      // const encCharacters = await response.json();
+      // if (encCharacters.acknowledged && encCharacters.modifiedCount > 0) {
+      //    setCampaign({
+      //       ...campaign,
+      //       monsters: [...campaign.monsters, monster]
+      //    });
+      //    setModal({ on: false, type: "" });
+      // }
+   };
+
+
+const items = [
+   {
+      label: editButton.state,
+      icon: editButton.icons,
+      command: () => editEncounterState()
+   },
+   {
+      label:'Encounter',
+      icon:'pi pi-fw pi-file',
+      items:[
+         {
+            label:'Duplicate',
+            icon:'pi pi-fw pi-file-export',
+            command: ()=>{ window.confirm("Copy this encounter to a new encounter?"); }
+         },
+         {
+            label:'Delete',
+            icon:'pi pi-fw pi-trash',
+            command: ()=>{ window.confirm("Are you sure you want to delete this encounter?"); }
+         },
+         {
+            separator:true
+         },
+         {
+            label:'Export',
+            icon:'pi pi-fw pi-external-link',
+            command:()=>{ window.confirm("Are you sure you want to export this encounter>"); }
+         }
+      ]
+   },
+   {
+      label:'Edit',
+      icon:'pi pi-fw pi-pencil',
+      items:[
+         {
+            label:'Left',
+            icon:'pi pi-fw pi-align-left'
+         },
+         {
+            label:'Right',
+            icon:'pi pi-fw pi-align-right'
+         },
+         {
+            label:'Center',
+            icon:'pi pi-fw pi-align-center'
+         },
+         {
+            label:'Justify',
+            icon:'pi pi-fw pi-align-justify'
+         },
+
+      ]
+   },
+   {
+      label:'Users',
+      icon:'pi pi-fw pi-user',
+      items:[
+         {
+            label:'New',
+            icon:'pi pi-fw pi-user-plus',
+
+         },
+         {
+            label:'Delete',
+            icon:'pi pi-fw pi-user-minus',
+
+         },
+         {
+            label:'Search',
+            icon:'pi pi-fw pi-users',
+            items:[
+               {
+                  label:'Filter',
+                  icon:'pi pi-fw pi-filter',
+                  items:[
+                     {
+                        label:'Print',
+                        icon:'pi pi-fw pi-print'
+                     }
+                  ]
+               },
+               {
+                  icon:'pi pi-fw pi-bars',
+                  label:'List'
+               }
+            ]
+         }
+      ]
+   },
+   {
+      label:'Events',
+      icon:'pi pi-fw pi-calendar',
+      items:[
+         {
+            label:'Edit',
+            icon:'pi pi-fw pi-pencil',
+            items:[
+               {
+                  label:'Save',
+                  icon:'pi pi-fw pi-calendar-plus'
+               },
+               {
+                  label:'Delete',
+                  icon:'pi pi-fw pi-calendar-minus'
+               },
+
+            ]
+         },
+         {
+            label:'Archieve',
+            icon:'pi pi-fw pi-calendar-times',
+            items:[
+               {
+                  label:'Remove',
+                  icon:'pi pi-fw pi-calendar-minus'
+               }
+            ]
+         }
+      ]
+   },
+   {
+      label:'Archive',
+      icon:'pi pi-fw pi-power-off',
+      command:()=>{ window.confirm("Are you sure you want to mark this encounter as complete?"); }
+   }
+];
+
+
    return (
       <EncounterContext.Provider
          value={{
@@ -473,9 +670,11 @@ const Encounter = ({ initialEncounter }) => {
             setCharacters,
             selected,
             setSelected,
+            editMonster,
             modal,
             setModal,
             initiativeItemToFullStats,
+            saveMonster
          }}
       >
          <>
@@ -561,6 +760,9 @@ const Encounter = ({ initialEncounter }) => {
                </div>
             )}
 
+            <section style={{"marginBottom": "1em"}}>
+               <Menubar model={items}></Menubar>
+            </section>
             <section>
                {/* the edit list of combatants */}
                {encounter && encounter.mode === "editing" && (
@@ -588,7 +790,10 @@ const Encounter = ({ initialEncounter }) => {
                   <div className="column-wide">
                      <CombatantDetails
                         combatant={selected}
+                        // combatant={getCombatantStats(selected)}
                         doDamage={doDamage}
+                        editCharacter={editCharacter}
+                        editMonster={editMonster}
                      ></CombatantDetails>
                   </div>
                )}
@@ -599,15 +804,30 @@ const Encounter = ({ initialEncounter }) => {
 };
 
 const CombatantDetails = ({ combatant, doDamage }) => {
-   const [tab, setTab] = useState("details");
+   const context = useContext(EncounterContext)
+   const [ tab, setTab ] = useState("details");
+    const conditionOptions = conditions.map(condition => (
+      {value: condition, label: condition}
+    ))
 
    const calcSaveThrow = (combatant, save, ability) => {
-      if (combatant?.saves?.includes(save)) {
+      if (context?.combatant?.saves?.includes(save)) {
          return (
             abilityModifier(ability) + calculateProficiencyBonus(combatant.cr)
          );
       } else return abilityModifier(ability);
    };
+
+   const updateConditions = (target, conditions) => {
+      const update = conditions.map(condition => (
+         condition.value
+      )) 
+      console.log(target, conditions)
+      if (target.enemy === 'pc') context.editCharacter(target, {conditions: update})
+      if (target.enemy === 'monster') context.editMonster(target, {conditions: update})
+   }
+   const menu = useRef(null);
+
    return (
       <>
          <div className={styles.mainpanel}>
@@ -639,9 +859,21 @@ const CombatantDetails = ({ combatant, doDamage }) => {
                      </p>
                   </span>
                </div>
-               <div className={styles.title_buttons}>
-                  <button>Add Condition</button>
-               </div>
+               <Menu model={[
+                  {
+                     icon: 'pi pi-fw pi-file-export', 
+                     label: 'Save Custom',
+                     command: () => {
+                        context.saveMonster(combatant)
+                     }
+                  }
+                  ]} 
+                  popup ref={menu}>
+               </Menu>
+               <Button
+                  className=""
+                  icon="pi pi-ellipsis-v" 
+                  onClick={(event) => menu.current.toggle(event)}/>
             </div>
 
             <div id={encounterStyle.tabs}>
@@ -1412,6 +1644,17 @@ const CombatantDetails = ({ combatant, doDamage }) => {
                         </p>
                      )}
                   </div>
+                  <div className={styles.title_buttons}>
+                     <Select
+                        options={conditionOptions} 
+                        value={combatant?.conditions?.map(condition => (
+                           {value: condition, label: condition}
+                        ))} 
+                        placeholder={'Condition'} 
+                        isMulti 
+                        onChange={(e) => {updateConditions(combatant, e)}}
+                     />
+                  </div>
                </div>
 
                {combatant.traits && combatant.traits.length > 0 && (
@@ -1499,32 +1742,12 @@ const CombatantDetails = ({ combatant, doDamage }) => {
                   <div
                      style={
                         tab === "spells"
-                           ? { display: "block" }
+                           ? { display: "block", padding: '1ch' }
                            : { display: "none" }
                      }
-                     id="details"
+                     id="spells"
                   >
-                     <div id="spellslots" className={encounterStyle.spellslots}>
-                        {combatant.spellSlots.map((slots, index) => (
-                           <>
-                              <label htmlFor={index}>
-                                 {index + 1}
-                                 <input
-                                    id={index}
-                                    type="number"
-                                    value={slots}
-                                 ></input>
-                              </label>
-                           </>
-                        ))}
-                     </div>
-                     <div>
-                        <ul>
-                           {combatant?.spells?.map((spell) => (
-                              <li>{spell}</li>
-                           ))}
-                        </ul>
-                     </div>
+                     <SpellPane combatant={combatant} />
                   </div>
                )}
             </div>
@@ -1532,6 +1755,87 @@ const CombatantDetails = ({ combatant, doDamage }) => {
       </>
    );
 };
+
+const SpellPane = ({ combatant }) => {
+   const context = useContext(EncounterContext)
+   const castSpell = () => {}
+   const [ spells, setSpells ] = useState([])
+   const [ maxCastLevel, setMaxCastLevel ] = useState(0)
+   const api = '/api/'
+
+   useEffect(() => {
+      if (combatant?.spells) {
+         console.log(combatant.spells)
+         const getSpells = async (spells) => {
+            const response = await fetch(`${api}spells`, {
+               method: "POST",
+               body: JSON.stringify({
+                  action: "monster",
+                  data: { name: { $in: spells } },
+                  sort: {},
+               }),
+               headers: { "Content-type": "application/json; charset=UTF-8" },
+            });
+            const spellList = await response.json();
+            // setItemOffset(0)
+            setSpells(spellList);
+         }
+         getSpells(combatant.spells)
+      }
+
+      if (combatant?.spellSlots) {
+         setMaxCastLevel(combatant.spellSlots.filter(level => {return level | level > 0}).length)
+      }
+   
+      return () => {}
+   }, [combatant])
+   
+
+   return(
+      <>
+      <div id="spellslots" className={encounterStyle.spellslots}>
+         {combatant.spellSlots.map((slot, index) => (
+            <label key={index} htmlFor={index}>
+               {index + 1}
+               <input
+                  id={index}
+                  type="number"
+                  value={slot}
+                  onChange={(e) => {combatant.spellSlots[index] = parseInt(e.target.value); context.editMonster(combatant, {spellSlots: combatant.spellSlots})}}
+               ></input>
+            </label>
+         ))}
+         </div>
+         <div id="spell-list">
+            {spells?.sort((a, b) => {return a.level - b.level}).map((spell) => (
+               <div key={spell._id} className={encounterStyle.spell_line}>
+                  <div className={encounterStyle.spell_title}>{spell.level} {spell.name}</div>
+                  <div className={encounterStyle.spell_cast_buttons}>
+                     {console.log(combatant.spellSlots)}
+                     {[0, ...combatant?.spellSlots]?.map((slot, index) => (
+                        <button
+                           key={index}
+                           disabled={slot > 0 ? false : true}
+                           className={encounterStyle.spell_cast_button} 
+                           style={(spell.level <= index && spell.level > 0) ? {display: 'block'} : {display: 'none'}}
+                           // onClick={(() => {console.log(`remove a level ${index} spell slot`)})}
+                           onClick={() => {
+                              const spellSlots = combatant.spellSlots
+                              console.log(index)
+                              spellSlots[index - 1] = spellSlots[index -1 ] - 1
+                              console.log(spellSlots)
+                              // combatant.spellSlots[slot] = combatant.spellSlots[slot] -1
+                              context.editMonster(combatant, {spellSlots: spellSlots})
+                           }}
+                        >Cast {index}</button>
+                     ))}
+                  </div>
+               </div>
+            ))}
+         </div>
+      </>
+   )
+}
 
 export default withPageAuthRequired(Encounter);
 export async function getServerSideProps(context) {

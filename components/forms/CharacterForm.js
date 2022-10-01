@@ -4,25 +4,26 @@ import { races, classes } from '../../utils/Forms'
 const CharacterForm = ({data, updateFnc}) => {
     // console.log(updateFnc)
     const [ character, setCharacter ] = useState({
-        "name": "",
-        "description": "",
-        "class": classes[0],
-        "race": races[0],
-        "str": 10,
-        "dex": 10,
-        "con": 10,
-        "int": 10,
-        "wis": 10,
-        "cha": 10,
-        "ac": 0,
-        "maxHp": 0,
-        "currentHP": 0,
+        name: "",
+        description: "",
+        class: classes[0],
+        race: races[0],
+        str: 10,
+        dex: 10,
+        con: 10,
+        int: 10,
+        wis: 10,
+        cha: 10,
+        ac: 0,
+        maxHp: 0,
+        currentHP: 0,
+        conditions: []
     });
 
     useEffect(() => {
-        if (data && !data.id) {
+        if (data && data._id) {
             setCharacter({...data})
-        } else setCharacter(data)
+        } 
     
       return () => {}
     }, [data])    

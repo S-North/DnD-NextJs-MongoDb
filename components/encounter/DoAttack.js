@@ -84,7 +84,7 @@ export default function DoAttack ({tempCombatant}) {
             <details open className={styles.details}>
                 <summary className={styles.summary}>PC Targets</summary>
                 {combatants.filter(i => i.enemy === 'pc').map(target => (
-                <div key={target._id} className={styles.target}>
+                <label key={target._id} className={styles.target}>
                     <input type='checkbox' className='target-checkbox'
                     checked={targets.includes(target._id)} 
                     onChange={(e) => {targets.includes(target._id) 
@@ -93,7 +93,7 @@ export default function DoAttack ({tempCombatant}) {
                     
                     <p>{target.name}</p>
                     <p>AC: {target.ac}: </p>
-                </div>
+                </label>
                 ))}
             </details>
     
@@ -101,7 +101,7 @@ export default function DoAttack ({tempCombatant}) {
                 <summary className={styles.summary}>Monsters</summary>
                 <div className={styles.targets}>
                 {combatants.filter(i => i.enemy === 'monster').map(target => (
-                <div key={target._id} className={styles.target}>
+                <label key={target._id} className={styles.target}>
                     <input type='checkbox' className='target-checkbox'
                     checked={targets.includes(target._id)} 
                     onChange={(e) => {targets.includes(target._id) 
@@ -110,7 +110,7 @@ export default function DoAttack ({tempCombatant}) {
                     
                     <p>{target.name}</p>
                     <p>AC: {target.ac}: </p>
-                </div>
+                </label>
                 ))}
                 </div>
             </details>
@@ -127,21 +127,26 @@ export default function DoAttack ({tempCombatant}) {
             {combatantsHit && combatantsHit.length > 0 &&
             <>
             {combatantsHit.map(combatant => (
-                <h2>{`You hit ${combatant.name}`}</h2>
+                <h2 key={combatant._id}>{`You hit ${combatant.name}`}</h2>
             ))}
             {criticalHit && <h2>Its a critical Hit!!</h2>}
     
             {tempCombatant.attack.damage1 &&
                 <>
                 <br></br>
-                <button>{tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1.hdSides}+{tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}</button>
+                <button 
+                    onClick={() => window.alert(`Damage = ${diceRoll(tempCombatant.attack.damage1.hdDice, tempCombatant.attack.damage1.hdSides, tempCombatant.attack.damage1.hdBonus)[2]} ${tempCombatant.attack.damage1.type}`)}>
+                    {tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1.hdSides}+{tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}
+                </button>
                 </>
             }
     
             {tempCombatant.attack.damage2 && tempCombatant.attack.damage2.hdDice &&
                 <>
                 <br></br>
-                <button>{tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2.hdSides}+{tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}</button>
+                <button
+                    onClick={() => window.alert(`Damage = ${diceRoll(tempCombatant.attack.damage2.hdDice, tempCombatant.attack.damage2.hdSides, tempCombatant.attack.damage2.hdBonus)[2]} ${tempCombatant.attack.damage2.type}`)}>
+                    {tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2.hdSides}+{tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}</button>
                 </>
             }
     
