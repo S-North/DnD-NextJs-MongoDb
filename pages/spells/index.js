@@ -5,7 +5,7 @@ import styles from '../../styles/Spells.module.css'
 import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, monsterTemplate, schools, spellSlotLevels } from '../../utils/Forms'
 import { truncate, abilityModifier, diceRoll, crToXp, displayCrAsFraction } from '../../utils/utils'
 import ReactPaginate from 'react-paginate'; // https://www.npmjs.com/package/react-paginate
-import spellBook from '../../spells.json'
+// import spellBook from '../../spells.json'
 import SpellForm from '../../components/spells/SpellForm';
 import { importSpell } from '../../utils/import';
 import { FaWindowClose, FaEdit } from 'react-icons/fa';
