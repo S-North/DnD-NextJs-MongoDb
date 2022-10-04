@@ -1794,7 +1794,7 @@ const SpellPane = ({ combatant }) => {
       // console.log(slots)
       const castableSlots = []
       slots.forEach((slot, index) => {
-         if (typeof slot === 'number' & slot > 0 & index +1 >= min ) castableSlots.push(index + 1)
+         if (typeof slot === 'number' & slot > 0 & index +1 >= min & min != 0) castableSlots.push(index + 1)
       });
       // console.log(castableSlots)
       return castableSlots
