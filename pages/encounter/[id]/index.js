@@ -464,7 +464,7 @@ const Encounter = ({ initialEncounter }) => {
    };
 
    const displayCombatant = (combatant) => {
-      console.log(combatant);
+      // console.log(combatant);
       setSelected(combatant);
    };
 
@@ -907,9 +907,10 @@ const CombatantDetails = ({ combatant, doDamage }) => {
                   onClick={() => setTab("spells")}
                >
                   Spells (
-                  {combatant.spellSlots?.reduce(
-                     (total, current) => total + parseInt(current),
-                     0
+                  {combatant.spellSlots?.reduce((total, current) => {
+                     if (typeof current === 'number') total += parseInt(current);
+                     return total
+                  },0
                   )}
                   )
                </button>
@@ -1742,7 +1743,7 @@ const CombatantDetails = ({ combatant, doDamage }) => {
                   <div
                      style={
                         tab === "spells"
-                           ? { display: "block", padding: '1ch' }
+                           ? { display: "block", padding: '1ch', width: '100%' }
                            : { display: "none" }
                      }
                      id="spells"
@@ -1765,7 +1766,6 @@ const SpellPane = ({ combatant }) => {
 
    useEffect(() => {
       if (combatant?.spells) {
-         console.log(combatant.spells)
          const getSpells = async (spells) => {
             const response = await fetch(`${api}spells`, {
                method: "POST",
@@ -1777,7 +1777,6 @@ const SpellPane = ({ combatant }) => {
                headers: { "Content-type": "application/json; charset=UTF-8" },
             });
             const spellList = await response.json();
-            // setItemOffset(0)
             setSpells(spellList);
          }
          getSpells(combatant.spells)
@@ -1789,6 +1788,17 @@ const SpellPane = ({ combatant }) => {
    
       return () => {}
    }, [combatant])
+
+   const spellCastButtons = (min, slots) => {
+      // console.log(min)
+      // console.log(slots)
+      const castableSlots = []
+      slots.forEach((slot, index) => {
+         if (typeof slot === 'number' & slot > 0 & index +1 >= min ) castableSlots.push(index + 1)
+      });
+      // console.log(castableSlots)
+      return castableSlots
+   }
    
 
    return(
@@ -1806,29 +1816,44 @@ const SpellPane = ({ combatant }) => {
             </label>
          ))}
          </div>
+
          <div id="spell-list">
             {spells?.sort((a, b) => {return a.level - b.level}).map((spell) => (
-               <div key={spell._id} className={encounterStyle.spell_line}>
-                  <div className={encounterStyle.spell_title}>{spell.level} {spell.name}</div>
+               <div 
+                  key={spell._id} 
+                  className={encounterStyle.spell_line} 
+                  style={{'display':'flex', 'justifyContent': 'space-between', 'width': '100%'}}
+                  onClick={() => console.log("click")}>
+
+                  <div className={encounterStyle.spell_title}>
+                     <p>{spell.level} - <strong>{spell.name}</strong> ({spell.concentration ? 'C' : ''}{spell.ritual ? 'R' : ''})</p>
+                     <span class={encounterStyle.description_tooltip}>
+                        <h3>{spell.name}</h3>
+                        <p><strong>Range: </strong>{spell.range}</p>
+                        <p><strong>Cast Time: </strong>{spell.time}</p>
+                        <p><strong>Duration: </strong>{spell.duration}</p>
+                        <p>{spell.description}</p>
+                        </span>
+                  </div>
                   <div className={encounterStyle.spell_cast_buttons}>
-                     {console.log(combatant.spellSlots)}
-                     {[0, ...combatant?.spellSlots]?.map((slot, index) => (
-                        <button
-                           key={index}
-                           disabled={slot > 0 ? false : true}
-                           className={encounterStyle.spell_cast_button} 
-                           style={(spell.level <= index && spell.level > 0) ? {display: 'block'} : {display: 'none'}}
-                           // onClick={(() => {console.log(`remove a level ${index} spell slot`)})}
-                           onClick={() => {
-                              const spellSlots = combatant.spellSlots
-                              console.log(index)
-                              spellSlots[index - 1] = spellSlots[index -1 ] - 1
-                              console.log(spellSlots)
-                              // combatant.spellSlots[slot] = combatant.spellSlots[slot] -1
-                              context.editMonster(combatant, {spellSlots: spellSlots})
-                           }}
-                        >Cast {index}</button>
-                     ))}
+                     {
+                        spellCastButtons(
+                           spell.level, 
+                           combatant.spellSlots.filter(slot => {return typeof slot === 'number' })
+                           )
+                           .map((slot, index) => (
+                              <button
+                                 key={index}
+                                 className={encounterStyle.spell_cast_button} 
+                                 onClick={() => {
+                                    const spellSlots = combatant.spellSlots
+                                    spellSlots[slot -1] = spellSlots[slot -1 ] - 1
+                                    context.editMonster(combatant, {spellSlots: spellSlots})
+                                 }}
+                              >{slot}
+                              </button>
+                           ))
+                     }
                   </div>
                </div>
             ))}

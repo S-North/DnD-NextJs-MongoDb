@@ -11,7 +11,7 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
     // console.log(encounter)
 
     function getExpandedStats (combatant) {
-        console.log(combatant)
+        // console.log(combatant)
         switch (true) {
             default:
                 break;
