@@ -789,7 +789,7 @@ const items = [
                {selected && (
                   <div className="column-wide">
                      <CombatantDetails
-                        combatant={selected}
+                        selected={selected}
                         // combatant={getCombatantStats(selected)}
                         doDamage={doDamage}
                         editCharacter={editCharacter}
@@ -803,8 +803,24 @@ const items = [
    );
 };
 
-const CombatantDetails = ({ combatant, doDamage }) => {
+const CombatantDetails = ({ selected, doDamage }) => {
    const context = useContext(EncounterContext)
+   console.log(selected)
+   console.log(context.encounter)
+   const [ combatant, setCombatant ] = useState({})
+   
+   useEffect(() => {
+      if (selected?.enemy === 'monster' && context.encounter) {
+      setCombatant(context.encounter.monsters.filter(monster => {return selected._id === monster._id})[0])
+      }
+      if (selected?.enemy === 'pc' && context.characters) {
+      setCombatant(context.characters.filter(character => {return selected._id === character._id})[0])
+      }
+   
+     return () => {}
+   }, [selected, context.encounter, context.characters])
+   
+
    const [ tab, setTab ] = useState("details");
     const conditionOptions = conditions.map(condition => (
       {value: condition, label: condition}
@@ -823,7 +839,7 @@ const CombatantDetails = ({ combatant, doDamage }) => {
          condition.value
       )) 
       console.log(target, conditions)
-      if (target.enemy === 'pc') context.editCharacter(target, {conditions: update})
+      // if (target.enemy === 'pc') context.setCharacters(target, {conditions: update})
       if (target.enemy === 'monster') context.editMonster(target, {conditions: update})
    }
    const menu = useRef(null);
@@ -1846,6 +1862,16 @@ const SpellPane = ({ combatant }) => {
                                  key={index}
                                  className={encounterStyle.spell_cast_button} 
                                  onClick={() => {
+                                    if (spell.concentration) {
+                                       if (combatant.concentrating?.active) {
+                                          if (window.confirm(`This monster is already concentrating on a spell (${combatant.concentrating?.spellName}). Do you want to drop the old spell?`)) {
+                                             console.log('switched concentration')
+                                          }
+                                          else return
+                                       }
+                                       if (window.confirm('This is a concentration spell. Add the concentration flag to this monster?')) console.log('add concentration')
+                                       else return
+                                    }
                                     const spellSlots = combatant.spellSlots
                                     spellSlots[slot -1] = spellSlots[slot -1 ] - 1
                                     context.editMonster(combatant, {spellSlots: spellSlots})
