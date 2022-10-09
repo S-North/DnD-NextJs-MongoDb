@@ -17,7 +17,8 @@ const CharacterForm = ({data, updateFnc}) => {
         ac: 0,
         maxHp: 0,
         currentHP: 0,
-        conditions: []
+        conditions: [],
+        picture_url: ''
     });
 
     useEffect(() => {
@@ -39,6 +40,12 @@ const CharacterForm = ({data, updateFnc}) => {
                         placeholder="name"
                         value={ character.name }
                         onChange={e => setCharacter({...character, "name": e.target.value})}
+                    />
+                    <input 
+                        type='text'
+                        placeholder="picture URL"
+                        value={ character.picture_url }
+                        onChange={e => setCharacter({...character, picture_url: e.target.value})}
                     />
                     <div className="flex-row">
                         {races && <select value={character.race} onChange={e => setCharacter({...character, "race": e.target.value})}>
