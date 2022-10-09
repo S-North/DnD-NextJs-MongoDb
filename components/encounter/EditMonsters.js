@@ -19,6 +19,7 @@ export default function EditMonsters ({ addMonsters }) {
         monsters.push({
           ...monster,
           currentHp: monster.maxHp,
+          conditions: [],
           source: monster._id,
           _id: uuidv4(),
           name: `${monster.name} ${i + 1}`

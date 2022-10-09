@@ -75,7 +75,7 @@ export default function DoAttack ({tempCombatant}) {
     return (
         <>
         <div className={styles.title_section}>
-            <h2>{`${tempCombatant.attacker.name} > Uses ${tempCombatant.attack.name}`}</h2>
+            <h2>{`${tempCombatant.attacker.name} > Uses ${tempCombatant.attack.name}`}{tempCombatant.options?.advantage && ' with '}{tempCombatant.options?.advantage && tempCombatant.options?.advantage}</h2>
             <p>{tempCombatant.attack.description}</p>
         </div>
     

@@ -1,8 +1,11 @@
-import { crToXp } from './utils'
+import { crToXp, skillToAbility, calculateProficiencyBonus, abilityModifier, fractionalCrtoNumber } from './utils'
 import { damageTypes } from './Forms'
 import { v4 as uuidv4 } from 'uuid'
 
-export const importMonster = (monster) => {
+export const importMonster = (inputFile) => {
+    const monster = inputFile.monster
+    const tag = inputFile.importTag
+    // console.log(monster)
     const dcRegex = /DC\s\d+\s\w+/g
     const getSize = (size) => {
         switch (size) {
@@ -72,6 +75,33 @@ export const importMonster = (monster) => {
         splitOnComma.map(e => (
             abilities.push(e.trim().split(/\s+/)[0])
             ))
+        return abilities // No need to return the bonuses, we can calulate them from profficiency bonus
+    }
+
+    const parseSkills = (monster) => {
+        // console.log(monster)
+        const skills = monster.skill
+        if (skills.length === 0) return []
+        const abilities = []
+
+        const splitOnComma = skills.split(/[,]/)
+        splitOnComma.forEach(item => {
+            const obj = {}
+            obj.name = item.split('+')[0].trim()
+            obj.bonus = parseInt(item.split('+')[1].trim())
+            obj.level = 'other' // default value
+
+            const abilityBonus = abilityModifier(monster[skillToAbility(obj.name)])
+            const crAsNumber = fractionalCrtoNumber(monster.cr)
+
+            // test the supplied bonus against calculated proficiency bonus and ability modifier to see if it fits [proficient | expert | none]
+            if (obj.bonus === abilityBonus + calculateProficiencyBonus(crAsNumber)) obj.level = 'proficient'
+            if (obj.bonus === abilityBonus + (calculateProficiencyBonus(crAsNumber)*2)) obj.level = 'expert'
+            if (obj.bonus === abilityBonus) obj.level = 'none'
+
+            abilities.push(obj)
+        })
+        
         return abilities // No need to return the bonuses, we can calulate them from profficiency bonus
     }
 
@@ -216,16 +246,16 @@ export const importMonster = (monster) => {
                 }
 
                 const regex = /\d legendary actions/i;
-                console.log(legend.text)
+                // console.log(legend.text)
                 if (regex.exec(legend.text)) {
-                    console.log("found actions")
+                    // console.log("found actions")
                     cost = 0
                     actions = parseInt(regex.exec(legend.text)[0].split(" ")[0])
-                    console.log(actions)
+                    // console.log(actions)
                 }
                 
                 if (actions > 0) {
-                    console.log("actions greater than 0")
+                    // console.log("actions greater than 0")
                     // console.log(`actions = ${parseInt(costDigits.exec(actions[0])[0])}`)
                     data.push({
                         name: legend.name,
@@ -249,10 +279,15 @@ export const importMonster = (monster) => {
 
     const parseSpellSlots = (spellSlotString) => {
         // spellSlotString is a comma separated values string
+        // convert to array of integers
         if (spellSlotString) {
             const spellSlots = spellSlotString.split(",")
+            const spellSlotArray = []
+            spellSlots.forEach(slot => {
+                spellSlotArray.push(parseInt(slot.trim()))
+            })
             // console.log(spellSlots)
-            return spellSlots
+            return spellSlotArray
         } else return []
     }
 
@@ -303,11 +338,21 @@ export const importMonster = (monster) => {
             // let speed = {}
             const speed = []
             speeds.forEach((element, index) => {
-                if (index === 0) speed.push(`walk ${element.trim()}`)
+                if (index === 0) speed.push(`${element.trim()}`)
                 else speed.push(element.trim())
             })
             return speed          
         }
+    }
+
+    const parseSourceBook = (description) => {
+        // see if the name of the source book e.g. Monster Manual is in the description. If so, add it to the monster. Otherwise return a blank string
+        // const text = description.toLowerCase()
+        // let sourceBook = ""
+        // if (description.includes("monster manual")) return 'Monster Manual'
+        // if (description.includes("mordenkainen's tome of foes")) return "Mordenkainen's Tome of Foes"
+        // if (description.includes("Volo's Guide")) return "Volo's Guide"
+        return tag
     }
 
     return {
@@ -329,7 +374,7 @@ export const importMonster = (monster) => {
         wis: parseInt(monster.wis),
         cha: parseInt(monster.cha),
         saves: parseSaves(monster.save),
-        skills: parseSaves(monster.skill), // skills can be profficient or expert. Might be able to calc by checking the written bonus against abilityBonus+proficiencyBonus(cr)
+        skills: parseSkills(monster), // skills can be profficient or expert. Might be able to calc by checking the written bonus against abilityBonus+proficiencyBonus(cr)
         passive: parseInt(monster.passive), // passive what, maybe perception. Probably dont need this as they can be calculated
         languages: parseLanguages(monster.languages),
         cr: parseCR(monster.cr),
@@ -343,7 +388,8 @@ export const importMonster = (monster) => {
         actions: parseActions(monster.action),
         legendary: parseLegendary(monster.legendary), // problem in the data for out data model. May need to do some manual data entry :( think some more... 
         spellSlots: parseSpellSlots(monster.slots),
-        spells: parseSpells(monster.spells)
+        spells: parseSpells(monster.spells),
+        sourceBook: parseSourceBook(monster.description)
     }
 }
 

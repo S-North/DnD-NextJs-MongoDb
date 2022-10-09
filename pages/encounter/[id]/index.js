@@ -36,6 +36,8 @@ import Select from 'react-select'
 import { Menubar } from 'primereact/menubar'
 import { Menu } from 'primereact/menu';
 import { Button } from 'primereact/button';
+import { SplitButton } from 'primereact/splitbutton';
+import { TieredMenu } from 'primereact/tieredmenu';
 import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
 import "primereact/resources/primereact.min.css";                  //core css
 import "primeicons/primeicons.css";                                //icons
@@ -480,10 +482,10 @@ const Encounter = ({ initialEncounter }) => {
       changeHP(selected);
    };
 
-   const doDamage = (attacker, attack) => {
+   const doDamage = (attacker, attack, options) => {
       console.log(attacker);
       console.log(attack);
-      setTempCombatant({ attacker, attack });
+      setTempCombatant({ attacker, attack, options });
       setModal({ on: true, type: "doAttack" });
    };
 
@@ -760,9 +762,9 @@ const items = [
                </div>
             )}
 
-            <section style={{"marginBottom": "1em"}}>
+            {/* <section style={{"marginBottom": "1em"}}>
                <Menubar model={items}></Menubar>
-            </section>
+            </section> */}
             <section>
                {/* the edit list of combatants */}
                {encounter && encounter.mode === "editing" && (
@@ -887,7 +889,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                   popup ref={menu}>
                </Menu>
                <Button
-                  className=""
+                  className="p-button-sm"
                   icon="pi pi-ellipsis-v" 
                   onClick={(event) => menu.current.toggle(event)}/>
             </div>
@@ -989,7 +991,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                         </button>
 
                         {combatant.skills &&
-                           combatant.skills.includes("Athletics") && (
+                           combatant.skills.filter(skill => {return skill.name.toLowerCase() === 'athletics'})[0] && (
                               <p
                                  className={encounterStyle.link}
                                  title={
@@ -1001,10 +1003,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                                        diceRoll(
                                           1,
                                           20,
-                                          abilityModifier(combatant.str) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
+                                          combatant.skills.filter(skill => {return skill.name.toLowerCase() === 'athletics'})[0].bonus
                                        )[2]
                                     );
                                  }}
@@ -1019,17 +1018,8 @@ const CombatantDetails = ({ selected, doDamage }) => {
                         <button
                            className={styles.btn}
                            title="Acrobatics, Sleight of Hand, Stealth"
-                           onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    abilityModifier(combatant.dex)
-                                 )[2]
-                              );
-                           }}
-                        >
-                           {combatant.dex}
+                           onClick={() => { window.alert( diceRoll(1, 20, abilityModifier( combatant.dex ) )[2]) }}
+                           >{combatant.dex}
                         </button>
 
                         <button
@@ -1050,80 +1040,26 @@ const CombatantDetails = ({ selected, doDamage }) => {
                         >
                            {calcSaveThrow(combatant, "Dex", combatant.dex)}
                         </button>
-                        {combatant.skills &&
-                           combatant.skills.includes("Acrobatics") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 title={
-                                    abilityModifier(combatant.dex) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.dex) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                              >
-                                 Acrobatics
-                              </p>
-                           )}
 
-                        {combatant.skills &&
-                           combatant.skills.includes("Sleight of Hand") && (
+                        {/* generate clickable links for each of the skills of this ability stat */}
+                        {["Acrobatics", "Sleight of Hand", "Stealth"].map(skillName => (
+                           <>
+                           {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
                               <p
                                  className={encounterStyle.link}
-                                 title={
-                                    abilityModifier(combatant.dex) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
                                  onClick={() => {
                                     window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.dex) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
+                                       diceRoll(1, 20, combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus)[2]
                                     );
                                  }}
-                              >
-                                 Sleight of Hand
+                                 title={combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus}
+                              >{skillName}
                               </p>
-                           )}
+                           }
+                           </>
+                        ))
+                        }
 
-                        {combatant.skills &&
-                           combatant.skills.includes("Stealth") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 title={
-                                    abilityModifier(combatant.dex) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.dex) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                              >
-                                 Stealth
-                              </p>
-                           )}
                      </div>
 
                      <div className={styles.abilitybox}>
@@ -1162,7 +1098,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                         </button>
                      </div>
 
-                     <div className={styles.abilitybox}>
+                     <div className={styles.abilitybox}> 
                         <h2>Int</h2>
                         <button
                            className={styles.btn}
@@ -1197,126 +1133,26 @@ const CombatantDetails = ({ selected, doDamage }) => {
                         >
                            {calcSaveThrow(combatant, "Int", combatant.int)}
                         </button>
-                        {combatant.skills &&
-                           combatant.skills.includes("Arcana") && (
+
+                        {/* generate clickable links for each of the skills of this ability stat */}
+                        {["Arcana", "History", "Investigation", "Nature", "Religion"].map(skillName => (
+                           <>
+                           {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
                               <p
                                  className={encounterStyle.link}
                                  onClick={() => {
                                     window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.int) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
+                                       diceRoll(1, 20, combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus)[2]
                                     );
                                  }}
-                                 title={
-                                    abilityModifier(combatant.int) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Arcana
+                                 title={combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus}
+                              >{skillName}
                               </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("History") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.int) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.int) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 History
-                              </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("Investigation") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.int) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.int) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Investigation
-                              </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("Nature") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.int) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.int) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Nature
-                              </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("Religion") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.int) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.int) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Religion
-                              </p>
-                           )}
+                           }
+                           </>
+                        ))
+                        }
+
                      </div>
 
                      <div className={styles.abilitybox}>
@@ -1354,126 +1190,26 @@ const CombatantDetails = ({ selected, doDamage }) => {
                         >
                            {calcSaveThrow(combatant, "Wis", combatant.wis)}
                         </button>
-                        {combatant.skills &&
-                           combatant.skills.includes("Animal Handling") && (
+
+                        {/* generate clickable links for each of the skills of this ability stat */}
+                        {["Animal Handling", "Insight", "Medicine", "Perception", "Survival"].map(skillName => (
+                           <>
+                           {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
                               <p
                                  className={encounterStyle.link}
                                  onClick={() => {
                                     window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.wis) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
+                                       diceRoll(1, 20, combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus)[2]
                                     );
                                  }}
-                                 title={
-                                    abilityModifier(combatant.wis) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Animal Handling
+                                 title={combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus}
+                              >{skillName}
                               </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("Insight") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.wis) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.wis) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Insight
-                              </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("Medicine") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.wis) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.wis) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Medicine
-                              </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("Perception") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.wis) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.wis) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Perception
-                              </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("Survival") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.wis) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.wis) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Survival
-                              </p>
-                           )}
+                           }
+                           </>
+                        ))
+                        }
+
                      </div>
 
                      <div className={styles.abilitybox}>
@@ -1511,104 +1247,29 @@ const CombatantDetails = ({ selected, doDamage }) => {
                         >
                            {calcSaveThrow(combatant, "Cha", combatant.cha)}
                         </button>
-                        {combatant.skills &&
-                           combatant.skills.includes("Deception") && (
+
+                        {/* generate clickable links for each of the skills of this ability stat */}
+                        {["Deception", "Intimidation", "Performance", "Persuasion"].map(skillName => (
+                           <>
+                           {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
                               <p
                                  className={encounterStyle.link}
                                  onClick={() => {
                                     window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.cha) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
+                                       diceRoll(1, 20, combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus)[2]
                                     );
                                  }}
-                                 title={
-                                    abilityModifier(combatant.cha) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Deception
+                                 title={combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus}
+                              >{skillName}
                               </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("Intimidation") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.cha) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.cha) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Intimidation
-                              </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("Performance") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.wis) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.cha) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Performance
-                              </p>
-                           )}
-                        {combatant.skills &&
-                           combatant.skills.includes("Persuasion") && (
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          abilityModifier(combatant.wis) +
-                                             calculateProficiencyBonus(
-                                                combatant.cr
-                                             )
-                                       )[2]
-                                    );
-                                 }}
-                                 title={
-                                    abilityModifier(combatant.cha) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                              >
-                                 Persuasion
-                              </p>
-                           )}
+                           }
+                           </>
+                        ))
+                        }
+
                      </div>
                   </div>
+
                   <div className={encounterStyle.vulnerabilites}>
                      {combatant?.vulnerabilities?.length > 0 && (
                         <p>
@@ -1714,8 +1375,32 @@ const CombatantDetails = ({ selected, doDamage }) => {
                                  <p>{action.description}</p>
                                  {(action.attack && action.attack > 0) |
                                  action.damage1.hdDice ? (
-                                    <button
-                                       className={styles.btn}
+                                    <SplitButton
+                                       // label="Attack"
+                                       icon='pi pi-bolt'
+                                       tooltip="Do Attack"
+                                       // className={styles.btn}
+                                       className="p-button-sm mr-2 mb-2"
+                                       model={[
+                                          {label: 'Advantage', command: () => doDamage(
+                                             {
+                                                _id: combatant._id,
+                                                name: combatant.name,
+                                                enemy: combatant.enemy,
+                                             },
+                                             action,
+                                             {advantage: 'advantage'}
+                                          )}, 
+                                          {label: 'Disadvantage', command: () => doDamage(
+                                             {
+                                                _id: combatant._id,
+                                                name: combatant.name,
+                                                enemy: combatant.enemy,
+                                             },
+                                             action,
+                                             {advantage: 'disadvantage'}
+                                          )}
+                                       ]}
                                        onClick={() => {
                                           doDamage(
                                              {
@@ -1727,8 +1412,8 @@ const CombatantDetails = ({ selected, doDamage }) => {
                                           );
                                        }}
                                     >
-                                       Do Attack
-                                    </button>
+                                       
+                                    </SplitButton>
                                  ) : (
                                     <></>
                                  )}

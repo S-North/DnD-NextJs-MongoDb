@@ -96,7 +96,7 @@
 
 .action {
     display: grid;
-    grid-template-columns: 10ch auto 5ch;
+    grid-template-columns: 10ch auto auto;
     /* grid-template-rows: ; */
     row-gap: 1ch;
     column-gap: 1ch;

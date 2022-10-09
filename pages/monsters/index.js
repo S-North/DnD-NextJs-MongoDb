@@ -1,11 +1,13 @@
 import connectToDatabase from "../../utils/mongodb";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
    truncate,
    abilityModifier,
    diceRoll,
    crToXp,
    displayCrAsFraction,
+   skillToAbility,
+   calculateProficiencyBonus
 } from "../../utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import { FaEdit, FaWindowClose, FaDiceSix } from "react-icons/fa";
@@ -31,28 +33,51 @@ import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 import Nav from "../../components/Nav";
 import { SpellList } from "../spells";
 
+import { FileUpload } from 'primereact/fileupload';
+import { Button } from 'primereact/button';
+import { TieredMenu } from 'primereact/tieredmenu';
+import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
+import "primereact/resources/primereact.min.css";                  //core css
+import "primeicons/primeicons.css";                                //icons
+
 export default withPageAuthRequired(function Monsters({}) {
    const api = "/api/";
    const [selected, setSelected] = useState();
    const [modal, setModal] = useState({ type: "none", on: false });
    const [updated, setUpdated] = useState(0);
+   const [ importMessage, setImportMessage ] = useState("")
+   const [ importTag, setImportTag ] = useState('nothing')
 
-   const importMonsterManual = async (file) => {
+   const importMonsterManual = async (json) => {
+      console.log(json)
       const monsterUpload = [];
-      monsterManual.forEach((monster) => {
-         monsterUpload.push(importMonster(monster));
+      json.monster.forEach((monster) => {
+         monsterUpload.push(importMonster({monster: monster, importTag: json.source}));
       });
       console.log(monsterUpload);
-      const response = await fetch(`${api}monsters`, {
-         method: "POST",
-         body: JSON.stringify({
-            action: "addmany",
-            data: monsterUpload,
-         }),
-         headers: { "Content-type": "application/json; charset=UTF-8" },
-      });
-      const uploadedMonsters = await response.json();
-      console.log(uploadedMonsters);
+
+      // break the array into groups of 50 and upload to database
+      const uploadChunk = async (chunk) => {
+         console.log(chunk)
+
+         const response = await fetch(`${api}monsters`, {
+            method: "POST",
+            body: JSON.stringify({
+               action: "addmany",
+               data: chunk,
+            }),
+            headers: { "Content-type": "application/json; charset=UTF-8" },
+         });
+         const uploadedMonsters = await response.json();
+         console.log(uploadedMonsters);
+      }
+
+      const chunkSize = 50;
+
+      for (let i = 0; i < monsterUpload.length; i += chunkSize) {
+         const chunk = monsterUpload.slice(i, i + chunkSize);
+         await uploadChunk(chunk)
+      }
    };
 
    const editMonster = async (monster) => {
@@ -99,6 +124,35 @@ export default withPageAuthRequired(function Monsters({}) {
       console.log(uploadedMonsters);
       setUpdated(updated + 1);
    };
+
+   const getFile = async (file) => {
+      let content
+      if (file.type === 'application/json') {
+         content = await JSON.parse(await file.text());
+      } else {
+         setImportMessage('Selected import file is not in JSON FORMAT');
+         console.log('Selected import file is not in JSON FORMAT')
+         return
+      }
+
+      // console.log(content.monster)
+
+      if (content.length === 0) {
+         setImportMessage('No records found in data');
+         console.log('No records found')
+         return
+      }
+
+      content.monster.forEach(monster => {
+         if (!monster.name) {
+            setImportMessage("data is not valid")
+            console.log("data is not valid")
+         }
+      }) 
+      // console.log(content)
+      if (content.source) setImportTag(content.source)
+      importMonsterManual(content)
+   }
 
    return (
       <>
@@ -159,14 +213,24 @@ export default withPageAuthRequired(function Monsters({}) {
                ></MonsterList>
             </div>
 
-            <div className="one-column">
-               <button
+            <div className="column-wide">
+               {/* <input type='text' value={importTag} onChange={(e) => setImportTag(e.target.value)}></input> */}
+               {/* <button
+                  disabled
                   onClick={() => {
                      importMonsterManual();
                   }}
                >
                   Import Monsters
-               </button>
+               </button> */}
+               
+               {importMessage.length > 0 && <p>{importMessage}</p>}
+               <FileUpload
+                  accept="application/json"
+                  customUpload 
+                  uploadHandler={(e) => getFile(e.files[0])}
+                  emptyTemplate={<p className="m-0">Drag and drop files to here to upload.</p>}>
+               </FileUpload>
             </div>
          </section>
       </>
@@ -212,7 +276,7 @@ const MonsterList = ({
          const response = await fetch(`${api}monsters`, {
             method: "POST",
             body: JSON.stringify({
-               action: "minilist",
+               action: "fulllist",
                data: { minCr: minCr, maxCr: maxCr, search: search, type: type },
                sort: { name: sortName, cr: sortCr },
             }),
@@ -279,10 +343,43 @@ const MonsterList = ({
       setModal({ on: true, view: "edit" });
    };
 
+   const exportToJson = (objectData) => {
+      objectData.forEach(monster => {
+         const getFullMonster = async () => {
+            const response = await fetch(`/api/monsters`, {
+               method: "POST",
+               body: JSON.stringify({
+                  action: "query",
+                  data: { _id: id },
+               }),
+               headers: { "Content-type": "application/json; charset=UTF-8" },
+            });
+            const fullMonster = await response.json();
+            // if (fullMonster && fullMonster.length > 0) setMonster(fullMonster[0]);
+         };
+      })
+
+      let filename = "monsters.json";
+      let contentType = "application/json;charset=utf-8;";
+      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        var blob = new Blob([decodeURIComponent(encodeURI(JSON.stringify(objectData, null, 2)))], { type: contentType });
+        navigator.msSaveOrOpenBlob(blob, filename);
+      } else {
+        var a = document.createElement('a');
+        a.download = filename;
+        a.href = 'data:' + contentType + ',' + encodeURIComponent(JSON.stringify(objectData, null, 2));
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    }
+
    return (
       <>
          <div className={styles.monster_filter_container}>
             {
+               <div style={{'display': 'flex', 'flexDirection': 'column', 'gap': '0.5rem'}}>
                <button
                   className={styles.btn_add_new_monster}
                   onClick={() => {
@@ -292,6 +389,11 @@ const MonsterList = ({
                >
                   New Monster
                </button>
+               <button
+                  className={styles.btn_add_new_monster}
+                  onClick={() => exportToJson(monsters)}
+                  >Export List</button>
+               </div>
             }
 
             {/* filtering the results */}
@@ -620,6 +722,28 @@ const MonsterForm = ({ selected, setSelected, update }) => {
    const [legendary, setLegendary] = useState();
    const [monsters, setMonsters] = useState([]);
 
+   // new skills button
+   const skillsMenu = useRef(null);
+   const menuModel = () => {
+      const currentSkills = []
+      selected.skills.forEach(skill => {
+         currentSkills.push(skill.name)
+      })
+      console.log(currentSkills)
+      const items = skillList.filter(skill => {return !currentSkills.includes(skill)})
+      console.log(items)
+      return items.map(item => (
+         {
+            label: item,
+            command: (e) => {
+               console.log(item);
+               setSelected({...selected, skills: [...selected.skills, {name: item, level: 'none', bonus: abilityModifier(selected[skillToAbility(item)])}]}),
+               skillsMenu.current.toggle(e)}
+
+         }
+      ))
+   }
+
    useEffect(() => {
       if (selected) setItem(selected);
       if (selected?.spells) {
@@ -749,6 +873,32 @@ const MonsterForm = ({ selected, setSelected, update }) => {
          }),
       ]);
    };
+
+   const updateSkillLevel = (name, level) => {
+      let skill = selected.skills.filter(item => {return item.name === name})[0]
+      let bonus = abilityModifier(selected[skillToAbility(name)])
+      switch (level) {
+         case 'none':
+            break
+         case 'proficient':
+            bonus += calculateProficiencyBonus(selected.cr)
+            break
+         case 'expert':
+            bonus += (calculateProficiencyBonus(selected.cr) * 2)
+            break
+      }
+
+      const newSkillList = [...selected.skills.filter(item => item.name !== name), {...skill, level, bonus}]
+      setSelected({...selected, skills: newSkillList})
+   }
+
+   const updateSkillBonus = (skill, value) => {
+      setSelected({...selected, skills: [...selected.skills.filter(item => {return skill.name !== item.name}), {...skill, bonus: value}]})
+   }
+
+   const deleteSkill = (skill) => {
+      setSelected({...selected, skills: [...selected.skills.filter(item => {return skill.name !== item.name})]})
+   }
 
    return (
       <>
@@ -1163,6 +1313,7 @@ const MonsterForm = ({ selected, setSelected, update }) => {
                   </button>
                </div>{" "}
                <br />
+
                {/* tabs for sections */}
                <div id="tabs" className="flex-row">
                   <button
@@ -1250,6 +1401,7 @@ const MonsterForm = ({ selected, setSelected, update }) => {
                      spells
                   </button>
                </div>
+
                <div
                   style={
                      tabs === "details"
@@ -1692,6 +1844,7 @@ const MonsterForm = ({ selected, setSelected, update }) => {
                   <div className="flex-checkboxes">
                      {languagesList.map((c) => (
                         <div key={c} className="checkboxs">
+                           <label>
                            <input
                               title={c}
                               style={{ cursor: "pointer" }}
@@ -1720,46 +1873,46 @@ const MonsterForm = ({ selected, setSelected, update }) => {
                                       });
                               }}
                            />
-                           <label htmlFor={c}>{c}</label>
+                           {c}</label>
                         </div>
                      ))}
                   </div>
 
                   <hr />
-                  <h2>Skills</h2>
-                  <br />
-                  <div className="flex-checkboxes">
-                     {skillList.map((c) => (
-                        <div key={c} className="checkboxs">
-                           <input
-                              title={c}
-                              style={{ cursor: "pointer" }}
-                              type="checkbox"
-                              name={c}
-                              checked={selected.skills.includes(c)}
-                              value={c}
-                              onChange={(e) => {
-                                 selected.skills.includes(e.target.value)
-                                    ? setSelected({
-                                         ...selected,
-                                         skills: [
-                                            ...selected.skills.filter((f) => {
-                                               return f !== e.target.value;
-                                            }),
-                                         ],
-                                      })
-                                    : setSelected({
-                                         ...selected,
-                                         skills: [
-                                            ...selected.skills,
-                                            e.target.value,
-                                         ],
-                                      });
-                              }}
-                           />
-                           <label htmlFor={c}>{c}</label>
-                        </div>
-                     ))}
+                  <div className="">
+                     {/* add new skill menu button */}
+                     <TieredMenu model={menuModel()} popup ref={skillsMenu} id="overlay_tmenu" />
+                     <Button label="New Skill" icon="pi pi-bars" onClick={(event) => {event.preventDefault(); skillsMenu.current.toggle(event)}} aria-haspopup aria-controls="overlay_tmenu" className="p-button-sm"/>
+                     
+                     {/* list of skills */}
+                     <div className={styles.skillList}>
+                        {selected.skills.sort((a,b) => (a.name > b.name)).map((skill) => (
+                           <div key={skill.name} className={styles.skillRow}>
+                              <div style={{"minWidth": "8rem"}}><strong>{skill.name}</strong></div>
+
+                              <label>
+                                 <input type='radio' name={skill.name} id='none' checked={skill.level === 'none'} onChange={(e) => updateSkillLevel(skill.name, e.target.id)}></input>
+                              none</label>
+
+                              <label>
+                                 <input type='radio' name={skill.name} id='proficient' checked={skill.level === 'proficient'} onChange={(e) => updateSkillLevel(skill.name, e.target.id)}></input>
+                              proficient</label>
+
+                              <label>
+                                 <input type='radio' name={skill.name} id='expert' checked={skill.level === 'expert'} onChange={(e) => updateSkillLevel(skill.name, e.target.id)}></input>
+                              expert</label>
+
+                              <label>
+                                 <input type='radio' name={skill.name} id='other' checked={skill.level === 'other'} onChange={(e) => updateSkillLevel(skill.name, e.target.id)}></input>
+                              other</label>
+
+                              <input type='number' value={skill.bonus} disabled={skill.level !== 'other'} onChange={(e) => updateSkillBonus(skill, e.target.value)}></input>
+                              <Button className="p-button-sm" icon='pi pi-trash' onClick={(e) => {e.preventDefault(); deleteSkill(skill)}}></Button>
+
+                           </div>
+                        ))}
+                     </div>
+
                   </div>
                </div>
                <div

@@ -58,6 +58,22 @@ export const displayCrAsFraction = (cr) => {
     return cr.toString()
 }
 
+const fractionalCrtoNumber = (cr) => {
+    // take in a cr as a string. try cast to number, if fails, try to convert to decimal
+    let number = 0
+    try {
+        number = parseInt(cr)
+        return number
+    } catch (error) {console.error(error)}
+    if (["0.5", "0.25", "0.125"].includes(cr)) {
+        switch (cr) {
+            case '1/2': return 0.5
+            case '1/4': return 0.25
+            case '1/8': return 0.125
+        }
+    } else return 0
+}
+
 // generate a random integer, takes in the lowest and highest integer as "start" and "end"
 //returns a single integer
 const randInt = (start, end) => {
@@ -202,4 +218,14 @@ const calculateProficiencyBonus = (cr) => {
     }
 }
 
-export { randInt, diceRoll, averageHP, abilityModifier, xpToLevel, crToXp, calculateProficiencyBonus  }
+const skillToAbility = (skill) => {
+    // check the ability type of any skill. take in a skill as string e.g. "Deception", "Insight", etc. return an ability as string e.g. "str", "dex"
+    if (["athletics"].includes(skill.toLowerCase())) return 'str'
+    if (["acrobatics", "sleight of hand", "stealth"].includes(skill.toLowerCase())) return 'dex'
+    if (["arcana", "history", "investigation", "nature", "religion"].includes(skill.toLowerCase())) return 'int'
+    if (["animal handling", "insight", "medicine", "perception", "survival"].includes(skill.toLowerCase())) return 'wis'
+    if (["deception", "intimidation", "performance", "persuasion"].includes(skill.toLowerCase())) return 'cha'
+    return false
+}
+
+export { randInt, diceRoll, averageHP, abilityModifier, xpToLevel, crToXp, calculateProficiencyBonus, skillToAbility, fractionalCrtoNumber }

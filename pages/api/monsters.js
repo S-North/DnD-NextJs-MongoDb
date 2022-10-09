@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   let response = {}
 
   if (method === 'POST' && body.action === 'query') {
-    console.log('get queried adventures')
+    console.log('get queried monsters')
     if (body.data && body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
     response = await db.collection("monsters").find(body.data).toArray()
   }
@@ -51,6 +51,15 @@ export default async function handler(req, res) {
           size: 1
         } }
       ).sort(sortCriteria)
+      .toArray()
+  }
+
+  if (method === 'POST' && body.action === 'fulllist') {
+    // returns queried monsters from the collection with all fields returned
+    console.log('get mini list of monsters')
+    if (body.data && body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
+    response = await db.collection("monsters").find(query)
+      .sort(sortCriteria)
       .toArray()
   }
 
