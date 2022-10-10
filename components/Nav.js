@@ -7,7 +7,7 @@ const Nav = () => {
     const { query, pathname, isReady } = useRouter()
     const path = pathname.split("/")[1]
     const id = query.id
-    const api = 'http://localhost:3000/api/'
+    const api = '/api/'
     // console.log(path)
     // console.log(id)
     const [ campaign, setCampaign ] = useState()
