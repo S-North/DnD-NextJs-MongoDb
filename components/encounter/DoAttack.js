@@ -38,7 +38,7 @@ export default function DoAttack ({tempCombatant}) {
         if ( targets && targets.length > 0 && toHitRoll ) {
         targets.forEach(target => {
             const combatant = combatants.filter(c => c._id === target)[0]
-            const diceRoll = toHitRoll[combatant.advantage]
+            const diceRoll = toHitRoll[combatant.advantage] + toHitRoll.bonus
             if (parseInt(diceRoll) == 20) {
             storeHits.push(combatant)
             }
@@ -162,7 +162,7 @@ export default function DoAttack ({tempCombatant}) {
             {combatantsHit.map(combatant => (
                 <div key={combatant._id} className={styles.hitList}>
                     <h2>{combatant.name}</h2>
-                    <p>{combatant.advantage} roll: <strong>{toHitRoll[combatant.advantage]}</strong> {toHitRoll[combatant.advantage] === 20 ? <strong>CRITICAL HIT</strong> : ''}</p>
+                    <p>{combatant.advantage} roll: <strong>{toHitRoll[combatant.advantage] + toHitRoll.bonus}</strong> {toHitRoll[combatant.advantage] === 20 ? <strong>CRITICAL HIT</strong> : ''}</p>
                     <p>hits AC: <strong>{combatant.ac}</strong></p>
                     <p>HP: <strong>{combatant.currentHp}</strong></p>
                     {tempCombatant.attack.damage1.enabled && <Button className="p-button-sm">{tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1.hdSides} + {tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}</Button>}
