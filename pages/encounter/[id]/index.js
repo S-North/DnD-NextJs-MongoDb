@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { withPageAuthRequired, useUser } from "@auth0/nextjs-auth0";
 
-import { useState, useEffect, createContext, useContext, useRef } from "react";
+import React, { useState, useEffect, createContext, useContext, useRef } from "react";
 import {
    abilityModifier,
    diceRoll,
@@ -231,12 +231,16 @@ const Encounter = ({ initialEncounter }) => {
       }
    };
 
+
+
+/** 
+* @summary updates the supplied character in the characters collection. It sends the updated character to the characters API, on success it updates the character state
+* @param {object} character - {character} is an object containing the full stats of the character
+* @param {object} update - update should be an object containing the changed fields in the character e.g. {currentHp: 15, conditions: [...conditions, 'blinded']}
+* @return {void} - returns nothing
+*/
    const editCharacter = async (character, updated) => {
-      // updates the selected character in the characters collection
-      // {character} is an object containing the full stats of the character, updated is an object containing the keys and values to update
-      // update should be an object containing the changed fields in the character e.g. {currentHp: 15, conditions: [...conditions, 'blinded']}
-      console.log(character);
-      console.log(updated);
+      // send the character update to the character api (mongodb editone)
       const response = await fetch(`${api}characters`, {
          method: "POST",
          body: JSON.stringify({
@@ -249,6 +253,8 @@ const Encounter = ({ initialEncounter }) => {
          headers: { "Content-type": "application/json; charset=UTF-8" },
       });
       const encCharacters = await response.json();
+
+      // if fetch returns a successful update, update the characters state
       if (encCharacters.acknowledged && encCharacters.modifiedCount > 0) {
          setCharacters([
             ...characters.filter((c) => c._id !== character._id),
@@ -807,8 +813,6 @@ const items = [
 
 const CombatantDetails = ({ selected, doDamage }) => {
    const context = useContext(EncounterContext)
-   console.log(selected)
-   console.log(context.encounter)
    const [ combatant, setCombatant ] = useState({})
    
    useEffect(() => {
@@ -1043,7 +1047,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
 
                         {/* generate clickable links for each of the skills of this ability stat */}
                         {["Acrobatics", "Sleight of Hand", "Stealth"].map(skillName => (
-                           <>
+                           <React.Fragment key={skillName}>
                            {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
                               <p
                                  className={encounterStyle.link}
@@ -1056,7 +1060,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                               >{skillName}
                               </p>
                            }
-                           </>
+                           </React.Fragment>
                         ))
                         }
 
@@ -1136,7 +1140,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
 
                         {/* generate clickable links for each of the skills of this ability stat */}
                         {["Arcana", "History", "Investigation", "Nature", "Religion"].map(skillName => (
-                           <>
+                           <React.Fragment key={skillName}>
                            {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
                               <p
                                  className={encounterStyle.link}
@@ -1149,7 +1153,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                               >{skillName}
                               </p>
                            }
-                           </>
+                           </React.Fragment>
                         ))
                         }
 
@@ -1193,7 +1197,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
 
                         {/* generate clickable links for each of the skills of this ability stat */}
                         {["Animal Handling", "Insight", "Medicine", "Perception", "Survival"].map(skillName => (
-                           <>
+                           <React.Fragment key={skillName}>
                            {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
                               <p
                                  className={encounterStyle.link}
@@ -1206,7 +1210,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                               >{skillName}
                               </p>
                            }
-                           </>
+                           </React.Fragment>
                         ))
                         }
 
@@ -1250,7 +1254,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
 
                         {/* generate clickable links for each of the skills of this ability stat */}
                         {["Deception", "Intimidation", "Performance", "Persuasion"].map(skillName => (
-                           <>
+                           <React.Fragment key={skillName}>
                            {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
                               <p
                                  className={encounterStyle.link}
@@ -1263,7 +1267,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                               >{skillName}
                               </p>
                            }
-                           </>
+                           </React.Fragment>
                         ))
                         }
 
@@ -1324,7 +1328,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                   </div>
                   <div className={styles.title_buttons}>
                      <Select
-                        options={conditionOptions} 
+                        options={conditionOptions}
                         value={combatant?.conditions?.map(condition => (
                            {value: condition, label: condition}
                         ))} 
@@ -1408,7 +1412,8 @@ const CombatantDetails = ({ selected, doDamage }) => {
                                                 name: combatant.name,
                                                 enemy: combatant.enemy,
                                              },
-                                             action
+                                             action,
+                                             {advantage: 'normal'}
                                           );
                                        }}
                                     >

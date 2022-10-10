@@ -41,9 +41,10 @@
 
 .target {
     display: grid;
-    grid-template-columns: 30px 70% 30%;
+    grid-template-columns: 2ch max-content auto 20% max-content;
     column-gap: 1ch;
     justify-items: left;
+    align-items: center;
     padding-left: 1.5ch;
 }
 
@@ -58,4 +59,39 @@
     padding: 0.5ch;
     margin-bottom: 1ch;
     box-shadow: 0 0 5px grey;
+}
+
+.section {
+    display: block;
+    background-color: var(--paper);
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.rollResults {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.rollResult {
+    display: grid;
+    /* grid-template-columns: repeat(4, 1fr); */
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    /* column-gap: 1ch; */
+    justify-items: left;
+    align-items: center;
+}
+
+.hitList {
+    display: grid;
+    /* grid-template-columns: repeat(7, 1fr); */
+    grid-template-columns: 1fr 1fr 0.5fr 0.5fr max-content max-content max-content;
+    /* grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column; */
+    /* column-gap: 1ch; */
+    justify-items: left;
+    align-items: center;
+    margin-bottom: 0.3rem
 }

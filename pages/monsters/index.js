@@ -276,7 +276,7 @@ const MonsterList = ({
          const response = await fetch(`${api}monsters`, {
             method: "POST",
             body: JSON.stringify({
-               action: "fulllist",
+               action: "minilist",
                data: { minCr: minCr, maxCr: maxCr, search: search, type: type },
                sort: { name: sortName, cr: sortCr },
             }),

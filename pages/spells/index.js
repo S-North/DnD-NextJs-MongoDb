@@ -204,7 +204,7 @@ const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, selec
         <div className={styles.item_list}>
         {currentItems && currentItems.map(spell => (
             <div key={spell._id} className={styles.list_item}>
-                <div className={styles.item_text} onClick={() => {setSelected(spell); setModal({on: true, view: "edit"})}}>
+                <div className={styles.item_text} onClick={() => {setSelected(spell); setModal({on: false, view: ""})}}>
                     <div className="link">
                             <h2>{spell.name}</h2>
                             <div style={{display: "flex"}}>
