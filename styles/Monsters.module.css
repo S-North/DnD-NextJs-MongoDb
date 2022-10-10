@@ -1,3 +1,4 @@
+/* list component */
 .monster_filter_container {
     display: flex;
     gap: 1ch;
@@ -71,3 +72,45 @@
 .action_dmg3Option3 { grid-area: dmg3Option3; }
 .action_dmg3Option4 { grid-area: dmg3Option4; }
 .action_save { grid-area: save;}
+
+/* Spells tab */
+.spellslots_container {
+    display: flex;
+    gap: 1ch;
+}
+
+.spell_list {
+    display: flex;
+    flex-direction: column;
+    gap: 1ch;
+    background-color: var(--paper);
+    opacity: 70%;
+}
+
+.spell_line {
+    width: 100%;
+    display: flex;
+    gap: 1ch;
+    align-content: baseline;
+}
+
+.delete_button {
+    cursor: pointer;
+}
+
+.skillList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.skillRow {
+    display: flex;
+    background-color: var(--paper);
+    gap: 0.5em;
+    align-items: center;
+}
+
+.skillRow label {
+    min-width: 5rem;
+}

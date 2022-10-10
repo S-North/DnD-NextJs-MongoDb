@@ -2,6 +2,7 @@ import connectToDatabase from '../utils/mongodb'
 import Link from 'next/link';
 import { useUser } from '@auth0/nextjs-auth0';
 import Nav from '../components/Nav';
+import Toolbar from '../components/Toolbar'
 import styles from '../styles/Home.module.css'
 
 export default function Home({ }) {
@@ -10,6 +11,7 @@ export default function Home({ }) {
   
   return (
     <>
+      <div style={{width: '100%'}}>
         <Nav location='home' user={user}></Nav>
 
         <section>
@@ -47,6 +49,8 @@ export default function Home({ }) {
               </div>
             </div>
         </section>
+      </div>
+      {/* <Toolbar /> */}
     </>
   )
 }

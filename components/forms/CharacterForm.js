@@ -4,25 +4,27 @@ import { races, classes } from '../../utils/Forms'
 const CharacterForm = ({data, updateFnc}) => {
     // console.log(updateFnc)
     const [ character, setCharacter ] = useState({
-        "name": "",
-        "description": "",
-        "class": classes[0],
-        "race": races[0],
-        "str": 10,
-        "dex": 10,
-        "con": 10,
-        "int": 10,
-        "wis": 10,
-        "cha": 10,
-        "ac": 0,
-        "maxHp": 0,
-        "currentHP": 0,
+        name: "",
+        description: "",
+        class: classes[0],
+        race: races[0],
+        str: 10,
+        dex: 10,
+        con: 10,
+        int: 10,
+        wis: 10,
+        cha: 10,
+        ac: 0,
+        maxHp: 0,
+        currentHP: 0,
+        conditions: [],
+        picture_url: ''
     });
 
     useEffect(() => {
-        if (data && !data.id) {
+        if (data && data._id) {
             setCharacter({...data})
-        } else setCharacter(data)
+        } 
     
       return () => {}
     }, [data])    
@@ -38,6 +40,12 @@ const CharacterForm = ({data, updateFnc}) => {
                         placeholder="name"
                         value={ character.name }
                         onChange={e => setCharacter({...character, "name": e.target.value})}
+                    />
+                    <input 
+                        type='text'
+                        placeholder="picture URL"
+                        value={ character.picture_url }
+                        onChange={e => setCharacter({...character, picture_url: e.target.value})}
                     />
                     <div className="flex-row">
                         {races && <select value={character.race} onChange={e => setCharacter({...character, "race": e.target.value})}>
