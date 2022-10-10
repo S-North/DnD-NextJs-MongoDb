@@ -3,9 +3,7 @@ import Toolbar from "./Toolbar"
 const Layout = ({children}) => {
     return (
         <>
-        
         {/* <Toolbar></Toolbar> */}
-        <Nav></Nav>
         <main>{children}</main>
         </>
     )

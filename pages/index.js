@@ -1,179 +1,50 @@
 import connectToDatabase from '../utils/mongodb'
-import { useState, useEffect } from 'react'
-import { truncate } from '../utils/utils'
-import Link from 'next/link'
-import { FaEdit, FaWindowClose } from 'react-icons/fa'
-import BasicForm from '../components/forms/BasicForm'
-
+import Link from 'next/link';
+import { useUser } from '@auth0/nextjs-auth0';
+import Nav from '../components/Nav';
+import styles from '../styles/Home.module.css'
 
 export default function Home({ }) {
-  const api = '/api/'
-  const [ campaigns, setCampaigns ] = useState([])
-  const [ encounters, setEncounters ] = useState([])
-  const [ selected, setSelected ] =useState();
-  const [ modal, setModal ] = useState({"type": "none", "on": false})
-  
-  useEffect(() => {
-    const getCampaigns = async () => {
-      const response = await fetch(`${api}campaigns`, {
-        method: "POST",
-        body: JSON.stringify(
-            {
-            action: 'query',
-            data: {}
-        }),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
-      }
-      })
-      const allcampaigns = await response.json(response)
-      setCampaigns(allcampaigns)
-    }
-    getCampaigns()
-
-    
-    const getRunningEncounters = async () => {
-      const response = await fetch(`${api}encounters`, {
-        method: "POST",
-        body: JSON.stringify(
-            {
-            action: 'query',
-            data: {
-                mode: "running"
-            }
-        }),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
-        }
-      })
-
-      const runningEncounters = await response.json()
-      // console.log(runningEncounters)
-      if (runningEncounters) setEncounters(runningEncounters)
-    }
-    getRunningEncounters()
-
-    return () => {}
-  }, [])
-
-  const updateCampaigns = async (mongoCollection, item) => {
-    const newCampaigns = null
-
-    // does the item have an id, if so do an editone api call
-    if (!item._id) {
-      // console.log('item has no id, add this to collection')
-      const response = await fetch(`${api}campaigns`, {
-        method: "POST",
-        body: JSON.stringify(
-            {
-            action: 'addone',
-            data: item
-        }),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
-        }
-      })
-      newCampaigns = await response.json()
-    }
-
-    if (item._id) {
-      // console.log('item has id, edit this item')
-      const response = await fetch(`${api}campaigns`, {
-        method: "POST",
-        body: JSON.stringify(
-            {
-            action: 'editone',
-            data: item
-        }),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
-        }
-      })
-      newCampaigns = await response.json()
-    }
-   
-    if (newCampaigns.acknowledged && newCampaigns.insertedId) {
-      setCampaigns([...campaigns, {...item, _id: newCampaigns.insertedId}])
-      setModal({on: false, type: ""})
-    } 
-    else if (newCampaigns.modifiedCount && newCampaigns.modifiedCount === 1) {
-      setCampaigns([...campaigns.filter(c => c._id !== item._id), item])
-      setModal({on: false, type: ""})
-    }
-  }
-
-  const deleteCampaign = async (mongoCollection, item) => {
-    // console.log(item)
-    const response = await fetch(`${api}delete`, {
-      method: "POST",
-      body: JSON.stringify(
-          {
-            collection: 'campaigns',
-            action: 'deleteone',
-            data: item
-      }),
-      headers: {
-          "Content-type": "application/json; charset=UTF-8"
-      }
-    })
-
-    const acknowledgement = await response.json()
-    if (acknowledgement.acknowledged && acknowledgement.deletedCount === 1) {
-      setCampaigns([...campaigns.filter(campaign => { return campaign._id !== item._id})])
-    }
-  } 
+  const { user, error, isLoading } = useUser();
+  console.log(user)
   
   return (
     <>
-        {/* modal window */}
-        {modal.on && <div id="modal-window" className="modal">
-            {/* Modal content */}
-                <div className="modal-content">
-                    <span className="close" onClick={() => {setModal({"on": false, "type": "none"})}}>&times;</span>
-                    {modal.type === "campaigns" &&
-                    <>
-                        <h3>Edit Campaign</h3>
-                        <BasicForm data={selected} updateFnc={updateCampaigns} mongoCollection={modal.type}></BasicForm>
-                    </>}
-                </div>
-        </div>}
+        <Nav location='home' user={user}></Nav>
 
         <section>
+            {!user && <div className="one-column">
+                <h2 className={styles.column_title}>Login</h2>
+                <div className={styles.columns}>
+                  <div className={styles.card}>
+                    <h2>Please login to access the application</h2>
+                    <Link href='/api/auth/login'><button className={styles.button_blue}>Log In</button></Link>
+                  </div>
+                </div>
+            </div>}
+
+            {user &&<div className="one-column">
+                <h2 className={styles.column_title}>Welcome {user.given_name ? user.given_name : user.nickname} {}</h2>
+                <div className={styles.card}>
+                  <p>Please go to the campaigns page to create and view campaigns</p>
+                  <Link href='/campaigns'><button className={styles.button_green}>Campaigns page</button></Link>
+                  </div>
+
+                  <div className={styles.card}>
+                  <p>Log out of you account</p>
+                  <Link href='/api/auth/logout'><button className={styles.button_red}>Log Out</button></Link>
+                </div>
+            </div>}
+
             <div className="one-column">
-                <h2>Campaigns</h2>
-                    <button className="green" onClick={() => {setSelected({"name": "", "description": ""}, setModal({"on": true, "type": "campaigns"}))}}>New</button>
-
-                    {campaigns.sort((a,b) => {return a.modified < b.modified}).map(campaign => (
-                        <div key={campaign._id} className="list-item">
-                            <Link key={campaign.id} href={`/campaign/${campaign._id}`}>
-                                <div className="link">
-                                        <h2>{campaign.name}</h2>
-                                        <em>{truncate(campaign.description, 50)}</em>
-                                </div>
-                            </Link>
-
-                            <div>
-                              <FaWindowClose style={{"cursor": "pointer"}} color="red"
-                                onClick={() => {deleteCampaign("campaigns", campaign)}} />
-
-                              <FaEdit style={{"cursor": "pointer"}} color="grey"
-                                onClick={() => {setSelected(campaign); setModal({"on": true, "type": "campaigns"})}} />
-                            </div>
-                        </div>
-                    ))}
-            </div>
-
-            <div className="one-column">
-                <h2>Running Encounters</h2>
-                {encounters && encounters
-                    .filter(e => { return e.mode === "running"})
-                    .map(encounter => (
-                        <div key={encounter._id} className="list-item">
-                            <Link href={`/encounter/${encounter._id}`}>
-                                <h2>{encounter.name}</h2>
-                                {/* <p>{`In ${campaigns.filter(c => c.id === encounter.campaignId).name} > ${adventures.list.filter(c => c.id === encounter.adventureId)[0].name}`}</p> */}
-                            </Link>
-                        </div>))}
+              <h2 className={styles.column_title}>Anouncements</h2>
+              <div className={styles.card}>
+                <h2>Expect Bugs</h2>
+                <p>This application is in alpha, which means it is not ready for production use. If you have access to the application it is for testing purposes only.</p>
+                <p>Expect bugs and unfinished features.</p>
+                <p>The developers would appreciate it if you can report any bugs you find to the<Link href='https://github.com/S-North/DnD-NextJs-MongoDb/issues'><a className={styles.link}> Github page here.</a></Link></p>
+                <p>Or if you don't have direct access to this private repo, <Link href='https://discord.gg/Xfbn67J6H9'><a className={styles.link}>join the discord</a></Link></p>
+              </div>
             </div>
         </section>
     </>

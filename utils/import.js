@@ -1,5 +1,6 @@
 import { crToXp } from './utils'
 import { damageTypes } from './Forms'
+import { v4 as uuidv4 } from 'uuid'
 
 export const importMonster = (monster) => {
     const dcRegex = /DC\s\d+\s\w+/g
@@ -118,9 +119,9 @@ export const importMonster = (monster) => {
                 let name = ""
                 let description = ""
                 let attack = 0
-                let damage1 = {}
-                let damage2 = {}
-                let damage3 = {}
+                let damage1 = {enabled: false}
+                let damage2 = {enabled: false}
+                let damage3 = {enabled: false}
                 let dc = {}
                 
                 // sometimes the text is a string, sometines its an array of strings
@@ -149,7 +150,7 @@ export const importMonster = (monster) => {
                 if (damagesText && damagesText.length > 0) {
                     damagesText.forEach((d, i) => {
                         // console.log(d)
-                    const damage = splitHitdice(d)
+                    const damage = {...splitHitdice(d), enabled: true}
                     // console.log(damage)
                     if (findDamageTypes(description)[i]) {damage.type = findDamageTypes(description)[i]}
                     damages.push(damage)
@@ -173,6 +174,7 @@ export const importMonster = (monster) => {
                 }
                 data.push(
                     {
+                        _id: uuidv4(),
                         name: name,
                         description: description,
                         attack: attack,
@@ -234,6 +236,7 @@ export const importMonster = (monster) => {
                 }
                 else {
                     data.push({
+                        _id: uuidv4(),
                         name: legend.name,
                         text: legend.text,
                         cost: cost
@@ -271,7 +274,11 @@ export const importMonster = (monster) => {
             if (!trait.text) trait.text = ""
             if (Array.isArray(trait.text)) trait.text = trait.text.join(' ')
 
-            buildTraits.push({name: trait.name, description: trait.text})
+            buildTraits.push({
+                _id: uuidv4(),
+                name: trait.name,
+                description: trait.text
+            })
         })
         return buildTraits
     }
@@ -283,8 +290,8 @@ export const importMonster = (monster) => {
                 case '1/4': return 0.25
                 case '1/8': return 0.125
             }
-        return parseInt(cr)
         }
+        return parseInt(cr)
     }
 
     return {

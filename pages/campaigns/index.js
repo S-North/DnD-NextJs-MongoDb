@@ -1,12 +1,15 @@
-import connectToDatabase from '../../../utils/mongodb'
+import connectToDatabase from '../../utils/mongodb'
+import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
 import { useState, useEffect } from 'react'
-import { truncate } from '../../../utils/utils'
+import { truncate } from '../../utils/utils'
 import Link from 'next/link'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
-import BasicForm from '../../../components/forms/BasicForm'
+import BasicForm from '../../components/forms/BasicForm'
+import Nav from '../../components/Nav';
 
 
-export default function Monster({ }) {
+export default withPageAuthRequired(function Campaign({ }) {
+  const { user, error, isLoading } = useUser();
   const api = '/api/'
   const [ campaigns, setCampaigns ] = useState([])
   const [ encounters, setEncounters ] = useState([])
@@ -20,7 +23,7 @@ export default function Monster({ }) {
         body: JSON.stringify(
             {
             action: 'query',
-            data: {}
+            data: {userId: user.sub}
         }),
         headers: {
             "Content-type": "application/json; charset=UTF-8"
@@ -39,7 +42,8 @@ export default function Monster({ }) {
             {
             action: 'query',
             data: {
-                mode: "running"
+                mode: "running",
+                userId: user.sub
             }
         }),
         headers: {
@@ -67,7 +71,7 @@ export default function Monster({ }) {
         body: JSON.stringify(
             {
             action: 'addone',
-            data: item
+            data: {...item, userId: user.sub}
         }),
         headers: {
             "Content-type": "application/json; charset=UTF-8"
@@ -93,7 +97,7 @@ export default function Monster({ }) {
     }
    
     if (newCampaigns.acknowledged && newCampaigns.insertedId) {
-      setCampaigns([...campaigns, {...item, _id: newCampaigns.insertedId}])
+      setCampaigns([...campaigns, {...item, userId: user.sub, _id: newCampaigns.insertedId}])
       setModal({on: false, type: ""})
     } 
     else if (newCampaigns.modifiedCount && newCampaigns.modifiedCount === 1) {
@@ -121,10 +125,11 @@ export default function Monster({ }) {
     if (acknowledgement.acknowledged && acknowledgement.deletedCount === 1) {
       setCampaigns([...campaigns.filter(campaign => { return campaign._id !== item._id})])
     }
-  } 
+  }
   
   return (
     <>
+        <Nav location='campaigns' user={user}></Nav>
         {/* modal window */}
         {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}
@@ -168,16 +173,72 @@ export default function Monster({ }) {
                 {encounters && encounters
                     .filter(e => { return e.mode === "running"})
                     .map(encounter => (
-                        <div key={encounter._id} className="list-item">
-                            <Link href={`/encounter/${encounter._id}`}>
-                                <h2>{encounter.name}</h2>
-                                {/* <p>{`In ${campaigns.filter(c => c.id === encounter.campaignId).name} > ${adventures.list.filter(c => c.id === encounter.adventureId)[0].name}`}</p> */}
-                            </Link>
+                        <div key={encounter._id} className="list-item">                          
+                            <EncounterLink encounter={encounter}></EncounterLink>
                         </div>))}
             </div>
         </section>
     </>
   )
+})
+
+export function EncounterLink ({encounter}) {
+  const api = '/api/'
+  const [ campaign, setCampaign ] = useState();
+  const [ adventure, setAdventure ] = useState();
+
+  const getEncounterDetails = async (encounter) => {
+    // get the campaign and adventure name for a specified encounter
+    const campaignResponse = await fetch(`${api}campaigns`, {
+      method: "POST",
+      body: JSON.stringify(
+          {
+          action: 'query',
+          data: {_id: encounter.campaignId}
+      }),
+      headers: {
+          "Content-type": "application/json; charset=UTF-8"
+      }
+    })
+    const campaign = await campaignResponse.json()
+    console.log(campaign)
+
+    const adventureResponse = await fetch(`${api}adventures`, {
+      method: "POST",
+      body: JSON.stringify(
+          {
+          action: 'query',
+          data: {_id: encounter.adventureId}
+      }),
+      headers: {
+          "Content-type": "application/json; charset=UTF-8"
+      }
+    })
+    const adventure = await adventureResponse.json()
+    console.log(adventure)
+
+    if (campaign && campaign.length > 0) setCampaign(campaign[0])
+    if (adventure && adventure.length > 0) setAdventure(adventure[0])
+  }
+
+  useEffect(() => {
+    if (encounter) {
+      getEncounterDetails(encounter)
+    }
+  
+    return () => {}
+  }, [encounter])
+  
+
+
+  return (
+    <Link href={`/encounter/${encounter._id}`}>
+      <div className='link'>
+        <h2>{encounter.name}</h2>
+        {campaign && adventure && <p>{campaign.name} > {adventure.name}</p>}
+      </div>
+    </Link>
+  );
 }
 
 export async function getServerSideProps(context) {

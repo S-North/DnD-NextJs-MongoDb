@@ -1,16 +1,18 @@
-import { connectToDatabase } from '../../../utils/mongodb'
+import connectToDatabase from '../../../utils/mongodb'
 import { ObjectId } from 'mongodb'
+import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
 import { useState, useEffect } from 'react'
 import { truncate } from '../../../utils/utils'
 import Link from 'next/link'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
 import BasicForm from '../../../components/forms/BasicForm'
 import CharacterForm from '../../../components/forms/CharacterForm'
+import Nav from '../../../components/Nav';
 
 
-const Campaign = ({campaign}) => {
+export default withPageAuthRequired(function Campaign({campaign}) {
     const api = '/api/'
-
+    const { user, error, isLoading } = useUser();
     const [ adventures, setAdventures ] = useState([])
     const [ encounters, setEncounters ] = useState([])
     const [ characters, setCharacters ] = useState([])    
@@ -24,7 +26,7 @@ const Campaign = ({campaign}) => {
                 body: JSON.stringify(
                     {
                     action: 'query',
-                    data: {campaignId: campaign._id}
+                    data: {campaignId: campaign._id, userId: user.sub}
                 }),
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"
@@ -63,7 +65,8 @@ const Campaign = ({campaign}) => {
                     action: 'query',
                     data: {
                         mode: "running",
-                        campaignId: campaign._id
+                        campaignId: campaign._id,
+                        userId: user.id
                     }
                 }),
                 headers: {
@@ -94,7 +97,7 @@ const Campaign = ({campaign}) => {
             body: JSON.stringify(
                 {
                 action: 'addone',
-                data: {...item, campaignId: campaign._id}
+                data: {...item, campaignId: campaign._id, userId: user.sub}
             }),
             headers: {
                 "Content-type": "application/json; charset=UTF-8"
@@ -103,7 +106,7 @@ const Campaign = ({campaign}) => {
         newAdventures = await response.json()
 
         if (newAdventures.acknowledged && newAdventures.insertedId) {
-            setAdventures([...adventures, {...item, _id: newAdventures.insertedId}])
+            setAdventures([...adventures, {...item, _id: newAdventures.insertedId, userId: user.sub}])
             setModal({on: false, type: ""})
           }
     }
@@ -164,7 +167,8 @@ const Campaign = ({campaign}) => {
                     ...character, 
                     campaignId: campaign._id,
                     enemy: 'pc',
-                    currentHp: character.maxHp
+                    currentHp: character.maxHp,
+                    userId: user.id
                 }
             }),
             headers: {
@@ -174,7 +178,14 @@ const Campaign = ({campaign}) => {
         updateCharacter = await response.json()
 
         if (updateCharacter.acknowledged && updateCharacter.insertedId) {
-            setCharacters([...characters, {...character, _id: updateCharacter.insertedId}])
+            setCharacters([
+                ...characters, 
+                {
+                    ...character, 
+                    _id: updateCharacter.insertedId, 
+                    enemy: 'pc',
+                    currentHp: character.maxHp,
+                    userId: user.sub}])
             setModal({on: false, type: ""})
           }
     }
@@ -222,6 +233,7 @@ const Campaign = ({campaign}) => {
     
     return (
        <>
+       <Nav location='campaign' campaign={campaign} user={user}></Nav>
        {/* modal window */}
        {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}
@@ -307,9 +319,7 @@ const Campaign = ({campaign}) => {
         </section>
        </>
     );
-}
-
-export default Campaign
+})
 
 export async function getServerSideProps(context) {
     const {db} = await connectToDatabase()

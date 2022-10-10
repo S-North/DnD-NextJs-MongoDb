@@ -1,15 +1,20 @@
-import { connectToDatabase } from '../../../utils/mongodb'
+import connectToDatabase from '../../../utils/mongodb'
+import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
+
 import { useState, useEffect } from 'react'
 import { truncate } from '../../../utils/utils'
 import Link from 'next/link'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
 import BasicForm from '../../../components/forms/BasicForm'
 import { ObjectId } from 'mongodb'
+import Nav from '../../../components/Nav';
 
 
 const Adventure = ({adventure}) => {
     const api = '/api/'
+    const { user, error, isLoading } = useUser();
     const [ encounters, setEncounters ] = useState([])
+    const [ campaign, setCampaign ] = useState()
     const [ selected, setSelected ] = useState();
     const [ modal, setModal ] = useState({"type": "none", "on": false})
     
@@ -20,7 +25,7 @@ const Adventure = ({adventure}) => {
                 body: JSON.stringify(
                     {
                     action: 'query',
-                    data: {adventureId: adventure._id}
+                    data: {adventureId: adventure._id, userId: user.id}
                 }),
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"
@@ -30,9 +35,26 @@ const Adventure = ({adventure}) => {
               setEncounters(allencounters)
         }
         getEncounters()
+
+        const getCampaign = async () => {
+            const response = await fetch(`${api}campaigns`, {
+                method: "POST",
+                body: JSON.stringify(
+                    {
+                    action: 'query',
+                    data: {_id: adventure.campaignId}
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+              }
+              })
+              const campaign = await response.json(response)
+              setCampaign(campaign[0])
+        }
+        getCampaign()
   
       return () => {}
-    }, [])
+    }, [adventure])
     
     const updateEncounters = async (mongoCollection, item) => {
         const newEncounters = null
@@ -51,7 +73,9 @@ const Adventure = ({adventure}) => {
                     initiative: [],
                     monsters: [],
                     campaignId: adventure.campaignId, 
-                    adventureId: adventure._id}
+                    adventureId: adventure._id,
+                    userId: user.sub
+                }
             }),
             headers: {
                 "Content-type": "application/json; charset=UTF-8"
@@ -114,6 +138,7 @@ const Adventure = ({adventure}) => {
     
     return (
        <>
+       <Nav location='adventure' campaign={campaign} adventure={adventure} user={user}></Nav>
        {/* modal window */}
        {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}
@@ -169,7 +194,7 @@ const Adventure = ({adventure}) => {
     );
 }
 
-export default Adventure
+export default withPageAuthRequired(Adventure)
 
 export async function getServerSideProps(context) {
     const {db} = await connectToDatabase()

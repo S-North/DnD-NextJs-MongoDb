@@ -22,33 +22,34 @@ const skillToAbility = (skill) => {
             return "cha"
     }
 }
-const sensesList = ["darkvision 30 ft.", "darkvision 60 ft.", "darkvision 120 ft.", "blindsight 60 ft.", "tremorsense", "truevision"]
+const sensesList = ["darkvision 30 ft.", "darkvision 60 ft.", "darkvision 120 ft.", "blindsight 60 ft.", "blindsight 120 ft.", "tremorsense", "truevision"]
 const monsterTemplate = {
     "name": "",
     "size": "",
     "titan": false,
     "description": "",
     "environment": "",
-    "type": "",
+    "type": "medium",
     "alignment": "",
-    "ac": undefined,
+    "ac": 8,
     "hitDice": {
-      "hdDice": undefined,
-      "hdSides": undefined,
-      "hdBbonus": undefined
+      "hdDice": 1,
+      "hdSides": 8,
+      "hdBonus": 0
     },
-    "speed": undefined,
-    "str": undefined,
-    "dex": undefined,
-    "con": undefined,
-    "int": undefined,
-    "wis": undefined,
-    "cha": undefined,
+    "speed": 30,
+    "str": 10,
+    "dex": 10,
+    "con": 10,
+    "int": 10,
+    "wis": 10,
+    "cha": 10,
     "saves": [],
     "skills": [],
-    "passive": undefined,
+    "passive": 10,
     "languages": [],
-    "cr": undefined,
+    "cr": 0,
+    "xp": 0,
     "vulnerabilities": [],
     "resistances": [],
     "damageImmunity": [],

@@ -7,7 +7,7 @@ export default function AddMonster ({ setSelected }) {
 
     const choseMonster = async (monster) => {
         console.log(monster)
-        const api = 'http://localhost:3000/api/'
+        const api = '/api/'
         const response = await fetch(`${api}monsters`, {
           method: "POST",
           body: JSON.stringify(
