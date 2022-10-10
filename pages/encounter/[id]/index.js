@@ -1413,7 +1413,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                                                 enemy: combatant.enemy,
                                              },
                                              action,
-                                             {advantage: 'none'}
+                                             {advantage: 'normal'}
                                           );
                                        }}
                                     >

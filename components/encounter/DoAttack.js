@@ -100,7 +100,7 @@ export default function DoAttack ({tempCombatant}) {
                         <p>{target.conditions?.map(condition => (<button key={condition}>{condition}</button>))}</p>
                         <input type='number' value={target.ac} onChange={(e) => setCombatants([...combatants.filter(item => {return item._id !== target._id}), {...target, ac: e.target.value}])}></input>
                         <span>
-                            {['Disadvantage', 'None', 'Advantage'].map(item => (
+                            {['Disadvantage', 'Normal', 'Advantage'].map(item => (
                                 <input type='radio' id={item.toLowerCase()} name={target._id} title={item} checked={item.toLowerCase() === target.advantage} onChange={() => setCombatants([...combatants.filter(combatant => {return combatant._id !== target._id}), {...target, advantage: item.toLowerCase()}])} />
                             ))}
                         </span>
@@ -123,7 +123,7 @@ export default function DoAttack ({tempCombatant}) {
                     <p>{target.conditions?.map(condition => (<button key={condition}>{condition}</button>))}</p>
                     <input type='number' value={target.ac} onChange={(e) => setCombatants([...combatants.filter(item => {return item._id !== target._id}), {...target, ac: e.target.value}])}></input>
                     <span>
-                            {['Disadvantage', 'None', 'Advantage'].map(item => (
+                            {['Disadvantage', 'Normal', 'Advantage'].map(item => (
                                 <input key={item} type='radio' id={item.toLowerCase()} name={target._id} title={item} checked={item.toLowerCase() === target.advantage} onChange={() => setCombatants([...combatants.filter(combatant => {return combatant._id !== target._id}), {...target, advantage: item.toLowerCase()}])} />
                             ))}
                         </span>
