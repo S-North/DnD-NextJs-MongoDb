@@ -31,12 +31,12 @@ export function ListResults ({ tempCombatant, combatantsHit, targets, toHitRoll,
         let damageResult
         if (hitResult < 20) {
             damageResult = {
-                damage: diceRoll(damage.hdSides, damage.hdDice, damage.hdBonus)[2], 
+                damage: diceRoll(damage.hdDice, damage.hdSides, damage.hdBonus)[2], 
                 type: damage.type}
         }
         else {
             damageResult = {
-                damage: (diceRoll(damage.hdSides, damage.hdDice, 0)[2] * 2) + damage.hdBonus, 
+                damage: (diceRoll(damage.hdDice, damage.hdSides, 0)[2] * 2) + damage.hdBonus, 
                 type: damage.type}
         }
         damageResult.vulnerable = damageResult.damage * 2
@@ -190,6 +190,17 @@ export default function DoAttack ({tempCombatant}) {
         }
         return number
     }
+
+    // If advantage/disadvantage is selected on the action page. Try to determine overall advantage with the attackers conditions
+    // const determineAttackerAdvantage = () => {
+    //     console.log(tempCombatant.options.advantage)
+    //     const advantageOverride = advantageToInt(tempCombatant.options.advantage)
+    //     const conditionAdvantage = advantageToInt(conditionAffectsAttack(attacker.conditions))
+    //     console.log(advantageOverride, conditionAdvantage)
+    //     if (advantageOverride - conditionAdvantage > 0) return advantageToInt('advantage')
+    //     else if (advantageOverride - conditionAdvantage < 0) return advantageToInt('disadvantage') 
+    //     else return advantageToInt('normal' )
+    // }
 
     const attackerAdvantage = advantageToInt(conditionAffectsAttack(attacker.conditions))
     const targetAdvantage = advantageToInt(conditionAffectsDefense(target.conditions))
