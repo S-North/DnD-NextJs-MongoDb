@@ -702,7 +702,7 @@ const MonsterView = ({ id }) => {
    );
 };
 
-const MonsterForm = ({ selected, setSelected, update }) => {
+const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal }) => {
    const api = "/api/";
    const [modal, setModal] = useState({ on: false, view: "" });
    const [tabs, setTabs] = useState("details");
@@ -1304,6 +1304,7 @@ const MonsterForm = ({ selected, setSelected, update }) => {
                onSubmit={(e) => {
                   e.preventDefault();
                   update(item);
+                  setParentModal({ on: false, type: "" })
                }}
             >
                {/* submit button */}

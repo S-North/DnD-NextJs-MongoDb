@@ -193,15 +193,17 @@ const Encounter = ({ initialEncounter }) => {
       }
    };
 
-   const getCombatantStats = async (combatant) => {
+   const getCombatantStats = (combatant) => {
+      console.log(combatant._id)
+      console.log(encounter.monsters.map(monster => {return monster._id}).includes(combatant._id))
       if (encounter.monsters.map(monster => {return monster._id}).includes(combatant._id)) {
          // return encounter.monsters.filter(monster => monster._id = combatant._id)[0]
          // console.log(encounter.monsters.filter(monster => monster._id = combatant._id)[0])
-         return encounter.monsters.filter(monster => monster._id = combatant._id)[0]
+         return encounter.monsters.filter(monster => monster._id === combatant._id)[0]
       } 
       if (characters.map(character => {return character._id}).includes(combatant._id)) {
          // console.log(characters.filter(character => character._id = combatant._id)[0])
-         return characters.filter(character => character._id = combatant._id)[0]
+         return characters.filter(character => character._id === combatant._id)[0]
       } else return selected
    }
    const selectMonster = (monster) => {
@@ -230,8 +232,6 @@ const Encounter = ({ initialEncounter }) => {
          setModal({ on: false, type: "" });
       }
    };
-
-
 
 /** 
 * @summary updates the supplied character in the characters collection. It sends the updated character to the characters API, on success it updates the character state
@@ -361,7 +361,7 @@ const Encounter = ({ initialEncounter }) => {
             ],
          });
       }
-      setModal({ type: "none", on: false });
+      // setModal({ type: "none", on: false });
    };
 
    const deleteCombatant = async (combatant) => {
@@ -519,25 +519,6 @@ const Encounter = ({ initialEncounter }) => {
          monsterList = [...campaign.monsters, monster]
       }
       console.log(monsterList)
-      // const response = await fetch(`${api}campaigns`, {
-      //    method: "POST",
-      //    body: JSON.stringify({
-      //       action: "editone",
-      //       data: {
-      //          ...campaign,
-      //          monsters: [...campaign.monsters, monster]
-      //       },
-      //    }),
-      //    headers: { "Content-type": "application/json; charset=UTF-8" },
-      // });
-      // const encCharacters = await response.json();
-      // if (encCharacters.acknowledged && encCharacters.modifiedCount > 0) {
-      //    setCampaign({
-      //       ...campaign,
-      //       monsters: [...campaign.monsters, monster]
-      //    });
-      //    setModal({ on: false, type: "" });
-      // }
    };
 
 
@@ -675,6 +656,7 @@ const items = [
             encounter,
             setEncounter,
             characters,
+            editCharacter,
             setCharacters,
             selected,
             setSelected,
@@ -682,7 +664,8 @@ const items = [
             modal,
             setModal,
             initiativeItemToFullStats,
-            saveMonster
+            saveMonster,
+            getCombatantStats
          }}
       >
          <>
@@ -731,6 +714,7 @@ const items = [
                               selected={selected}
                               setSelected={setSelected}
                               update={editMonster}
+                              setModal={setModal}
                            ></MonsterForm>
                         )}
                      {modal.type === "editCombatant" &&
@@ -840,12 +824,19 @@ const CombatantDetails = ({ selected, doDamage }) => {
       } else return abilityModifier(ability);
    };
 
-   const updateConditions = (target, conditions) => {
+   const addCondition = (target, conditions) => {
+      const currentRound = context.encounter.round
+      console.log(currentRound)
       const update = conditions.map(condition => (
-         condition.value
+         {
+            name: condition.value,
+            started: currentRound,
+            source: 'manually added',
+            duration: 1000
+         }
       )) 
       console.log(target, conditions)
-      // if (target.enemy === 'pc') context.setCharacters(target, {conditions: update})
+      if (target.enemy === 'pc') context.editCharacter(target, {conditions: update})
       if (target.enemy === 'monster') context.editMonster(target, {conditions: update})
    }
    const menu = useRef(null);
@@ -963,35 +954,18 @@ const CombatantDetails = ({ selected, doDamage }) => {
                            className={styles.btn}
                            title="Athletics"
                            onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    abilityModifier(combatant.str)
-                                 )[2]
+                              window.alert(diceRoll(1,20, abilityModifier(combatant.str))[2]
                               );
                            }}
-                        >
-                           {combatant.str}
+                        >{combatant.str}
                         </button>
 
                         <button
                            className={styles.btn}
                            onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    calcSaveThrow(
-                                       combatant,
-                                       "Str",
-                                       combatant.str
-                                    )
-                                 )[2]
-                              );
+                              window.alert( diceRoll( 1, 20, calcSaveThrow( combatant, "Str", combatant.str ) )[2] );
                            }}
-                        >
-                           {calcSaveThrow(combatant, "Str", combatant.str)}
+                        >{calcSaveThrow(combatant, "Str", combatant.str)}
                         </button>
 
                         {combatant.skills &&
@@ -1003,16 +977,12 @@ const CombatantDetails = ({ selected, doDamage }) => {
                                     calculateProficiencyBonus(combatant.cr)
                                  }
                                  onClick={() => {
-                                    window.alert(
-                                       diceRoll(
-                                          1,
-                                          20,
-                                          combatant.skills.filter(skill => {return skill.name.toLowerCase() === 'athletics'})[0].bonus
+                                    window.alert( diceRoll( 1, 20, 
+                                       combatant.skills.filter( skill => { return skill.name.toLowerCase() === 'athletics' } )[0].bonus
                                        )[2]
                                     );
                                  }}
-                              >
-                                 Athletics
+                              >Athletics
                               </p>
                            )}
                      </div>
@@ -1330,11 +1300,11 @@ const CombatantDetails = ({ selected, doDamage }) => {
                      <Select
                         options={conditionOptions}
                         value={combatant?.conditions?.map(condition => (
-                           {value: condition, label: condition}
+                           {value: condition.name, label: condition.name}
                         ))} 
                         placeholder={'Condition'} 
                         isMulti 
-                        onChange={(e) => {updateConditions(combatant, e)}}
+                        onChange={(e) => {addCondition(combatant, e)}}
                      />
                   </div>
                </div>
