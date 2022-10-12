@@ -12,7 +12,6 @@ export function ListResults ({ tempCombatant, combatantsHit, targets, toHitRoll,
 
     useEffect(() => {
       if (context?.encounter?.monsters && context.characters && combatantsHit) {
-        console.log('get the monsters')
         const monsters = []
         combatantsHit.forEach(combatant => {
             console.log(combatant)
@@ -60,9 +59,24 @@ export function ListResults ({ tempCombatant, combatantsHit, targets, toHitRoll,
                     <p>{combatant.advantage} roll: <strong>{toHitRoll[combatant.advantage] + toHitRoll.bonus}</strong> {toHitRoll[combatant.advantage] === 20 ? <strong>CRITICAL HIT</strong> : ''}</p>
                     <p>hits AC: <strong>{combatant.ac}</strong></p>
                     <p>HP: <strong>{combatant.currentHp}</strong></p>
-                    {tempCombatant.attack.damage1.enabled && <Button onClick={() => rollDamage(tempCombatant.attack.damage1, combatant)} className="p-button-sm">{tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1.hdSides} + {tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}</Button>}
-                    {tempCombatant.attack.damage2.enabled && <Button className="p-button-sm">{tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2.hdSides} + {tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}</Button>}
-                    {tempCombatant.attack.damage3.enabled && <Button className="p-button-sm">{tempCombatant.attack.damage3.hdDice}d{tempCombatant.attack.damage3.hdSides} + {tempCombatant.attack.damage3.hdBonus} {tempCombatant.attack.damage3.type}</Button>}
+                    {tempCombatant.attack.damage1.enabled && 
+                        <Button 
+                            onClick={() => rollDamage(tempCombatant.attack.damage1, combatant)} 
+                            className="p-button-sm">
+                            {tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1.hdSides} + {tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}
+                        </Button>}
+                    {tempCombatant.attack.damage2.enabled && 
+                        <Button 
+                            onClick={() => rollDamage(tempCombatant.attack.damage2, combatant)} 
+                            className="p-button-sm">
+                                {tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2.hdSides} + {tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}
+                        </Button>}
+                    {tempCombatant.attack.damage3.enabled && 
+                        <Button
+                            onClick={() => rollDamage(tempCombatant.attack.damage3, combatant)} 
+                            className="p-button-sm">
+                                {tempCombatant.attack.damage3.hdDice}d{tempCombatant.attack.damage3.hdSides} + {tempCombatant.attack.damage3.hdBonus} {tempCombatant.attack.damage3.type}
+                        </Button>}
                     
                 </div>
             ))}
@@ -260,7 +274,7 @@ export default function DoAttack ({tempCombatant}) {
     const applyDamage = (e, bundle) => {
         console.log(bundle)
         e.preventDefault()
-        let newHP = bundle.target.currentHp - bundle.modifiedDamage
+        let newHP = encounterContext.getCombatantStats(bundle.target).currentHp - bundle.modifiedDamage
         if (newHP < 0) newHP = 0
         console.log(newHP)
         setDamages([...damages.filter(item => {return item._id !== bundle._id}), {...bundle, applied: true}])
@@ -358,26 +372,6 @@ export default function DoAttack ({tempCombatant}) {
                 damages={damages} 
                 setDamages={setDamages} 
             />
-            {/* <section className={styles.section}>
-            {combatantsHit && combatantsHit.length > 0 && targets.length > 0 &&
-            <>
-            {combatantsHit.map(combatant => (
-                <div key={combatant._id} className={styles.hitList}>
-                    <h2>{combatant.name}</h2>
-                    <p>{combatant.advantage} roll: <strong>{toHitRoll[combatant.advantage] + toHitRoll.bonus}</strong> {toHitRoll[combatant.advantage] === 20 ? <strong>CRITICAL HIT</strong> : ''}</p>
-                    <p>hits AC: <strong>{combatant.ac}</strong></p>
-                    <p>HP: <strong>{combatant.currentHp}</strong></p>
-                    {tempCombatant.attack.damage1.enabled && <Button onClick={() => rollDamage(tempCombatant.attack.damage1, combatant)} className="p-button-sm">{tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1.hdSides} + {tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}</Button>}
-                    {tempCombatant.attack.damage2.enabled && <Button className="p-button-sm">{tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2.hdSides} + {tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}</Button>}
-                    {tempCombatant.attack.damage3.enabled && <Button className="p-button-sm">{tempCombatant.attack.damage3.hdDice}d{tempCombatant.attack.damage3.hdSides} + {tempCombatant.attack.damage3.hdBonus} {tempCombatant.attack.damage3.type}</Button>}
-                    
-                </div>
-            ))}
-            </>
-            }
-            {targets.length > 0 && combatantsHit.length === 0 && <h2>You didn't hit anyone :(</h2>}
-            {targets.length === 0 && <h2>You didn't select anyone! Go back and select at least one target</h2>}
-            </section> */}
 
             <section className={styles.section}>
                 <h2>Actions</h2>
