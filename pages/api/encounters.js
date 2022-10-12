@@ -20,6 +20,22 @@ export default async function handler(req, res) {
 
     response = await db.collection("encounters").find(req.body.data).toArray()
   }
+
+  if (method == 'POST' && body.action === 'minilist') {
+    console.log('get filtered encounters')
+    console.log(req.body.data)
+    if (body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
+
+    response = await db.collection("encounters").find(req.body.data, { projection: 
+      { 
+        _id: 1, 
+        name: 1, 
+        campaignId: 1,
+        adventureId: 1,
+        userId: 1,
+        mode: 1
+      } }).toArray()
+  }
   
   if (method == 'POST' && body.action === 'addone') {
     console.log('add 1 encounter')
