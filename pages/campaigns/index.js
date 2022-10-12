@@ -40,7 +40,7 @@ export default withPageAuthRequired(function Campaign({ }) {
         method: "POST",
         body: JSON.stringify(
             {
-            action: 'query',
+            action: 'minilist',
             data: {
                 mode: "running",
                 userId: user.sub

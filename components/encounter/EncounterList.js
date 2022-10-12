@@ -61,10 +61,10 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                             }}
                         >
                             <h2>AC: {getExpandedStats(combatant).ac} {getExpandedStats(combatant).name}</h2>
-                            {getExpandedStats(combatant).conditions && Array.isArray(getExpandedStats(combatant).conditions) && <p>{getExpandedStats(combatant).conditions.join(", ")}</p>}
+                            {getExpandedStats(combatant).conditions && Array.isArray(getExpandedStats(combatant).conditions) && <p>{getExpandedStats(combatant).conditions.map(condition => (condition.name)).join(", ")}</p>}
                         </div>
 
-                        <div className="hitpoints" style={{cursor: "pointer"}} onClick={() => { changeHP([combatant])} }>
+                        <div className="hitpoints" style={getExpandedStats(combatant).currentHp > 0 ? {cursor: "pointer"} : {cursor: "pointer", "backgroundColor": "red"}} onClick={() => { changeHP([combatant])} }>
                             <h2>
                             {getExpandedStats(combatant).currentHp}/{getExpandedStats(combatant).maxHp}
                             </h2>

@@ -60,7 +60,7 @@ export default function EditMonsters ({ addMonsters }) {
           />
           <button className={styles.subtract_button} onClick={() => changeRepeat('up')}><FaAngleRight /></button>
         </form>
-        <MonsterForm selected={encounter.selected} setSelected={encounter.setSelected} update={dbUpdate}></MonsterForm>
+        <MonsterForm selected={encounter.selected} setSelected={encounter.setSelected} update={dbUpdate} setModal={encounter.setModal}></MonsterForm>
       </>
     );
   };

@@ -86,11 +86,17 @@
 
 .hitList {
     display: grid;
-    /* grid-template-columns: repeat(7, 1fr); */
     grid-template-columns: 1fr 1fr 0.5fr 0.5fr max-content max-content max-content;
-    /* grid-auto-columns: minmax(0, 1fr);
-    grid-auto-flow: column; */
-    /* column-gap: 1ch; */
+    gap: 1rem;
+    justify-items: left;
+    align-items: center;
+    margin-bottom: 0.3rem
+}
+
+.damageList {
+    display: grid;
+    grid-template-columns: 1fr 4rem 1fr 4rem max-content max-content;
+    gap: 1rem;
     justify-items: left;
     align-items: center;
     margin-bottom: 0.3rem

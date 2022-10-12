@@ -16,7 +16,7 @@ const CharacterForm = ({data, updateFnc}) => {
         cha: 10,
         ac: 0,
         maxHp: 0,
-        currentHP: 0,
+        currentHp: 0,
         conditions: [],
         picture_url: ''
     });

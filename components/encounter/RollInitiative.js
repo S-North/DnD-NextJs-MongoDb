@@ -1,6 +1,9 @@
 import { useContext, useState, useEffect } from "react";
 import { EncounterContext } from "../../pages/encounter/[id]";
 import { abilityModifier, diceRoll } from "../../utils/utils";
+import styles from './RollInitiative.module.css';
+import { Button } from 'primereact/button';
+
 
 export default function RollInitiative ({ saveInitiative }) {
     const encounter = useContext(EncounterContext)
@@ -58,7 +61,8 @@ export default function RollInitiative ({ saveInitiative }) {
       ]);
     };
   
-    const rollMonsters = (id) => {
+    const rollMonsters = (e) => {
+      e.preventDefault()
       // roll all monster source groups. a d20 for each monster source group, then add individual bonus to the roll, update the initiative
       const init = initiative.filter((m) => {
         return m.enemy === "monster";
@@ -102,16 +106,19 @@ export default function RollInitiative ({ saveInitiative }) {
   
     return (
       <>
-        <h2>Roll Initiative</h2>
+        <h2 className={styles.title}>Roll Initiative</h2>
 
-        <form onSubmit={ (e) => { e.preventDefault(); saveInitiative( initiative ) } }>
+        <form className={styles.form} onSubmit={ (e) => { e.preventDefault(); saveInitiative( initiative ) } }>
   
             {/* section for player characters, enter initiative rolls here */}
+            <section className={styles.section}>
+              <h2>Player Characters</h2>
+              <hr />
             {initiative
                 .filter((p) => {return p.enemy === "pc"})
                 .sort((a, b) => (a._id > b._id ? 1 : -1)) // sorting on strings from here https://stackoverflow.com/a/43572944
                 .map((p) => (
-                    <div key={p._id} className="flex-row">
+                    <div key={p._id} className={styles.listRow}>
                         <div style={{ width: "30ch" }}>{p.name}</div>
                         <input type="number" id={p._id} name={p._id}
                             required
@@ -123,36 +130,45 @@ export default function RollInitiative ({ saveInitiative }) {
                     </div>
                 )
             )}
+            </section>
     
-            <input type="button" className="btn green"
+    
+            <section className={styles.section}>
+              <Button 
+                label="Roll All" className="p-button-raised b-button-sm"
                 value="roll monsters"
-                onClick={(e) => {rollMonsters()}} />
-    
-            {sources.map((g) => (
-            <div key={g}>
-                <hr />
-                {initiative.filter((c) => { return c.source === g })
-                .sort((a, b) => (a.name > b.name ? 1 : -1)) // sorting on strings from here https://stackoverflow.com/a/43572944
-                .map((c) => (
-                    <div key={c._id} className="flex-row">
-                    <div style={{ width: "30ch" }}>
-                        {encounter.encounter.monsters.filter((m) => { return m._id === c._id })[0].name}
-                    </div>
-                    <input type="button" className="btn green" style={{ width: "10ch" }}
-                        value={abilityModifier(encounter.encounter.monsters.filter((m) => { return m._id === c._id })[0].dex)}
-                        onClick={() => {rollMonster(c._id, c.source)}}                  
-                    />
-                    <p>{c.init}</p>
-                    </div>
-                ))}
-                {/* <div className="flex-row">
-                            <input className="btn green" type="button" value="Roll Group" onClick={() => {rollG(g)}}></input>
-                        </div> */}
-            </div>
-            ))}
+                onClick={(e) => {rollMonsters(e)}} />
+              {sources.map((g) => (
+              <div key={g}>
+                  <hr />
+                  {initiative.filter((c) => { return c.source === g })
+                  .sort((a, b) => (a.name > b.name ? 1 : -1)) // sorting on strings from here https://stackoverflow.com/a/43572944
+                  .map((c) => (
+                      <div key={c._id} className={styles.monsterRow}>
+                      <div style={{ width: "30ch" }}>
+                          {encounter.encounter.monsters.filter((m) => { return m._id === c._id })[0].name}
+                      </div>
+                      {/* <input type="button" className="btn green" style={{ width: "10ch" }}
+                          value={abilityModifier(encounter.encounter.monsters.filter((m) => { return m._id === c._id })[0].dex)}
+                          onClick={() => {rollMonster(c._id, c.source)}}                  
+                      /> */}
+                      <Button label={abilityModifier(encounter.encounter.monsters.filter((m) => { return m._id === c._id })[0].dex)} className="btn green" style={{ width: "10ch" }}
+                          value={abilityModifier(encounter.encounter.monsters.filter((m) => { return m._id === c._id })[0].dex)}
+                          onClick={(e) => {e.preventDefault(); rollMonster(c._id, c.source)}}                  
+                      />
+                      <input type='number' value={c.init} className={styles.input}></input>
+                      </div>
+                  ))}
+                  {/* <div className="flex-row">
+                              <input className="btn green" type="button" value="Roll Group" onClick={() => {rollG(g)}}></input>
+                          </div> */}
+              </div>
+              ))}
+            </section>
+            
             <hr />
     
-            <input type="submit" className="btn green" value="Save" />
+            <Button type="submit" className="b-button-sm b-button-rounded p-button-success" label="Run" />
 
         </form>
       </>
