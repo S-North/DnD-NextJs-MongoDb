@@ -36,6 +36,9 @@ import { SpellList } from "../spells";
 import { FileUpload } from 'primereact/fileupload';
 import { Button } from 'primereact/button';
 import { TieredMenu } from 'primereact/tieredmenu';
+import { RadioButton } from 'primereact/radiobutton';
+// import { Slider } from 'primereact/slider';
+// import { InputText } from 'primereact/inputtext';
 import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
 import "primereact/resources/primereact.min.css";                  //core css
 import "primeicons/primeicons.css";                                //icons
@@ -205,9 +208,9 @@ export default withPageAuthRequired(function Monsters({}) {
                <MonsterList
                   importMonsterManual={importMonsterManual}
                   addMonster={editMonster}
-                  deleteMonster={deleteMonster}
+                  // deleteMonster={deleteMonster}
                   setSelected={setSelected}
-                  editMonster={editMonster}
+                  // editMonster={editMonster}
                   setModal={setModal}
                   updated={updated}
                ></MonsterList>
@@ -226,6 +229,7 @@ export default withPageAuthRequired(function Monsters({}) {
                
                {importMessage.length > 0 && <p>{importMessage}</p>}
                <FileUpload
+                  disabled
                   accept="application/json"
                   customUpload 
                   uploadHandler={(e) => getFile(e.files[0])}
@@ -244,18 +248,26 @@ const MonsterList = ({
    setSelected,
    setModal,
    updated,
-}) => {
+   extraMonsters
+   }) => {
+
+   MonsterList.defaultProps = {
+      extraMonsters: []
+   }
+
    const api = "/api/";
-   const [monsters, setMonsters] = useState([]);
+   const [ monsters, setMonsters] = useState([]);
 
    // manage the query state
-   const [search, setSearch] = useState("");
-   const [minCr, setminCr] = useState(0);
-   const [maxCr, setMaxCr] = useState(30);
-   const [type, setType] = useState();
-   const [sortName, setSortName] = useState("asc");
-   const [sortCr, setSortCr] = useState("off");
-   const [query, setQuery] = useState({
+   const [ search, setSearch ] = useState("");
+   // const [ crRange, setCrRange ] = useState([0, 30])
+   const [ minCr, setminCr ] = useState(0);
+   const [ maxCr, setMaxCr ] = useState(30);
+   const [ monsterSource, setMonsterSource ] = useState('both')
+   const [ type, setType ] = useState('none');
+   const [ sortName, setSortName ] = useState("asc");
+   const [ sortCr, setSortCr ] = useState("off");
+   const [ query, setQuery ] = useState({
       minCr: minCr,
       maxCr: maxCr,
       search: search,
@@ -282,14 +294,24 @@ const MonsterList = ({
             }),
             headers: { "Content-type": "application/json; charset=UTF-8" },
          });
-         const allMonsters = await response.json();
+         let allMonsters = await response.json();
          setItemOffset(0);
-         setMonsters(allMonsters);
+         if (extraMonsters) allMonsters = [...allMonsters, ...extraMonsters]
+         setMonsters(
+            allMonsters
+            .sort((a,b) => (
+            (sortName === 'asc' || sortName === 'desc') ? (sortName === 'asc' ? a.name > b.name : a.name < b.name)
+            : ((sortCr === 'asc' || sortCr === 'desc') && (sortCr === 'asc' ? a.cr > b.cr : a.cr < b.cr) )
+            ))
+            .filter(monster => {return type !== 'none' ? monster.type === type : true})
+            .filter(monster => {return monsterSource === 'custom' ? monster.sourceBook === 'Custom Edited' : (monsterSource === 'official' ? monster.sourceBook !== 'Custom Edited' : true)
+          })
+         );
       };
       getMonsters();
 
       return () => {};
-   }, [minCr, maxCr, search, sortName, sortCr, type, updated]);
+   }, [minCr, maxCr, search, sortName, sortCr, type, monsterSource, updated]);
 
    useEffect(() => {
       // Fetch items from another resources.
@@ -327,7 +349,7 @@ const MonsterList = ({
    };
 
    const getMonster = async (monster) => {
-      console.log(monster);
+      console.log('get monster stats');
       const response = await fetch(`${api}monsters`, {
          method: "POST",
          body: JSON.stringify({
@@ -381,13 +403,13 @@ const MonsterList = ({
             {
                <div style={{'display': 'flex', 'flexDirection': 'column', 'gap': '0.5rem'}}>
                <button
+                  disabled
                   className={styles.btn_add_new_monster}
                   onClick={() => {
                      setSelected(monsterTemplate);
                      setModal({ on: true, view: "edit" });
                   }}
-               >
-                  New Monster
+               >New Monster
                </button>
                <button
                   className={styles.btn_add_new_monster}
@@ -397,15 +419,18 @@ const MonsterList = ({
             }
 
             {/* filtering the results */}
-            <details open>
-               <summary>Filter & Search</summary>
-               <div className="flex-row">
+            <details open style={{"width": "100%"}}>
+               <summary style={{"display": "flex", "gap": "1rem", "alignItems": "baseline"}}>
+                  <h2 style={{"width": "8rem"}}>Filter & Search</h2> 
                   <input
                      type="text"
                      placeholder="search"
                      value={search}
                      onChange={(e) => setSearch(e.target.value)}
                   ></input>
+               </summary>
+               <div className="flex-row">
+                  {/* <Slider value={crRange} onChange={(e) => setCrRange(e.value)} range style={{"width": "100%"}} min={0} max={30} step={1}/> */}
                   <select
                      value={minCr}
                      onChange={(e) => {
@@ -432,6 +457,21 @@ const MonsterList = ({
                         </option>
                      ))}
                   </select>
+                  {/* <fieldset> */}
+                     {/* <legend>Source</legend> */}
+                     <label>
+                        <RadioButton value="official" name="source" onChange={(e) => setMonsterSource(e.value)} checked={monsterSource === 'official'} style={{"margin-right": "0.5rem"}} />
+                        Offical
+                     </label>
+                     <label>
+                        <RadioButton value="custom" name="source" onChange={(e) => setMonsterSource(e.value)} checked={monsterSource === 'custom'} style={{"margin-right": "0.5rem"}} />
+                        Custom
+                     </label>
+                     <label>
+                        <RadioButton value="both" name="source" onChange={(e) => setMonsterSource(e.value)} checked={monsterSource === 'both'} style={{"margin-right": "0.5rem"}} />
+                        Both
+                     </label>
+                  {/* </fieldset> */}
                </div>
                <div className="flex-row">
                   <select
@@ -494,8 +534,10 @@ const MonsterList = ({
          </div>
 
          <div className={styles.item_list}>
-            {currentItems &&
-               currentItems.map((monster) => (
+            {currentItems?.length > 0 &&
+               currentItems
+                  .filter(monster => {return monster.name.toLowerCase().includes(search.toLowerCase())})
+                  .map((monster) => (
                   <div key={monster._id} className={styles.list_item}>
                      <div
                         key={monster.id}
@@ -729,9 +771,9 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal }
       selected.skills.forEach(skill => {
          currentSkills.push(skill.name)
       })
-      console.log(currentSkills)
+      // console.log(currentSkills)
       const items = skillList.filter(skill => {return !currentSkills.includes(skill)})
-      console.log(items)
+      // console.log(items)
       return items.map(item => (
          {
             label: item,

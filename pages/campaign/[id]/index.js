@@ -1,7 +1,10 @@
 import connectToDatabase from '../../../utils/mongodb'
 import { ObjectId } from 'mongodb'
+
 import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
+
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import { truncate } from '../../../utils/utils'
 import Link from 'next/link'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
@@ -10,9 +13,12 @@ import CharacterForm from '../../../components/forms/CharacterForm'
 import Nav from '../../../components/Nav';
 
 
-export default withPageAuthRequired(function Campaign({campaign}) {
+export default withPageAuthRequired(function Campaign({ initialCampaign }) {
+    const router = useRouter()
+    console.log(router.query.id)
     const api = '/api/'
     const { user, error, isLoading } = useUser();
+    const [ campaign, setCampaign ] = useState({})
     const [ adventures, setAdventures ] = useState([])
     const [ encounters, setEncounters ] = useState([])
     const [ characters, setCharacters ] = useState([])    
@@ -78,6 +84,31 @@ export default withPageAuthRequired(function Campaign({campaign}) {
         if (runningEncounters) setEncounters(runningEncounters)
         }
         getRunningEncounters()
+    
+      return () => {}
+    }, [campaign])
+    
+    useEffect(() => {
+        const getCampaign = async () => {
+            const response = await fetch(`${api}campaigns`, {
+                method: "POST",
+                body: JSON.stringify(
+                    {
+                    action: 'query',
+                    data: {_id: router.query.id}
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })        
+            const parsed = await response.json()
+    
+            if (parsed && parsed.length > 0) {
+                setCampaign(parsed[0])
+            }
+        }
+        getCampaign()
+        
     
       return () => {}
     }, [])
@@ -230,7 +261,37 @@ export default withPageAuthRequired(function Campaign({campaign}) {
         setCharacters([...characters.filter(c => { return c._id !== character._id})])
     }
   }
-    
+
+  const deleteMonster = async (monster) => {
+    const response = await fetch(`${api}campaigns`, {
+        method: "POST",
+            body: JSON.stringify(
+                {
+                collection: 'campaigns',
+                action: 'edit monster',
+                data: {
+                    campaignId: campaign._id,
+                    monster: monster
+                }
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+    })
+
+    const acknowledgement = await response.json()
+    if (acknowledgement && acknowledgement.acknowledged && acknowledgement.modifiedCount > 0) {
+        console.log(acknowledgement)
+        setCampaign(
+            {
+            ...campaign, 
+            monsters: [ ...campaign.monsters.filter( c => { return c._id !== monster._id } ) ]
+            }   
+        )
+    }
+
+  }
+     
     return (
        <>
        <Nav location='campaign' campaign={campaign} user={user}></Nav>
@@ -316,6 +377,28 @@ export default withPageAuthRequired(function Campaign({campaign}) {
                             </Link>
                         </div>))}
             </div>
+
+            <div className="one-column">
+                <h2>Campaign Monsters</h2>
+                {campaign?.monsters?.sort((a,b) => {return a.name > b.name}).map(monster => (
+                        <div key={monster._id} className="list-item">
+                            <Link key={monster._id} href={`/monster/${monster._id}`}>
+                                <div className="link">
+                                        <h2>{monster.name}</h2>
+                                        <em>{truncate(monster.description, 50)}</em>
+                                </div>
+                            </Link>
+
+                            <div>
+                              <FaWindowClose style={{"cursor": "pointer"}} color="red"
+                                onClick={() => {deleteMonster(monster)}} />
+
+                              <FaEdit style={{"cursor": "pointer"}} color="grey"
+                                onClick={() => {setSelected(adventure); setModal({"on": true, "type": "adventures"})}} />
+                            </div>
+                        </div>
+                    ))}
+            </div>
         </section>
        </>
     );
@@ -328,6 +411,6 @@ export async function getServerSideProps(context) {
     const campaign = await JSON.parse(JSON.stringify(response))
 
     return {
-        props: {campaign: campaign[0]}
+        props: {initialCampaign: campaign[0]}
     }
 }

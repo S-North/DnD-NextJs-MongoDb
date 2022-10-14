@@ -19,7 +19,7 @@ import { conditions } from "../../../utils/Forms";
 import styles from "../../../styles/CombatantDetails.module.css";
 import encounterStyle from "../../../styles/Encounter.module.css";
 
-import { MonsterForm } from "../../monsters";
+import monsters, { MonsterForm } from "../../monsters";
 import CharacterForm from "../../../components/forms/CharacterForm";
 import InitiativeList from "../../../components/encounter/InitiativeList";
 import AddCharacter from "../../../components/encounter/AddCharacter";
@@ -38,6 +38,8 @@ import { Menu } from 'primereact/menu';
 import { Button } from 'primereact/button';
 import { SplitButton } from 'primereact/splitbutton';
 import { TieredMenu } from 'primereact/tieredmenu';
+import { Toast } from 'primereact/toast';
+import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
 import "primereact/resources/primereact.min.css";                  //core css
 import "primeicons/primeicons.css";                                //icons
@@ -177,6 +179,29 @@ const Encounter = ({ initialEncounter }) => {
       return () => {};
    }, [encounter.turn, characters]);
 
+   const saveCustomMonster = async (monster) => {
+      console.log(monster)
+      monster = {...monster, sourceBook: 'Custom Edited', campaignMonster: true}
+      console.log(monster)
+      const DATA = {
+         campaignId: encounter.campaignId,
+         monster: monster
+      }
+      const response = await fetch(`${api}campaigns`, {
+         method: "POST",
+         body: JSON.stringify({
+            action: "append monster",
+            data: DATA,
+         }),
+         headers: { "Content-type": "application/json; charset=UTF-8" },
+      });
+      const reply = await response.json();
+      console.log(reply)
+      if (reply.confirm.acknowledged && reply.confirm.modifiedCount > 0) {
+         setCampaign({...campaign, monsters: [...campaign.monsters, reply.monster]})
+      }
+   }
+
    const initiativeItemToFullStats = (initItem) => {
       if (characters) {
          switch (true) {
@@ -206,6 +231,7 @@ const Encounter = ({ initialEncounter }) => {
          return characters.filter(character => character._id === combatant._id)[0]
       } else return selected
    }
+
    const selectMonster = (monster) => {
       // utility function to handle setting the selected item state. Should propably rename as this is used for monsters, characters, npcs, etc
       setSelected(monster);
@@ -522,137 +548,138 @@ const Encounter = ({ initialEncounter }) => {
    };
 
 
-const items = [
-   {
-      label: editButton.state,
-      icon: editButton.icons,
-      command: () => editEncounterState()
-   },
-   {
-      label:'Encounter',
-      icon:'pi pi-fw pi-file',
-      items:[
-         {
-            label:'Duplicate',
-            icon:'pi pi-fw pi-file-export',
-            command: ()=>{ window.confirm("Copy this encounter to a new encounter?"); }
-         },
-         {
-            label:'Delete',
-            icon:'pi pi-fw pi-trash',
-            command: ()=>{ window.confirm("Are you sure you want to delete this encounter?"); }
-         },
-         {
-            separator:true
-         },
-         {
-            label:'Export',
-            icon:'pi pi-fw pi-external-link',
-            command:()=>{ window.confirm("Are you sure you want to export this encounter>"); }
-         }
-      ]
-   },
-   {
-      label:'Edit',
-      icon:'pi pi-fw pi-pencil',
-      items:[
-         {
-            label:'Left',
-            icon:'pi pi-fw pi-align-left'
-         },
-         {
-            label:'Right',
-            icon:'pi pi-fw pi-align-right'
-         },
-         {
-            label:'Center',
-            icon:'pi pi-fw pi-align-center'
-         },
-         {
-            label:'Justify',
-            icon:'pi pi-fw pi-align-justify'
-         },
+   const items = [
+      {
+         label: editButton.state,
+         icon: editButton.icons,
+         command: () => editEncounterState()
+      },
+      {
+         label:'Encounter',
+         icon:'pi pi-fw pi-file',
+         items:[
+            {
+               label:'Duplicate',
+               icon:'pi pi-fw pi-file-export',
+               command: ()=>{ window.confirm("Copy this encounter to a new encounter?"); }
+            },
+            {
+               label:'Delete',
+               icon:'pi pi-fw pi-trash',
+               command: ()=>{ window.confirm("Are you sure you want to delete this encounter?"); }
+            },
+            {
+               separator:true
+            },
+            {
+               label:'Export',
+               icon:'pi pi-fw pi-external-link',
+               command:()=>{ window.confirm("Are you sure you want to export this encounter>"); }
+            }
+         ]
+      },
+      {
+         label:'Edit',
+         icon:'pi pi-fw pi-pencil',
+         items:[
+            {
+               label:'Left',
+               icon:'pi pi-fw pi-align-left'
+            },
+            {
+               label:'Right',
+               icon:'pi pi-fw pi-align-right'
+            },
+            {
+               label:'Center',
+               icon:'pi pi-fw pi-align-center'
+            },
+            {
+               label:'Justify',
+               icon:'pi pi-fw pi-align-justify'
+            },
 
-      ]
-   },
-   {
-      label:'Users',
-      icon:'pi pi-fw pi-user',
-      items:[
-         {
-            label:'New',
-            icon:'pi pi-fw pi-user-plus',
+         ]
+      },
+      {
+         label:'Users',
+         icon:'pi pi-fw pi-user',
+         items:[
+            {
+               label:'New',
+               icon:'pi pi-fw pi-user-plus',
 
-         },
-         {
-            label:'Delete',
-            icon:'pi pi-fw pi-user-minus',
+            },
+            {
+               label:'Delete',
+               icon:'pi pi-fw pi-user-minus',
 
-         },
-         {
-            label:'Search',
-            icon:'pi pi-fw pi-users',
-            items:[
-               {
-                  label:'Filter',
-                  icon:'pi pi-fw pi-filter',
-                  items:[
-                     {
-                        label:'Print',
-                        icon:'pi pi-fw pi-print'
-                     }
-                  ]
-               },
-               {
-                  icon:'pi pi-fw pi-bars',
-                  label:'List'
-               }
-            ]
-         }
-      ]
-   },
-   {
-      label:'Events',
-      icon:'pi pi-fw pi-calendar',
-      items:[
-         {
-            label:'Edit',
-            icon:'pi pi-fw pi-pencil',
-            items:[
-               {
-                  label:'Save',
-                  icon:'pi pi-fw pi-calendar-plus'
-               },
-               {
-                  label:'Delete',
-                  icon:'pi pi-fw pi-calendar-minus'
-               },
+            },
+            {
+               label:'Search',
+               icon:'pi pi-fw pi-users',
+               items:[
+                  {
+                     label:'Filter',
+                     icon:'pi pi-fw pi-filter',
+                     items:[
+                        {
+                           label:'Print',
+                           icon:'pi pi-fw pi-print'
+                        }
+                     ]
+                  },
+                  {
+                     icon:'pi pi-fw pi-bars',
+                     label:'List'
+                  }
+               ]
+            }
+         ]
+      },
+      {
+         label:'Events',
+         icon:'pi pi-fw pi-calendar',
+         items:[
+            {
+               label:'Edit',
+               icon:'pi pi-fw pi-pencil',
+               items:[
+                  {
+                     label:'Save',
+                     icon:'pi pi-fw pi-calendar-plus'
+                  },
+                  {
+                     label:'Delete',
+                     icon:'pi pi-fw pi-calendar-minus'
+                  },
 
-            ]
-         },
-         {
-            label:'Archieve',
-            icon:'pi pi-fw pi-calendar-times',
-            items:[
-               {
-                  label:'Remove',
-                  icon:'pi pi-fw pi-calendar-minus'
-               }
-            ]
-         }
-      ]
-   },
-   {
-      label:'Archive',
-      icon:'pi pi-fw pi-power-off',
-      command:()=>{ window.confirm("Are you sure you want to mark this encounter as complete?"); }
-   }
-];
+               ]
+            },
+            {
+               label:'Archieve',
+               icon:'pi pi-fw pi-calendar-times',
+               items:[
+                  {
+                     label:'Remove',
+                     icon:'pi pi-fw pi-calendar-minus'
+                  }
+               ]
+            }
+         ]
+      },
+      {
+         label:'Archive',
+         icon:'pi pi-fw pi-power-off',
+         command:()=>{ window.confirm("Are you sure you want to mark this encounter as complete?"); }
+      }
+   ];
 
 
    return (
       <EncounterContext.Provider
          value={{
+            campaign,
             encounter,
             setEncounter,
             characters,
@@ -665,7 +692,8 @@ const items = [
             setModal,
             initiativeItemToFullStats,
             saveMonster,
-            getCombatantStats
+            getCombatantStats,
+            saveCustomMonster
          }}
       >
          <>
@@ -798,11 +826,31 @@ const items = [
 const CombatantDetails = ({ selected, doDamage }) => {
    const context = useContext(EncounterContext)
    const [ combatant, setCombatant ] = useState({})
+   const toast = useRef(null);
+   const showSticky = (title, message) => {
+      toast.current.show({severity: 'success', summary: title, detail: message, life: 5000});
+   }
+   const [visible, setVisible] = useState(false);
+   const confirm1 = (event) => {
+      confirmPopup({
+          target: event.currentTarget,
+          message: 'Are you sure you want to proceed?',
+          icon: 'pi pi-exclamation-triangle',
+          accept,
+          reject
+      });
+  };
    
    useEffect(() => {
       if (selected?.enemy === 'monster' && context.encounter) {
       setCombatant(context.encounter.monsters.filter(monster => {return selected._id === monster._id})[0])
       }
+      // if (selected?.enemy === 'monster' && selected.sourceBook === 'Custom Edited' && context.encounter) {
+      //    console.log('set the combatant view to...')
+      //    console.log(context.campaign.monsters.filter(monster => {return selected._id === monster._id}))
+      //    // console.log(context.campaign.monsters.filter(monster => {return selected._id === monster._id})[0])
+      //    setCombatant(context.campaign.monsters.filter(monster => {return selected._id === monster._id})[0])
+      //    }
       if (selected?.enemy === 'pc' && context.characters) {
       setCombatant(context.characters.filter(character => {return selected._id === character._id})[0])
       }
@@ -812,9 +860,9 @@ const CombatantDetails = ({ selected, doDamage }) => {
    
 
    const [ tab, setTab ] = useState("details");
-    const conditionOptions = conditions.map(condition => (
-      {value: condition, label: condition}
-    ))
+   const conditionOptions = conditions.map(condition => (
+   {value: condition, label: condition}
+   ))
 
    const calcSaveThrow = (combatant, save, ability) => {
       if (context?.combatant?.saves?.includes(save)) {
@@ -843,7 +891,9 @@ const CombatantDetails = ({ selected, doDamage }) => {
 
    return (
       <>
-         <div className={styles.mainpanel}>
+         <Toast ref={toast} position="bottom-right" />
+         
+         {combatant &&<div className={styles.mainpanel}>
             <div className={encounterStyle.title}>
                {combatant.picture_url && (
                   <a href={combatant.picture_url} target='blank'>
@@ -877,7 +927,17 @@ const CombatantDetails = ({ selected, doDamage }) => {
                      icon: 'pi pi-fw pi-file-export', 
                      label: 'Save Custom',
                      command: () => {
-                        context.saveMonster(combatant)
+                        let confirm = true
+                        if (context.campaign.monsters?.map(monster => (monster.name)).includes(combatant.name)) {
+                           confirm = window.confirm(`There is already a monster called ${combatant.name} in the campaign monsters. Are you sure you wan't to add this duplicate name?`)
+                        }
+                        if (confirm) {
+                           console.log(combatant)
+                           context.saveCustomMonster(combatant);
+                           showSticky(combatant.name, 'Saved to campaign monsters.')
+                        } else {
+                           showSticky(combatant.name, 'Monster not saved')
+                        }
                      }
                   }
                   ]} 
@@ -1428,7 +1488,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                   </div>
                )}
             </div>
-         </div>
+         </div>}
       </>
    );
 };

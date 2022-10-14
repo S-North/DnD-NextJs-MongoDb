@@ -71,7 +71,7 @@ export default withPageAuthRequired(function Campaign({ }) {
         body: JSON.stringify(
             {
             action: 'addone',
-            data: {...item, userId: user.sub}
+            data: {...item, userId: user.sub, monsters: [], items: [], npcs: []}
         }),
         headers: {
             "Content-type": "application/json; charset=UTF-8"

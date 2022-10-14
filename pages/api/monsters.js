@@ -48,7 +48,9 @@ export default async function handler(req, res) {
           name: 1, 
           cr: 1,
           type: 1,
-          size: 1
+          size: 1,
+          sourceBook: 1,
+          campaignMonster: 1
         } }
       ).sort(sortCriteria)
       .toArray()
