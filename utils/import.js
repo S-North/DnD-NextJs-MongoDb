@@ -389,7 +389,8 @@ export const importMonster = (inputFile) => {
         legendary: parseLegendary(monster.legendary), // problem in the data for out data model. May need to do some manual data entry :( think some more... 
         spellSlots: parseSpellSlots(monster.slots),
         spells: parseSpells(monster.spells),
-        sourceBook: parseSourceBook(monster.description)
+        sourceBook: parseSourceBook(monster.description),
+        campaignMonster: monster.campaignMonster ? true : false
     }
 }
 

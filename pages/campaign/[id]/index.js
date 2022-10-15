@@ -11,7 +11,93 @@ import { FaEdit, FaWindowClose } from 'react-icons/fa'
 import BasicForm from '../../../components/forms/BasicForm'
 import CharacterForm from '../../../components/forms/CharacterForm'
 import Nav from '../../../components/Nav';
+import { importMonster } from '../../../utils/import';
 
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
+import { FileUpload } from 'primereact/fileupload';
+import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
+import "primereact/resources/primereact.min.css";                  //core css
+import "primeicons/primeicons.css";                                //icons
+import monsters from '../../monsters';
+
+
+export function ImportFromFile({ campaign, setCampaign}) {
+    const [ importMessage, setImportMessage ] = useState('')
+    const [ failed, setFailed ] = useState([])
+
+    const saveCustomMonster = async (monster) => {
+        console.log(monster)
+        monster = {...monster, sourceBook: 'Custom Edited', campaignMonster: true}
+        console.log(monster)
+        const DATA = {
+           campaignId: campaign._id,
+           monster: monster
+        }
+        const response = await fetch(`/api/campaigns`, {
+           method: "POST",
+           body: JSON.stringify({
+              action: "append monster",
+              data: DATA,
+           }),
+           headers: { "Content-type": "application/json; charset=UTF-8" },
+        });
+        const reply = await response.json();
+        console.log(reply)
+        if (reply.confirm.acknowledged && reply.confirm.modifiedCount > 0) {
+           await setCampaign({...campaign, monsters: [...campaign.monsters, reply.monster]})
+        } else setFailed([...failed, monster])
+     }
+
+    const getFile = async (file) => {
+        let content
+        const monsters = []
+        if (file.type === 'application/json') {
+            content = await JSON.parse(await file.text());
+        } else {
+            setImportMessage('Selected import file is not in JSON FORMAT');
+            console.log('Selected import file is not in JSON FORMAT')
+            return
+        }
+        console.log(content)
+  
+        if (!content?.monster?.length > 0) {
+           setImportMessage('No records found in data');
+           console.log('No records found')
+           return
+        }
+  
+        await content?.monster?.forEach(monster => {
+            console.log(monster)
+           if (!monster.name) {
+              setImportMessage("data is not valid")
+              console.log("data is not valid")
+           } else {
+            monsters.push(importMonster({monster: {...monster, campaignMonster: true}, importTag: content.source}))
+           }
+        }) 
+        console.log(monsters)
+        setImportMessage('Files OK')
+        
+        monsters.forEach(monster => {
+            saveCustomMonster(monster)
+        })
+     }
+
+    return (
+        <>
+            <h2>Import From File</h2>
+            <FileUpload
+                accept="application/json"
+                customUpload
+                onClear={() => setImportMessage('')}
+                uploadHandler={(e) => getFile(e.files[0])}
+                emptyTemplate={<p className="m-0">Drag and drop files to here to upload.</p>}>
+            </FileUpload>
+            <p>{importMessage}</p>
+        </>
+    )
+}
 
 export default withPageAuthRequired(function Campaign({ initialCampaign }) {
     const router = useRouter()
@@ -24,6 +110,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
     const [ characters, setCharacters ] = useState([])    
     const [ selected, setSelected ] = useState();
     const [ modal, setModal ] = useState({"type": "none", "on": false})
+    const [displayDialog, setDisplayDialog] = useState(false);
     
     useEffect(() => {
         const getCampaign = async () => {
@@ -293,7 +380,20 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
      
     return (
        <>
-       <Nav location='campaign' campaign={campaign} user={user}></Nav>
+        <Nav location='campaign' campaign={campaign} user={user}></Nav>
+        <Dialog 
+            header="Header" 
+            visible={displayDialog} 
+            // style={{ width: '50vw' }} 
+            // footer={renderFooter('displayBasic')} 
+            onHide={() => setDisplayDialog(false)}
+            // breakpoints={{'960px': '75vw'}} style={{"maxWidth": '95vw', "minWidth": "50rem"}}
+            >
+            <ImportFromFile
+                campaign={campaign}
+                setCampaign={setCampaign}>
+            </ImportFromFile>    
+        </Dialog>
        {/* modal window */}
        {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}
@@ -378,7 +478,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
             </div>
 
             <div className="one-column">
-                <h2>Campaign Monsters</h2>
+                <h2>Campaign Monsters</h2> <Button label='Import' onClick={() => setDisplayDialog(true)}></Button>
                 {campaign?.monsters?.sort((a,b) => {return a.name > b.name}).map(monster => (
                         <div key={monster._id} className="list-item">
                             <Link key={monster._id} href={`/monster/${monster._id}`}>
