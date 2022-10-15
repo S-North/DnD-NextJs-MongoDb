@@ -26,69 +26,6 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
     const [ modal, setModal ] = useState({"type": "none", "on": false})
     
     useEffect(() => {
-        const getAdventures = async () => {
-            const response = await fetch(`${api}adventures`, {
-                method: "POST",
-                body: JSON.stringify(
-                    {
-                    action: 'query',
-                    data: {campaignId: campaign._id, userId: user.sub}
-                }),
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8"
-              }
-              })
-              const alladventures = await response.json(response)
-              setAdventures(alladventures)
-        }
-        getAdventures()
-
-        const getCharacters = async () => {
-            const response = await fetch(`${api}characters`, {
-              method: "POST",
-              body: JSON.stringify(
-                  {
-                  action: 'query',
-                  data: {
-                      campaignId: campaign._id
-                  }
-              }),
-              headers: {
-                  "Content-type": "application/json; charset=UTF-8"
-              }
-            })
-            const characterReply = await response.json()
-            console.log(characterReply)
-            setCharacters(characterReply)
-          }
-          getCharacters()
-  
-        const getRunningEncounters = async () => {
-            const response = await fetch(`${api}encounters`, {
-                method: "POST",
-                body: JSON.stringify(
-                    {
-                    action: 'query',
-                    data: {
-                        mode: "running",
-                        campaignId: campaign._id,
-                        userId: user.id
-                    }
-                }),
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8"
-                }
-            })
-
-        const runningEncounters = await response.json()
-        if (runningEncounters) setEncounters(runningEncounters)
-        }
-        getRunningEncounters()
-    
-      return () => {}
-    }, [campaign])
-    
-    useEffect(() => {
         const getCampaign = async () => {
             const response = await fetch(`${api}campaigns`, {
                 method: "POST",
@@ -112,6 +49,68 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
     
       return () => {}
     }, [])
+
+    useEffect(() => {
+        const getAdventures = async () => {
+            const response = await fetch(`${api}adventures`, {
+                method: "POST",
+                body: JSON.stringify(
+                    {
+                    action: 'query',
+                    data: {campaignId: campaign._id}
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+              }
+              })
+              const alladventures = await response.json(response)
+              setAdventures(alladventures)
+        }
+        if (campaign?._id) getAdventures()
+
+        const getCharacters = async () => {
+            const response = await fetch(`${api}characters`, {
+              method: "POST",
+              body: JSON.stringify(
+                  {
+                  action: 'query',
+                  data: {
+                      campaignId: campaign._id
+                  }
+              }),
+              headers: {
+                  "Content-type": "application/json; charset=UTF-8"
+              }
+            })
+            const characterReply = await response.json()
+            console.log(characterReply)
+            setCharacters(characterReply)
+          }
+          if (campaign?._id) getCharacters()
+  
+        const getRunningEncounters = async () => {
+            const response = await fetch(`${api}encounters`, {
+                method: "POST",
+                body: JSON.stringify(
+                    {
+                    action: 'query',
+                    data: {
+                        mode: "running",
+                        campaignId: campaign._id
+                    }
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })
+
+        const runningEncounters = await response.json()
+        if (runningEncounters) setEncounters(runningEncounters)
+        }
+        if (campaign?._id) getRunningEncounters()
+    
+      return () => {}
+    }, [campaign])
     
   const updateAdventures = async (mongoCollection, item) => {
     console.log(mongoCollection)
