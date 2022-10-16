@@ -290,13 +290,21 @@ const MonsterList = ({
             body: JSON.stringify({
                action: "minilist",
                data: { minCr: minCr, maxCr: maxCr, search: search, type: type },
-               sort: { name: sortName, cr: sortCr },
+               // sort: { name: sortName, cr: sortCr },
             }),
             headers: { "Content-type": "application/json; charset=UTF-8" },
          });
-         let allMonsters = await response.json();
+         let apiResponse = await response.json();
+         setPageCount(0)
          setItemOffset(0);
-         if (extraMonsters) allMonsters = [...allMonsters, ...extraMonsters]
+         // if (extraMonsters) allMonsters = [...allMonsters, ...extraMonsters]
+
+         extraMonsters ? extraMonsters = extraMonsters : extraMonsters = []
+         let allMonsters
+         if (monsterSource === 'custom') allMonsters = extraMonsters
+         if (monsterSource === 'official') allMonsters = apiResponse
+         if (monsterSource === 'both') allMonsters = [...extraMonsters, ...apiResponse]
+
          setMonsters(
             allMonsters
             .sort((a,b) => (
@@ -304,8 +312,9 @@ const MonsterList = ({
             : ((sortCr === 'asc' || sortCr === 'desc') && (sortCr === 'asc' ? a.cr > b.cr : a.cr < b.cr) )
             ))
             .filter(monster => {return type !== 'none' ? monster.type === type : true})
-            .filter(monster => {return monsterSource === 'custom' ? monster.sourceBook === 'Custom Edited' : (monsterSource === 'official' ? monster.sourceBook !== 'Custom Edited' : true)
-          })
+            .filter(monster => {return monsterSource === 'custom' ? monster.sourceBook === 'Custom Edited' : (monsterSource === 'official' ? monster.sourceBook !== 'Custom Edited' : true)})
+            .filter(monster => { return monster.name.toLowerCase().includes(search)})
+            .filter(monster => { return monster.cr >= minCr && monster.cr <= maxCr})
          );
       };
       getMonsters();
