@@ -28,8 +28,14 @@ export default async function handler(req, res) {
   if (method === 'POST' && body.action === 'editone') {
     console.log('edit one campaign')
     console.log(body.data)
-    const id = new ObjectId(body.data._id)
+    const id = ObjectId(body.data._id)
     response = await db.collection("campaigns").updateOne({_id: id}, {$set: {...body.data, _id: id}});
+  }
+
+  // method to edit an elenent in an existing document!!!
+  if (method === 'PATCH' && body.action === 'editmonster') {
+    console.log('edit one monster')
+    response = await db.collection("campaigns").updateOne({_id: campaignId, "monsters._id": body.data.monster._id}, {$set: {"monsters.$": {...body.data.monster}}});
   }
 
   if (method === 'POST' && body.action === 'deleteone') {

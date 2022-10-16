@@ -753,7 +753,7 @@ const MonsterView = ({ id }) => {
    );
 };
 
-const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal }) => {
+const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=() => console.log('nothing') }) => {
    const api = "/api/";
    const [modal, setModal] = useState({ on: false, view: "" });
    const [tabs, setTabs] = useState("details");

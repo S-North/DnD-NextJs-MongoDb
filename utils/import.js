@@ -487,3 +487,15 @@ export const importSpell = (spell) => {
         description: parseDescription(spell.text) // this may be an array, do a function to parse
     }
 }
+
+export const importEquipment = (equipment) => {
+
+}
+
+export const importCharacter = (equipment) => {
+    
+}
+
+export const importNPC = (equipment) => {
+    
+}

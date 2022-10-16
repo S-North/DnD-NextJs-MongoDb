@@ -12,6 +12,7 @@ import BasicForm from '../../../components/forms/BasicForm'
 import CharacterForm from '../../../components/forms/CharacterForm'
 import Nav from '../../../components/Nav';
 import { importMonster } from '../../../utils/import';
+import { MonsterForm } from '../../monsters';
 
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
@@ -110,7 +111,8 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
     const [ characters, setCharacters ] = useState([])    
     const [ selected, setSelected ] = useState();
     const [ modal, setModal ] = useState({"type": "none", "on": false})
-    const [displayDialog, setDisplayDialog] = useState(false);
+    const [ displayDialog, setDisplayDialog ] = useState(false);
+    const [ dialogType, setDialogType ] = useState('')
     
     useEffect(() => {
         const getCampaign = async () => {
@@ -348,6 +350,48 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
     }
   }
 
+  const updateMonster = async (monster) => {
+    setSelected(monster)
+    setDialogType('edit monster')
+    setDisplayDialog(true)
+}
+
+const saveMonster = async (monster) => {
+    console.log(monster)
+    setDisplayDialog(false)
+
+    const response = await fetch(`${api}campaigns`, {
+        method: "PATCH",
+        body: JSON.stringify(
+            {
+            action: 'editmonster',
+            data: {
+                campaignId: campaign._id,
+                monster: monster
+            }
+        }),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    })        
+    const newAdventures = await response.json()
+
+    if (newAdventures.acknowledged && newAdventures.modifiedCount === 1) {
+        // setAdventures([...adventures.filter(a => {return a._id !== item._id}), item])
+        // setModal({on: false, type: ""})
+      }   
+
+    setCampaign({
+        ...campaign, 
+        monsters: [
+            ...campaign.monsters.filter(m => { return monster._id !== m._id}), monster]})
+  }
+
+  const handleDialogModal = async (item) => {
+    console.log(item)
+    
+  }
+
   const deleteMonster = async (monster) => {
     const response = await fetch(`${api}campaigns`, {
         method: "POST",
@@ -382,17 +426,23 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
        <>
         <Nav location='campaign' campaign={campaign} user={user}></Nav>
         <Dialog 
-            header="Header" 
+            header={dialogType.toUpperCase()}
             visible={displayDialog} 
-            // style={{ width: '50vw' }} 
+            style={{ "maxWidth": '50rem' }} 
             // footer={renderFooter('displayBasic')} 
             onHide={() => setDisplayDialog(false)}
             // breakpoints={{'960px': '75vw'}} style={{"maxWidth": '95vw', "minWidth": "50rem"}}
             >
-            <ImportFromFile
-                campaign={campaign}
-                setCampaign={setCampaign}>
-            </ImportFromFile>    
+            {dialogType === 'edit monster' && 
+                <MonsterForm 
+                    selected={selected}
+                    setSelected={setSelected}
+                    update={saveMonster}
+                    setParentModal={handleDialogModal}>
+                </MonsterForm>
+            }
+
+
         </Dialog>
        {/* modal window */}
        {modal.on && <div id="modal-window" className="modal">
@@ -478,7 +528,11 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
             </div>
 
             <div className="one-column">
-                <h2>Campaign Monsters</h2> <Button label='Import' onClick={() => setDisplayDialog(true)}></Button>
+                <h2>Campaign Monsters</h2> 
+                <Button 
+                    label='Import' 
+                    onClick={() => {setImportType('campaign'); setDisplayDialog(true)}}>
+                </Button>
                 {campaign?.monsters?.sort((a,b) => {return a.name > b.name}).map(monster => (
                         <div key={monster._id} className="list-item">
                             <Link key={monster._id} href={`/monster/${monster._id}`}>
@@ -493,7 +547,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
                                 onClick={() => {deleteMonster(monster)}} />
 
                               <FaEdit style={{"cursor": "pointer"}} color="grey"
-                                onClick={() => {setSelected(adventure); setModal({"on": true, "type": "adventures"})}} />
+                                onClick={() => {updateMonster(monster)}} />
                             </div>
                         </div>
                     ))}
