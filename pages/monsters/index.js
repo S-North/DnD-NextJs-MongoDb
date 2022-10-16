@@ -43,7 +43,7 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
 import "primereact/resources/primereact.min.css";                  //core css
 import "primeicons/primeicons.css";                                //icons
 
-export default withPageAuthRequired(function Monsters({}) {
+export default withPageAuthRequired(function Monsters({ user }) {
    const api = "/api/";
    const [selected, setSelected] = useState();
    const [modal, setModal] = useState({ type: "none", on: false });
@@ -208,11 +208,12 @@ export default withPageAuthRequired(function Monsters({}) {
                <MonsterList
                   importMonsterManual={importMonsterManual}
                   addMonster={editMonster}
-                  // deleteMonster={deleteMonster}
+                  deleteMonster={deleteMonster}
                   setSelected={setSelected}
-                  // editMonster={editMonster}
+                  editMonster={editMonster}
                   setModal={setModal}
                   updated={updated}
+                  admin={user.permission}
                ></MonsterList>
             </div>
 
@@ -228,13 +229,13 @@ export default withPageAuthRequired(function Monsters({}) {
                </button> */}
                
                {importMessage.length > 0 && <p>{importMessage}</p>}
-               <FileUpload
-                  disabled
+               {user.permission === 'admin' && <FileUpload
+                  disabled={user.permission !== 'admin'}
                   accept="application/json"
                   customUpload 
                   uploadHandler={(e) => getFile(e.files[0])}
                   emptyTemplate={<p className="m-0">Drag and drop files to here to upload.</p>}>
-               </FileUpload>
+               </FileUpload>}
             </div>
          </section>
       </>
@@ -248,7 +249,8 @@ const MonsterList = ({
    setSelected,
    setModal,
    updated,
-   extraMonsters
+   extraMonsters,
+   admin
    }) => {
 
    MonsterList.defaultProps = {
@@ -412,7 +414,7 @@ const MonsterList = ({
             {
                <div style={{'display': 'flex', 'flexDirection': 'column', 'gap': '0.5rem'}}>
                <button
-                  disabled
+                  disabled={admin !== 'admin'}
                   className={styles.btn_add_new_monster}
                   onClick={() => {
                      setSelected(monsterTemplate);
@@ -568,7 +570,7 @@ const MonsterList = ({
                            </div>
                         </div>
                      </div>
-                     <div className="actions">
+                    {admin === 'admin' && <div className="actions">
                         {deleteMonster && (
                            <FaWindowClose
                               style={{ cursor: "pointer" }}
@@ -588,7 +590,7 @@ const MonsterList = ({
                               }}
                            />
                         )}
-                     </div>
+                     </div>}
                   </div>
                ))}
          </div>
@@ -2465,6 +2467,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
 };
 
 export { MonsterList, MonsterForm };
+
 export async function getServerSideProps(context) {
    try {
       await connectToDatabase;
