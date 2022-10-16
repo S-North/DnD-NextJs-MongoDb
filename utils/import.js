@@ -389,7 +389,8 @@ export const importMonster = (inputFile) => {
         legendary: parseLegendary(monster.legendary), // problem in the data for out data model. May need to do some manual data entry :( think some more... 
         spellSlots: parseSpellSlots(monster.slots),
         spells: parseSpells(monster.spells),
-        sourceBook: parseSourceBook(monster.description)
+        sourceBook: parseSourceBook(monster.description),
+        campaignMonster: monster.campaignMonster ? true : false
     }
 }
 
@@ -485,4 +486,16 @@ export const importSpell = (spell) => {
         ritual: parseRitual(spell.ritual),
         description: parseDescription(spell.text) // this may be an array, do a function to parse
     }
+}
+
+export const importEquipment = (equipment) => {
+
+}
+
+export const importCharacter = (equipment) => {
+    
+}
+
+export const importNPC = (equipment) => {
+    
 }

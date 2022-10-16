@@ -10,7 +10,7 @@ import SpellForm from '../../components/spells/SpellForm';
 import { importSpell } from '../../utils/import';
 import { FaWindowClose, FaEdit } from 'react-icons/fa';
 
-export default withPageAuthRequired(function Spells({ }) {
+export default withPageAuthRequired(function Spells({ user }) {
     const api = '/api/'
     const [ selected, setSelected ] = useState();
     const [ modal, setModal ] = useState({"type": "none", "on": false})
@@ -52,11 +52,13 @@ export default withPageAuthRequired(function Spells({ }) {
         </div>}
         <section>
             <div className="one-column">
-                <SpellList selected={selected} setSelected={setSelected} setModal={setModal} deleteItem={true} editItem={true}/>
+                <SpellList selected={selected} setSelected={setSelected} setModal={setModal} deleteItem={true} editItem={true} user={user}/>
             </div>
 
             <div className="one-column">
-                <button onClick={() => {importSpells(spellBook)}}>Import Spells</button>
+                {user.permission !== 'admin' && <button 
+                    onClick={() => {importSpells(spellBook)}}>
+                    Import Spells</button>}
             </div>
 
         </section>
@@ -64,7 +66,7 @@ export default withPageAuthRequired(function Spells({ }) {
     )
 })
 
-const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, selected }) => {
+const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, selected, user }) => {
     const api = '/api/'
     const [ spells, setSpells ] = useState([]);
     const [ updated, setUpdated ] = useState(1)
@@ -164,7 +166,11 @@ const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, selec
     return (
         <>
         <div className={styles.filter_container}>
-            {<button className={styles.btn_add_new} onClick={() => {setSelected({}); setModal({on:true, view: "edit"})}}>New Spell</button>}
+            {user.permission === 'admin' && <button 
+                className={styles.btn_add_new} 
+                onClick={() => {setSelected({}); setModal({on:true, view: "edit"})}}>
+                New Spell
+            </button>}
         
         {/* filtering the results */}
         <details open>
@@ -213,7 +219,7 @@ const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, selec
                             </div>
                     </div>
                 </div>
-                <div className='actions'>
+                {user.permission === 'admin' && <div className='actions'>
                     {deleteItem && <FaWindowClose 
                         style={{"cursor": "pointer"}} 
                         color="red"
@@ -223,8 +229,7 @@ const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, selec
                         style={{"cursor": "pointer"}} 
                         color="grey"
                         onClick={() => {setSelected(spell); setModal({on: true, view: "edit"})}} />}
-  
-                </div>
+                </div>}
             </div>
         ))}
         </div>

@@ -31,7 +31,7 @@ export default function AddCharacter ({ addCharacters }) {
 
     const selectAll = (e) => {
       console.log(e.target.checked)
-      if (e.target.checked) setSelected([...context.characters]) 
+      if (e.target.checked) setSelected(pcsNotInInitiative) 
       else setSelected([])
     }
   

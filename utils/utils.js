@@ -1,6 +1,6 @@
 export function calculateEncounterDifficulty (monsterXPs, charactersXp) {
-    console.log(charactersXp)
-    console.log(monsterXPs)
+    // console.log(charactersXp)
+    // console.log(monsterXPs)
     const difficultyArray = [
         [25, 50, 75, 125, 250, 300, 350, 450, 550, 600, 800, 1000, 1100, 1250, 1400, 1600, 2000, 2100, 2400, 2800],
         [50, 100, 150, 250, 500, 600, 750, 900, 1100, 1200, 1600, 2000, 2200, 2500, 2800, 3200, 3900, 4200, 4900, 5700],
@@ -13,13 +13,13 @@ export function calculateEncounterDifficulty (monsterXPs, charactersXp) {
 
     charactersXp.forEach(xp => {
         const level = xpToLevel(xp)
-        console.log(level)
+        // console.log(level)
         difficultyArray.forEach((difficulty, i) => {
             partyThresholds[i] = partyThresholds[i] + difficulty[level-1]
         })
     })
-    console.log(partyThresholds)
-    console.log(totalMonsterXP)
+    // console.log(partyThresholds)
+    // console.log(totalMonsterXP)
     switch (true) {
         case monsterXPs.length < 2: adjustedMonsterXP = totalMonsterXP; break
         case monsterXPs.length === 2: adjustedMonsterXP = totalMonsterXP * 1.5; break
@@ -28,7 +28,7 @@ export function calculateEncounterDifficulty (monsterXPs, charactersXp) {
         case monsterXPs.length < 15: adjustedMonsterXP = totalMonsterXP * 3; break
         default: adjustedMonsterXP = totalMonsterXP * 4; break
     }
-    console.log(adjustedMonsterXP)
+    // console.log(adjustedMonsterXP)
     // need to include the adjustment for party size before returning a result
 
     if (adjustedMonsterXP < partyThresholds[0]) return 'trivial'

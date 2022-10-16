@@ -1,24 +1,144 @@
 import connectToDatabase from '../../../utils/mongodb'
 import { ObjectId } from 'mongodb'
+
 import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
+
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import { truncate } from '../../../utils/utils'
 import Link from 'next/link'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
 import BasicForm from '../../../components/forms/BasicForm'
 import CharacterForm from '../../../components/forms/CharacterForm'
 import Nav from '../../../components/Nav';
+import { importMonster } from '../../../utils/import';
+import { MonsterForm } from '../../monsters';
+
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
+import { FileUpload } from 'primereact/fileupload';
+import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
+import "primereact/resources/primereact.min.css";                  //core css
+import "primeicons/primeicons.css";                                //icons
+import monsters from '../../monsters';
 
 
-export default withPageAuthRequired(function Campaign({campaign}) {
+export function ImportFromFile({ campaign, setCampaign}) {
+    const [ importMessage, setImportMessage ] = useState('')
+    const [ failed, setFailed ] = useState([])
+
+    const saveCustomMonster = async (monster) => {
+        console.log(monster)
+        monster = {...monster, sourceBook: 'Custom Edited', campaignMonster: true}
+        console.log(monster)
+        const DATA = {
+           campaignId: campaign._id,
+           monster: monster
+        }
+        const response = await fetch(`/api/campaigns`, {
+           method: "POST",
+           body: JSON.stringify({
+              action: "append monster",
+              data: DATA,
+           }),
+           headers: { "Content-type": "application/json; charset=UTF-8" },
+        });
+        const reply = await response.json();
+        console.log(reply)
+        if (reply.confirm.acknowledged && reply.confirm.modifiedCount > 0) {
+           await setCampaign({...campaign, monsters: [...campaign.monsters, reply.monster]})
+        } else setFailed([...failed, monster])
+     }
+
+    const getFile = async (file) => {
+        let content
+        const monsters = []
+        if (file.type === 'application/json') {
+            content = await JSON.parse(await file.text());
+        } else {
+            setImportMessage('Selected import file is not in JSON FORMAT');
+            console.log('Selected import file is not in JSON FORMAT')
+            return
+        }
+        console.log(content)
+  
+        if (!content?.monster?.length > 0) {
+           setImportMessage('No records found in data');
+           console.log('No records found')
+           return
+        }
+  
+        await content?.monster?.forEach(monster => {
+            console.log(monster)
+           if (!monster.name) {
+              setImportMessage("data is not valid")
+              console.log("data is not valid")
+           } else {
+            monsters.push(importMonster({monster: {...monster, campaignMonster: true}, importTag: content.source}))
+           }
+        }) 
+        console.log(monsters)
+        setImportMessage('Files OK')
+        
+        monsters.forEach(monster => {
+            saveCustomMonster(monster)
+        })
+     }
+
+    return (
+        <>
+            <h2>Import From File</h2>
+            <FileUpload
+                accept="application/json"
+                customUpload
+                onClear={() => setImportMessage('')}
+                uploadHandler={(e) => getFile(e.files[0])}
+                emptyTemplate={<p className="m-0">Drag and drop files to here to upload.</p>}>
+            </FileUpload>
+            <p>{importMessage}</p>
+        </>
+    )
+}
+
+export default withPageAuthRequired(function Campaign({ initialCampaign }) {
+    const router = useRouter()
+    console.log(router.query.id)
     const api = '/api/'
     const { user, error, isLoading } = useUser();
+    const [ campaign, setCampaign ] = useState({})
     const [ adventures, setAdventures ] = useState([])
     const [ encounters, setEncounters ] = useState([])
     const [ characters, setCharacters ] = useState([])    
     const [ selected, setSelected ] = useState();
     const [ modal, setModal ] = useState({"type": "none", "on": false})
+    const [ displayDialog, setDisplayDialog ] = useState(false);
+    const [ dialogType, setDialogType ] = useState('')
     
+    useEffect(() => {
+        const getCampaign = async () => {
+            const response = await fetch(`${api}campaigns`, {
+                method: "POST",
+                body: JSON.stringify(
+                    {
+                    action: 'query',
+                    data: {_id: router.query.id}
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })        
+            const parsed = await response.json()
+    
+            if (parsed && parsed.length > 0) {
+                setCampaign(parsed[0])
+            }
+        }
+        getCampaign()
+        
+    
+      return () => {}
+    }, [])
+
     useEffect(() => {
         const getAdventures = async () => {
             const response = await fetch(`${api}adventures`, {
@@ -26,7 +146,7 @@ export default withPageAuthRequired(function Campaign({campaign}) {
                 body: JSON.stringify(
                     {
                     action: 'query',
-                    data: {campaignId: campaign._id, userId: user.sub}
+                    data: {campaignId: campaign._id}
                 }),
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"
@@ -35,7 +155,7 @@ export default withPageAuthRequired(function Campaign({campaign}) {
               const alladventures = await response.json(response)
               setAdventures(alladventures)
         }
-        getAdventures()
+        if (campaign?._id) getAdventures()
 
         const getCharacters = async () => {
             const response = await fetch(`${api}characters`, {
@@ -55,7 +175,7 @@ export default withPageAuthRequired(function Campaign({campaign}) {
             console.log(characterReply)
             setCharacters(characterReply)
           }
-          getCharacters()
+          if (campaign?._id) getCharacters()
   
         const getRunningEncounters = async () => {
             const response = await fetch(`${api}encounters`, {
@@ -65,8 +185,7 @@ export default withPageAuthRequired(function Campaign({campaign}) {
                     action: 'query',
                     data: {
                         mode: "running",
-                        campaignId: campaign._id,
-                        userId: user.id
+                        campaignId: campaign._id
                     }
                 }),
                 headers: {
@@ -77,10 +196,10 @@ export default withPageAuthRequired(function Campaign({campaign}) {
         const runningEncounters = await response.json()
         if (runningEncounters) setEncounters(runningEncounters)
         }
-        getRunningEncounters()
+        if (campaign?._id) getRunningEncounters()
     
       return () => {}
-    }, [])
+    }, [campaign])
     
   const updateAdventures = async (mongoCollection, item) => {
     console.log(mongoCollection)
@@ -230,10 +349,101 @@ export default withPageAuthRequired(function Campaign({campaign}) {
         setCharacters([...characters.filter(c => { return c._id !== character._id})])
     }
   }
+
+  const updateMonster = async (monster) => {
+    setSelected(monster)
+    setDialogType('edit monster')
+    setDisplayDialog(true)
+}
+
+const saveMonster = async (monster) => {
+    console.log(monster)
+    setDisplayDialog(false)
+
+    const response = await fetch(`${api}campaigns`, {
+        method: "PATCH",
+        body: JSON.stringify(
+            {
+            action: 'editmonster',
+            data: {
+                campaignId: campaign._id,
+                monster: monster
+            }
+        }),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    })        
+    const newAdventures = await response.json()
+
+    if (newAdventures.acknowledged && newAdventures.modifiedCount === 1) {
+        // setAdventures([...adventures.filter(a => {return a._id !== item._id}), item])
+        // setModal({on: false, type: ""})
+      }   
+
+    setCampaign({
+        ...campaign, 
+        monsters: [
+            ...campaign.monsters.filter(m => { return monster._id !== m._id}), monster]})
+  }
+
+  const handleDialogModal = async (item) => {
+    console.log(item)
     
+  }
+
+  const deleteMonster = async (monster) => {
+    const response = await fetch(`${api}campaigns`, {
+        method: "POST",
+            body: JSON.stringify(
+                {
+                collection: 'campaigns',
+                action: 'edit monster',
+                data: {
+                    campaignId: campaign._id,
+                    monster: monster
+                }
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+    })
+
+    const acknowledgement = await response.json()
+    if (acknowledgement && acknowledgement.acknowledged && acknowledgement.modifiedCount > 0) {
+        console.log(acknowledgement)
+        setCampaign(
+            {
+            ...campaign, 
+            monsters: [ ...campaign.monsters.filter( c => { return c._id !== monster._id } ) ]
+            }   
+        )
+    }
+
+  }
+     
     return (
        <>
-       <Nav location='campaign' campaign={campaign} user={user}></Nav>
+        <Nav location='campaign' campaign={campaign} user={user}></Nav>
+        <Dialog 
+            header={dialogType.toUpperCase()}
+            visible={displayDialog} 
+            style={{ "maxWidth": '50rem' }} 
+            // footer={renderFooter('displayBasic')} 
+            onHide={() => setDisplayDialog(false)}
+            // breakpoints={{'960px': '75vw'}} style={{"maxWidth": '95vw', "minWidth": "50rem"}}
+            >
+            {dialogType === 'edit monster' && 
+                <MonsterForm 
+                    selected={selected}
+                    setSelected={setSelected}
+                    update={saveMonster}
+                    setParentModal={handleDialogModal}>
+                </MonsterForm>
+            }
+
+
+        </Dialog>
        {/* modal window */}
        {modal.on && <div id="modal-window" className="modal">
             {/* Modal content */}
@@ -316,6 +526,32 @@ export default withPageAuthRequired(function Campaign({campaign}) {
                             </Link>
                         </div>))}
             </div>
+
+            <div className="one-column">
+                <h2>Campaign Monsters</h2> 
+                <Button 
+                    label='Import' 
+                    onClick={() => {setImportType('campaign'); setDisplayDialog(true)}}>
+                </Button>
+                {campaign?.monsters?.sort((a,b) => {return a.name > b.name}).map(monster => (
+                        <div key={monster._id} className="list-item">
+                            <Link key={monster._id} href={`/monster/${monster._id}`}>
+                                <div className="link">
+                                        <h2>{monster.name}</h2>
+                                        <em>{truncate(monster.description, 50)}</em>
+                                </div>
+                            </Link>
+
+                            <div>
+                              <FaWindowClose style={{"cursor": "pointer"}} color="red"
+                                onClick={() => {deleteMonster(monster)}} />
+
+                              <FaEdit style={{"cursor": "pointer"}} color="grey"
+                                onClick={() => {updateMonster(monster)}} />
+                            </div>
+                        </div>
+                    ))}
+            </div>
         </section>
        </>
     );
@@ -328,6 +564,6 @@ export async function getServerSideProps(context) {
     const campaign = await JSON.parse(JSON.stringify(response))
 
     return {
-        props: {campaign: campaign[0]}
+        props: {initialCampaign: campaign[0]}
     }
 }

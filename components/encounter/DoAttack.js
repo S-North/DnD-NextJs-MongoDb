@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 export function ListResults ({ tempCombatant, combatantsHit, targets, toHitRoll, damages, setDamages }) {
     const context = useContext(EncounterContext);
     const [ combatants, setCombatants ] = useState([])
+    
 
     useEffect(() => {
       if (context?.encounter?.monsters && context.characters && combatantsHit) {
