@@ -10,6 +10,9 @@ function MyApp({ Component, pageProps }) {
       <Head>
         <link rel="shortcut icon" href="/images/shield.svg" />
         <title>Campaign Tracker</title>
+        <meta name="og:title" content="GM Tracker: Managing Your Campaign Made Easy"></meta>
+        <meta property="og:description" content="A free and open source web app for managing your campaigns, encounters, custom monsters and more."></meta>
+        <meta property="og:image" content="https://res.cloudinary.com/dgseq0kkm/image/upload/v1666011740/gm-tracker/gm-tracker_vqc9jx.png"></meta>
       </Head>
       <Layout>
         <Component {...pageProps} />

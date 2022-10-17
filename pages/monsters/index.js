@@ -218,16 +218,6 @@ export default withPageAuthRequired(function Monsters({ user }) {
             </div>
 
             <div className="column-wide">
-               {/* <input type='text' value={importTag} onChange={(e) => setImportTag(e.target.value)}></input> */}
-               {/* <button
-                  disabled
-                  onClick={() => {
-                     importMonsterManual();
-                  }}
-               >
-                  Import Monsters
-               </button> */}
-               
                {importMessage.length > 0 && <p>{importMessage}</p>}
                {user.permission === 'admin' && <FileUpload
                   disabled={user.permission !== 'admin'}
@@ -779,18 +769,18 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
    const skillsMenu = useRef(null);
    const menuModel = () => {
       const currentSkills = []
-      selected.skills.forEach(skill => {
+      item?.skills.forEach(skill => {
          currentSkills.push(skill.name)
       })
       // console.log(currentSkills)
       const items = skillList.filter(skill => {return !currentSkills.includes(skill)})
       // console.log(items)
-      return items.map(item => (
+      return items.map(s => (
          {
-            label: item,
+            label: s,
             command: (e) => {
                console.log(item);
-               setSelected({...selected, skills: [...selected.skills, {name: item, level: 'none', bonus: abilityModifier(selected[skillToAbility(item)])}]}),
+               setItem({...item, skills: [...item.skills, {name: s, level: 'none', bonus: abilityModifier(item[skillToAbility(s)])}]}),
                skillsMenu.current.toggle(e)}
 
          }
@@ -798,6 +788,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
    }
 
    useEffect(() => {
+      // set item to value of selected
       if (selected) setItem(selected);
       if (selected?.spells) {
          const getSpells = async () => {
@@ -836,9 +827,9 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
    };
 
    const deleteTrait = (traitId) => {
-      setSelected({
-         ...selected,
-         traits: [...selected.traits.filter((f) => f._id !== traitId)],
+      setItem({
+         ...item,
+         traits: [...item.traits.filter((f) => f._id !== traitId)],
       });
    };
 
@@ -882,9 +873,9 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
    };
 
    const deleteAction = (actionId) => {
-      setSelected({
-         ...selected,
-         actions: [...selected.actions.filter((f) => f._id !== actionId)],
+      setItem({
+         ...item,
+         actions: [...item.actions.filter((f) => f._id !== actionId)],
       });
    };
 
@@ -928,29 +919,29 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
    };
 
    const updateSkillLevel = (name, level) => {
-      let skill = selected.skills.filter(item => {return item.name === name})[0]
-      let bonus = abilityModifier(selected[skillToAbility(name)])
+      let skill = item.skills.filter(item => {return item.name === name})[0]
+      let bonus = abilityModifier(item[skillToAbility(name)])
       switch (level) {
          case 'none':
             break
          case 'proficient':
-            bonus += calculateProficiencyBonus(selected.cr)
+            bonus += calculateProficiencyBonus(item.cr)
             break
          case 'expert':
-            bonus += (calculateProficiencyBonus(selected.cr) * 2)
+            bonus += (calculateProficiencyBonus(item.cr) * 2)
             break
       }
 
-      const newSkillList = [...selected.skills.filter(item => item.name !== name), {...skill, level, bonus}]
-      setSelected({...selected, skills: newSkillList})
+      const newSkillList = [...item.skills.filter(item => item.name !== name), {...skill, level, bonus}]
+      setItem({...item, skills: newSkillList})
    }
 
    const updateSkillBonus = (skill, value) => {
-      setSelected({...selected, skills: [...selected.skills.filter(item => {return skill.name !== item.name}), {...skill, bonus: value}]})
+      setItem({...item, skills: [...item.skills.filter(item => {return skill.name !== item.name}), {...skill, bonus: value}]})
    }
 
    const deleteSkill = (skill) => {
-      setSelected({...selected, skills: [...selected.skills.filter(item => {return skill.name !== item.name})]})
+      setItem({...item, skills: [...item.skills.filter(item => {return skill.name !== item.name})]})
    }
 
    return (
@@ -1352,7 +1343,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
             </div>
          )}
 
-         {selected && (
+         {item && (
             <form
                onSubmit={(e) => {
                   e.preventDefault();
@@ -1463,39 +1454,43 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         : { display: "none" }
                   }
                >
+                  <div className="flex-row">
                   <label htmlFor="name">Name:</label>
                   <input
                      id="name"
                      type="text"
                      required
                      placeholder="name"
-                     value={selected.name}
+                     value={item.name}
                      onChange={(e) => {
-                        setSelected({ ...selected, name: e.target.value });
+                        setItem({ ...item, name: e.target.value });
                      }}
                   />
+                  </div>
+                  <div className="flex-row">
                   <label htmlFor="picture">Picture:</label>
                   <input
                      id="picture"
                      type="text"
                      placeholder="picture url"
-                     value={selected.picture_url}
+                     value={item.picture_url}
                      onChange={(e) => {
-                        setSelected({
-                           ...selected,
+                        setItem({
+                           ...item,
                            picture_url: e.target.value,
                         });
                      }}
                   />
+                  </div>
 
                   <div className="flex-row">
                      <label htmlFor="type">Size:</label>
                      <select
                         name="size"
                         id="size"
-                        value={selected.size}
+                        value={item.size}
                         onChange={(e) => {
-                           setSelected({ ...selected, size: e.target.value });
+                           setItem({ ...item, size: e.target.value });
                         }}
                      >
                         {sizes.map((o) => (
@@ -1509,9 +1504,9 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                      <select
                         name="type"
                         id=""
-                        value={selected.type}
+                        value={item.type}
                         onChange={(e) => {
-                           setSelected({ ...selected, type: e.target.value });
+                           setItem({ ...item, type: e.target.value });
                         }}
                      >
                         {types.map((o) => (
@@ -1527,9 +1522,9 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         type="number"
                         placeholder="ac"
                         required
-                        value={selected.ac}
+                        value={item.ac}
                         onChange={(e) => {
-                           setSelected({ ...selected, ac: e.target.value });
+                           setItem({ ...item, ac: e.target.value });
                         }}
                      />
                   </div>
@@ -1540,16 +1535,16 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                      rows="10"
                      type="text"
                      placeholder="description"
-                     value={selected.description}
+                     value={item.description}
                      onChange={(e) => {
-                        setSelected({
-                           ...selected,
+                        setItem({
+                           ...item,
                            description: e.target.value,
                         });
                      }}
                   />
 
-                  {selected && selected.hitDice && (
+                  {item && item.hitDice && (
                      <div className="flex-row">
                         <label htmlFor="dice">Hit Dice:</label>
                         <input
@@ -1557,12 +1552,12 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            type="number"
                            placeholder="dice"
                            required
-                           value={selected.hitDice.hdDice}
+                           value={item.hitDice.hdDice}
                            onChange={(e) => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  hitDice: {
-                                    ...selected.hitDice,
+                                    ...item.hitDice,
                                     hdDice: e.target.value,
                                  },
                               });
@@ -1575,12 +1570,12 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            type="number"
                            placeholder="sides"
                            required
-                           value={selected.hitDice.hdSides}
+                           value={item.hitDice.hdSides}
                            onChange={(e) => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  hitDice: {
-                                    ...selected.hitDice,
+                                    ...item.hitDice,
                                     hdSides: e.target.value,
                                  },
                               });
@@ -1593,12 +1588,12 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            type="number"
                            placeholder="bonus"
                            required
-                           value={selected.hitDice.hdBonus}
+                           value={item.hitDice.hdBonus}
                            onChange={(e) => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  hitDice: {
-                                    ...selected.hitDice,
+                                    ...item.hitDice,
                                     hdBonus: e.target.value,
                                  },
                               });
@@ -1611,12 +1606,12 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            color="green"
                            style={{ width: "20ch", height: "30px" }}
                            onClick={() => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  maxHp: diceRoll(
-                                    selected.hitDice.hdDice,
-                                    selected.hitDice.hdSides,
-                                    selected.hitDice.hdBonus
+                                    item.hitDice.hdDice,
+                                    item.hitDice.hdSides,
+                                    item.hitDice.hdBonus
                                  )[2],
                               });
                            }}
@@ -1627,10 +1622,10 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            type="number"
                            placeholder="HP"
                            required
-                           value={selected.maxHp}
+                           value={item.maxHp}
                            onChange={(e) => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  maxHp: parseInt(e.target.value),
                               });
                            }}
@@ -1640,13 +1635,13 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
 
                   <div className="flex-row">
 							<label htmlFor="walking">Speed:</label>
-							{selected?.speed?.map((speed, index) => (
+							{item?.speed?.map((speed, index) => (
 								<input key={index} type="text" value={speed} onChange={(e) => {
-									const el = selected.speed;
+									const el = item.speed;
 									el[index] = e.target.value;
-									setSelected({...selected, speed: el})}}></input>
+									setItem({...item, speed: el})}}></input>
 							))}
-							<button onClick={(e) => {e.preventDefault(), setSelected({...selected, speed: [...selected.speed, ""]})}}>+</button>
+							<button onClick={(e) => {e.preventDefault(), setItem({...item, speed: [...item.speed, ""]})}}>+</button>
                      
 						</div>
                   <div className="flex-row">
@@ -1654,10 +1649,10 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                      <select
                         name="cr"
                         id=""
-                        value={selected.cr}
+                        value={item.cr}
                         onChange={(e) => {
-                           setSelected({
-                              ...selected,
+                           setItem({
+                              ...item,
                               cr: parseFloat(e.target.value),
                               xp: crToXp(e.target.value),
                            });
@@ -1676,10 +1671,10 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         type="number"
                         placeholder="xp"
                         required
-                        value={selected.xp}
+                        value={item.xp}
                         onChange={(e) => {
-                           setSelected({
-                              ...selected,
+                           setItem({
+                              ...item,
                               xp: parseInt(e.target.value),
                            });
                         }}
@@ -1689,33 +1684,34 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                   <div className="flex-checkboxes">
                      {sensesList.map((c) => (
                         <div key={c} className="checkboxs">
+                           <label>
                            <input
                               title={c}
                               style={{ cursor: "pointer" }}
                               type="checkbox"
                               name={c}
-                              checked={selected.senses.includes(c)}
+                              checked={item.senses.includes(c)}
                               value={c}
                               onChange={(e) => {
-                                 selected.senses.includes(e.target.value)
-                                    ? setSelected({
-                                         ...selected,
+                                 item.senses.includes(e.target.value)
+                                    ? setItem({
+                                         ...item,
                                          senses: [
-                                            ...selected.senses.filter((f) => {
+                                            ...item.senses.filter((f) => {
                                                return f !== e.target.value;
                                             }),
                                          ],
                                       })
-                                    : setSelected({
-                                         ...selected,
+                                    : setItem({
+                                         ...item,
                                          senses: [
-                                            ...selected.senses,
+                                            ...item.senses,
                                             e.target.value,
                                          ],
                                       });
                               }}
                            />
-                           <label htmlFor={c}>{c}</label>
+                           {c}</label>
                         </div>
                      ))}
                   </div>
@@ -1727,18 +1723,18 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            placeholder="str"
                            type="number"
                            required
-                           value={selected.str}
+                           value={item.str}
                            onChange={(e) => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  str: parseInt(e.target.value),
                               });
                            }}
                         />
                         <p>
-                           {selected.str > 11
-                              ? `+ ${abilityModifier(selected.str)}`
-                              : abilityModifier(selected.str)}
+                           {item.str > 11
+                              ? `+ ${abilityModifier(item.str)}`
+                              : abilityModifier(item.str)}
                         </p>
                      </div>
 
@@ -1748,18 +1744,18 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            placeholder="dex"
                            type="number"
                            required
-                           value={selected.dex}
+                           value={item.dex}
                            onChange={(e) => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  dex: parseInt(e.target.value),
                               });
                            }}
                         />
                         <p>
-                           {selected.dex > 11
-                              ? `+ ${abilityModifier(selected.dex)}`
-                              : abilityModifier(selected.dex)}
+                           {item.dex > 11
+                              ? `+ ${abilityModifier(item.dex)}`
+                              : abilityModifier(item.dex)}
                         </p>
                      </div>
 
@@ -1769,18 +1765,18 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            placeholder="con"
                            type="number"
                            required
-                           value={selected.con}
+                           value={item.con}
                            onChange={(e) => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  con: parseInt(e.target.value),
                               });
                            }}
                         />
                         <p>
-                           {selected.con > 11
-                              ? `+ ${abilityModifier(selected.con)}`
-                              : abilityModifier(selected.con)}
+                           {item.con > 11
+                              ? `+ ${abilityModifier(item.con)}`
+                              : abilityModifier(item.con)}
                         </p>
                      </div>
 
@@ -1790,18 +1786,18 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            placeholder="int"
                            type="number"
                            required
-                           value={selected.int}
+                           value={item.int}
                            onChange={(e) => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  int: parseInt(e.target.value),
                               });
                            }}
                         />
                         <p>
-                           {selected.int > 11
-                              ? `+ ${abilityModifier(selected.int)}`
-                              : abilityModifier(selected.int)}
+                           {item.int > 11
+                              ? `+ ${abilityModifier(item.int)}`
+                              : abilityModifier(item.int)}
                         </p>
                      </div>
 
@@ -1811,18 +1807,18 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            placeholder="wis"
                            type="number"
                            required
-                           value={selected.wis}
+                           value={item.wis}
                            onChange={(e) => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  wis: parseInt(e.target.value),
                               });
                            }}
                         />
                         <p>
-                           {selected.wis > 11
-                              ? `+ ${abilityModifier(selected.wis)}`
-                              : abilityModifier(selected.wis)}
+                           {item.wis > 11
+                              ? `+ ${abilityModifier(item.wis)}`
+                              : abilityModifier(item.wis)}
                         </p>
                      </div>
 
@@ -1832,18 +1828,18 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                            placeholder="cha"
                            type="number"
                            required
-                           value={selected.cha}
+                           value={item.cha}
                            onChange={(e) => {
-                              setSelected({
-                                 ...selected,
+                              setItem({
+                                 ...item,
                                  cha: parseInt(e.target.value),
                               });
                            }}
                         />
                         <p>
-                           {selected.cha > 11
-                              ? `+ ${abilityModifier(selected.cha)}`
-                              : abilityModifier(selected.cha)}
+                           {item.cha > 11
+                              ? `+ ${abilityModifier(item.cha)}`
+                              : abilityModifier(item.cha)}
                         </p>
                      </div>
                   </div>
@@ -1854,33 +1850,34 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                   <div className="flex-checkboxes">
                      {abilityList.map((c) => (
                         <div key={c} className="checkboxs">
+                           <label>
                            <input
                               title={c}
                               style={{ cursor: "pointer" }}
                               type="checkbox"
                               name={c}
-                              checked={selected.saves.includes(c)}
+                              checked={item.saves.includes(c)}
                               value={c}
                               onChange={(e) => {
-                                 selected.saves.includes(e.target.value)
-                                    ? setSelected({
-                                         ...selected,
+                                 item.saves.includes(e.target.value)
+                                    ? setItem({
+                                         ...item,
                                          saves: [
-                                            ...selected.saves.filter((f) => {
+                                            ...item.saves.filter((f) => {
                                                return f !== e.target.value;
                                             }),
                                          ],
                                       })
-                                    : setSelected({
-                                         ...selected,
+                                    : setItem({
+                                         ...item,
                                          saves: [
-                                            ...selected.saves,
+                                            ...item.saves,
                                             e.target.value,
                                          ],
                                       });
                               }}
                            />
-                           <label htmlFor={c}>{c}</label>
+                           {c}</label>
                         </div>
                      ))}
                   </div>
@@ -1904,24 +1901,24 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                               style={{ cursor: "pointer" }}
                               type="checkbox"
                               name={c}
-                              checked={selected.languages.includes(c)}
+                              checked={item.languages.includes(c)}
                               value={c}
                               onChange={(e) => {
-                                 selected.languages.includes(e.target.value)
-                                    ? setSelected({
-                                         ...selected,
+                                 item.languages.includes(e.target.value)
+                                    ? setItem({
+                                         ...item,
                                          languages: [
-                                            ...selected.languages.filter(
+                                            ...item.languages.filter(
                                                (f) => {
                                                   return f !== e.target.value;
                                                }
                                             ),
                                          ],
                                       })
-                                    : setSelected({
-                                         ...selected,
+                                    : setItem({
+                                         ...item,
                                          languages: [
-                                            ...selected.languages,
+                                            ...item.languages,
                                             e.target.value,
                                          ],
                                       });
@@ -1940,7 +1937,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                      
                      {/* list of skills */}
                      <div className={styles.skillList}>
-                        {selected.skills.sort((a,b) => (a.name > b.name)).map((skill) => (
+                        {item.skills.sort((a,b) => (a.name > b.name)).map((skill) => (
                            <div key={skill.name} className={styles.skillRow}>
                               <div style={{"minWidth": "8rem"}}><strong>{skill.name}</strong></div>
 
@@ -1988,23 +1985,24 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         <div className="flex-checkboxes">
                            {damageTypes.map((c) => (
                               <div key={c} className="checkboxs">
+                                 <label>
                                  <input
                                     title={c}
                                     style={{ cursor: "pointer" }}
                                     type="checkbox"
                                     name={c}
-                                    checked={selected.vulnerabilities.includes(
+                                    checked={item.vulnerabilities.includes(
                                        c
                                     )}
                                     value={c}
                                     onChange={(e) => {
-                                       selected.vulnerabilities.includes(
+                                       item.vulnerabilities.includes(
                                           e.target.value
                                        )
-                                          ? setSelected({
-                                               ...selected,
+                                          ? setItem({
+                                               ...item,
                                                vulnerabilities: [
-                                                  ...selected.vulnerabilities.filter(
+                                                  ...item.vulnerabilities.filter(
                                                      (f) => {
                                                         return (
                                                            f !== e.target.value
@@ -2013,16 +2011,16 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                                                   ),
                                                ],
                                             })
-                                          : setSelected({
-                                               ...selected,
+                                          : setItem({
+                                               ...item,
                                                vulnerabilities: [
-                                                  ...selected.vulnerabilities,
+                                                  ...item.vulnerabilities,
                                                   e.target.value,
                                                ],
                                             });
                                     }}
                                  />
-                                 <label htmlFor={c}>{c}</label>
+                                 {c}</label>
                               </div>
                            ))}
                         </div>
@@ -2039,21 +2037,22 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         <div className="flex-checkboxes">
                            {damageTypes.map((c) => (
                               <div key={c} className="checkboxs">
+                                 <label>
                                  <input
                                     title={c}
                                     style={{ cursor: "pointer" }}
                                     type="checkbox"
                                     name={c}
-                                    checked={selected.resistances.includes(c)}
+                                    checked={item.resistances.includes(c)}
                                     value={c}
                                     onChange={(e) => {
-                                       selected.resistances.includes(
+                                       item.resistances.includes(
                                           e.target.value
                                        )
-                                          ? setSelected({
-                                               ...selected,
+                                          ? setItem({
+                                               ...item,
                                                resistances: [
-                                                  ...selected.resistances.filter(
+                                                  ...item.resistances.filter(
                                                      (f) => {
                                                         return (
                                                            f !== e.target.value
@@ -2062,16 +2061,16 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                                                   ),
                                                ],
                                             })
-                                          : setSelected({
-                                               ...selected,
+                                          : setItem({
+                                               ...item,
                                                resistances: [
-                                                  ...selected.resistances,
+                                                  ...item.resistances,
                                                   e.target.value,
                                                ],
                                             });
                                     }}
                                  />
-                                 <label htmlFor={c}>{c}</label>
+                                 {c}</label>
                               </div>
                            ))}
                         </div>
@@ -2088,23 +2087,24 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         <div className="flex-checkboxes">
                            {damageTypes.map((c) => (
                               <div key={c} className="checkboxs">
+                                 <label>
                                  <input
                                     title={c}
                                     style={{ cursor: "pointer" }}
                                     type="checkbox"
                                     name={c}
-                                    checked={selected.damageImmunity.includes(
+                                    checked={item.damageImmunity.includes(
                                        c
                                     )}
                                     value={c}
                                     onChange={(e) => {
-                                       selected.damageImmunity.includes(
+                                       item.damageImmunity.includes(
                                           e.target.value
                                        )
-                                          ? setSelected({
-                                               ...selected,
+                                          ? setItem({
+                                               ...item,
                                                damageImmunity: [
-                                                  ...selected.damageImmunity.filter(
+                                                  ...item.damageImmunity.filter(
                                                      (f) => {
                                                         return (
                                                            f !== e.target.value
@@ -2113,16 +2113,16 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                                                   ),
                                                ],
                                             })
-                                          : setSelected({
-                                               ...selected,
+                                          : setItem({
+                                               ...item,
                                                damageImmunity: [
-                                                  ...selected.damageImmunity,
+                                                  ...item.damageImmunity,
                                                   e.target.value,
                                                ],
                                             });
                                     }}
                                  />
-                                 <label htmlFor={c}>{c}</label>
+                                 {c}</label>
                               </div>
                            ))}
                         </div>
@@ -2138,23 +2138,24 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         <div className="flex-checkboxes">
                            {conditions.map((c) => (
                               <div key={c} className="checkboxs">
+                                 <label>
                                  <input
                                     title={c}
                                     style={{ cursor: "pointer" }}
                                     type="checkbox"
                                     name={c}
-                                    checked={selected.conditionImmunity.includes(
+                                    checked={item.conditionImmunity.includes(
                                        c
                                     )}
                                     value={c}
                                     onChange={(e) => {
-                                       selected.conditionImmunity.includes(
+                                       item.conditionImmunity.includes(
                                           e.target.value
                                        )
-                                          ? setSelected({
-                                               ...selected,
+                                          ? setItem({
+                                               ...item,
                                                conditionImmunity: [
-                                                  ...selected.conditionImmunity.filter(
+                                                  ...item.conditionImmunity.filter(
                                                      (f) => {
                                                         return (
                                                            f !== e.target.value
@@ -2163,16 +2164,16 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                                                   ),
                                                ],
                                             })
-                                          : setSelected({
-                                               ...selected,
+                                          : setItem({
+                                               ...item,
                                                conditionImmunity: [
-                                                  ...selected.conditionImmunity,
+                                                  ...item.conditionImmunity,
                                                   e.target.value,
                                                ],
                                             });
                                     }}
                                  />
-                                 <label htmlFor={c}>{c}</label>
+                                 {c}</label>
                               </div>
                            ))}
                         </div>
@@ -2339,9 +2340,9 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                   }
                >
                   {/* legendary */}
-                  {selected.legendary && (
+                  {item.legendary && (
                      <div id="legendary" className="list-columns">
-                        {selected.legendary.map((action, i) => (
+                        {item.legendary.map((action, i) => (
                            <div className="flex-row" key={i}>
                               <div
                                  className="list-item"

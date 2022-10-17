@@ -18,7 +18,8 @@ const CharacterForm = ({data, updateFnc}) => {
         maxHp: 0,
         currentHp: 0,
         conditions: [],
-        picture_url: ''
+        picture_url: '',
+        xp: 0
     });
 
     useEffect(() => {

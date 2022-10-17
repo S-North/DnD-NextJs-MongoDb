@@ -17,26 +17,11 @@ const Nav = ({campaign, adventure, encounter, user}) => {
       }
     
       return () => {}
-    }, [])
-
-    const toggleSidebar = (setting) => {
-        console.log(setting, typeof setting)
-        console.log(!setting, typeof setting)
-        switch (setting) {
-            case 'open':
-                localStorage.setItem('sidebar', 'closed')
-                break
-            default:
-                localStorage.setItem('sidebar', 'open')
-
-        }
-    }
-    
+    }, [])    
     
     return (
         <header>
-            <nav>
-                <h2></h2>
+            <nav className={navStyles.nav}>
                 <Link href='/'>Home</Link>
                 {user &&<Link href={`/campaigns`}>Campaigns</Link>}
                 {path && path === "monsters" && <Link href={`/monsters`}>&gt; Monsters</Link>}

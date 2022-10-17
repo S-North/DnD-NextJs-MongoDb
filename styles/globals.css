@@ -81,6 +81,7 @@ a {
   body {
     background-size: auto 150%;
     background-position: right;
+    font-size: small;
   }
 }
 
@@ -176,17 +177,21 @@ section {
   color: black;
   padding: 0.5ch 0.5ch 0.5ch 0.5ch;
   border-radius: 1px;
-  animation: shrink 0.05s ease-in 1 normal forwards;
+  /* animation: shrink 0.05s ease-in 1 normal forwards;
+  -webkit-animation: grow 0.08s ease-in 1 normal forwards; */
 }
 
 .list-item .link, .list-item a {
   width: 100%;
   cursor: pointer;
+  /* animation: grow 0.08s ease-in 1 normal forwards;  */
+
 }
 
 .list-item:hover {
-  animation: grow 0.08s ease-in 1 normal forwards; 
+  /* animation: grow 0.08s ease-in 1 normal forwards;  */
 }
+
 
 .list-item .actions {
     justify-content: space-between;
@@ -198,7 +203,7 @@ section {
  .modal {
   display: block; /* Hidden by default */
   position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
+  z-index: 10; /* Sit on top */
   left: 0;
   top: 0;
   width: 100%; /* Full width */
@@ -231,6 +236,21 @@ section {
   100% {
     opacity: 1;
     transform: scale(1);
+
+  }
+  
+}
+
+@keyframes grow {
+  0% {
+    /* opacity: 0; */
+    /* transform: scale(1); */
+    /* box-shadow: var(--box-shadow); */
+  }
+  100% {
+    /* opacity: 1; */
+    transform: scale(1.005);
+    /* box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.374) */
 
   }
   
@@ -301,7 +321,7 @@ input[type=number]::-webkit-outer-spin-button {
 .flex-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   text-align: center;
   gap: 1ch;
   min-height: 2ch;
@@ -315,6 +335,7 @@ input[type=number]::-webkit-outer-spin-button {
   flex-wrap: wrap;
   flex-direction: row;
   padding: 0ch;
+  column-gap: 0.5rem;
 }
 
 .flex-checkboxes > div {
@@ -327,6 +348,8 @@ input[type=number]::-webkit-outer-spin-button {
 
 .flex-checkboxes input, label {
   display: inline-block;
+  /* margin-right: 0.5rem; */
+
 }
 
 button {

@@ -109,8 +109,9 @@
     background-color: var(--paper);
     gap: 0.5em;
     align-items: center;
+    justify-content: space-between;
 }
 
-.skillRow label {
-    min-width: 5rem;
+.skillRow input[type='number'] {
+    max-width: 2rem;
 }

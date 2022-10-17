@@ -17,7 +17,7 @@
     gap: 1ch;
     width: 100%;
     background-image: url(/images/full-bloom.png);
-    position: relative;
+    /* position: relative; */
 }
 
 .title {
