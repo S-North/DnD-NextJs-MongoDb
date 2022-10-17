@@ -1454,6 +1454,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         : { display: "none" }
                   }
                >
+                  <div className="flex-row">
                   <label htmlFor="name">Name:</label>
                   <input
                      id="name"
@@ -1465,6 +1466,8 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         setItem({ ...item, name: e.target.value });
                      }}
                   />
+                  </div>
+                  <div className="flex-row">
                   <label htmlFor="picture">Picture:</label>
                   <input
                      id="picture"
@@ -1478,6 +1481,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         });
                      }}
                   />
+                  </div>
 
                   <div className="flex-row">
                      <label htmlFor="type">Size:</label>
@@ -1680,6 +1684,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                   <div className="flex-checkboxes">
                      {sensesList.map((c) => (
                         <div key={c} className="checkboxs">
+                           <label>
                            <input
                               title={c}
                               style={{ cursor: "pointer" }}
@@ -1706,7 +1711,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                                       });
                               }}
                            />
-                           <label htmlFor={c}>{c}</label>
+                           {c}</label>
                         </div>
                      ))}
                   </div>
@@ -1845,6 +1850,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                   <div className="flex-checkboxes">
                      {abilityList.map((c) => (
                         <div key={c} className="checkboxs">
+                           <label>
                            <input
                               title={c}
                               style={{ cursor: "pointer" }}
@@ -1871,7 +1877,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                                       });
                               }}
                            />
-                           <label htmlFor={c}>{c}</label>
+                           {c}</label>
                         </div>
                      ))}
                   </div>
@@ -1979,6 +1985,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         <div className="flex-checkboxes">
                            {damageTypes.map((c) => (
                               <div key={c} className="checkboxs">
+                                 <label>
                                  <input
                                     title={c}
                                     style={{ cursor: "pointer" }}
@@ -2013,7 +2020,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                                             });
                                     }}
                                  />
-                                 <label htmlFor={c}>{c}</label>
+                                 {c}</label>
                               </div>
                            ))}
                         </div>
@@ -2030,6 +2037,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         <div className="flex-checkboxes">
                            {damageTypes.map((c) => (
                               <div key={c} className="checkboxs">
+                                 <label>
                                  <input
                                     title={c}
                                     style={{ cursor: "pointer" }}
@@ -2062,7 +2070,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                                             });
                                     }}
                                  />
-                                 <label htmlFor={c}>{c}</label>
+                                 {c}</label>
                               </div>
                            ))}
                         </div>
@@ -2079,6 +2087,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         <div className="flex-checkboxes">
                            {damageTypes.map((c) => (
                               <div key={c} className="checkboxs">
+                                 <label>
                                  <input
                                     title={c}
                                     style={{ cursor: "pointer" }}
@@ -2113,7 +2122,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                                             });
                                     }}
                                  />
-                                 <label htmlFor={c}>{c}</label>
+                                 {c}</label>
                               </div>
                            ))}
                         </div>
@@ -2129,6 +2138,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                         <div className="flex-checkboxes">
                            {conditions.map((c) => (
                               <div key={c} className="checkboxs">
+                                 <label>
                                  <input
                                     title={c}
                                     style={{ cursor: "pointer" }}
@@ -2163,7 +2173,7 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
                                             });
                                     }}
                                  />
-                                 <label htmlFor={c}>{c}</label>
+                                 {c}</label>
                               </div>
                            ))}
                         </div>

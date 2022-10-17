@@ -321,7 +321,7 @@ input[type=number]::-webkit-outer-spin-button {
 .flex-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   text-align: center;
   gap: 1ch;
   min-height: 2ch;
@@ -335,6 +335,7 @@ input[type=number]::-webkit-outer-spin-button {
   flex-wrap: wrap;
   flex-direction: row;
   padding: 0ch;
+  column-gap: 0.5rem;
 }
 
 .flex-checkboxes > div {
@@ -347,6 +348,8 @@ input[type=number]::-webkit-outer-spin-button {
 
 .flex-checkboxes input, label {
   display: inline-block;
+  /* margin-right: 0.5rem; */
+
 }
 
 button {
