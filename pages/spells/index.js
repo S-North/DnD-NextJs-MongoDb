@@ -56,7 +56,7 @@ export default withPageAuthRequired(function Spells({ user }) {
             </div>
 
             <div className="one-column">
-                {user.permission !== 'admin' && <button 
+                {user?.permission !== 'admin' && <button 
                     onClick={() => {importSpells(spellBook)}}>
                     Import Spells</button>}
             </div>
@@ -166,7 +166,7 @@ const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, selec
     return (
         <>
         <div className={styles.filter_container}>
-            {user.permission === 'admin' && <button 
+            {user?.permission === 'admin' && <button 
                 className={styles.btn_add_new} 
                 onClick={() => {setSelected({}); setModal({on:true, view: "edit"})}}>
                 New Spell
@@ -219,7 +219,7 @@ const SpellList = ({ addItem, editItem, deleteItem, setSelected, setModal, selec
                             </div>
                     </div>
                 </div>
-                {user.permission === 'admin' && <div className='actions'>
+                {user?.permission === 'admin' && <div className='actions'>
                     {deleteItem && <FaWindowClose 
                         style={{"cursor": "pointer"}} 
                         color="red"

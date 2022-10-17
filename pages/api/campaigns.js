@@ -35,6 +35,7 @@ export default async function handler(req, res) {
   // method to edit an elenent in an existing document!!!
   if (method === 'PATCH' && body.action === 'editmonster') {
     console.log('edit one monster')
+    console.log(body.data)
     const campaignId = ObjectId(body.data.campaignId)
     const monsterId = ObjectId(body.data.monster._id)
     response = await db.collection("campaigns").updateOne({_id: campaignId, "monsters._id": body.data.monster._id}, {$set: {"monsters.$": {...body.data.monster}}});
