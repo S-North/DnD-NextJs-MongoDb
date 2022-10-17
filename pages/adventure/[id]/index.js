@@ -178,7 +178,7 @@ const Adventure = ({adventure}) => {
 
             <div className="one-column">
                 <h2>Running Encounters</h2>
-                {encounters && encounters
+                {encounters && campaign && encounters
                     .filter(e => { return e.mode === "running"})
                     .map(encounter => (
                         <div key={encounter._id} className="list-item">
