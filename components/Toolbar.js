@@ -12,7 +12,7 @@ const Toolbar = () => {
     return (
         <>
             <div className={styles.container}>
-            <button className={styles.open_button} onClick={() => setOpen(!open)}>{open ? <FaAngleRight color='white' size='2em' /> : <FaAngleLeft color='white' size='2em' />}</button>
+            <button className={styles.open_button} onClick={() => setOpen(!open)}>{open ? <FaAngleRight color='white' size='1em' /> : <FaAngleLeft color='white' size='1em' />}</button>
             {open && <div className={styles.navigation}>
                 <Link href={'/'}>Home</Link><br></br>
                 <Link href={'/campaigns'}>Campaigns</Link><br></br>

@@ -210,7 +210,9 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
 
         if (newAdventures.acknowledged && newAdventures.insertedId) {
             setAdventures([...adventures, {...item, _id: newAdventures.insertedId, userId: user.sub}])
-            setModal({on: false, type: ""})
+            // setModal({on: false, type: ""})
+            setDisplayDialog(false)
+            setDialogType('')
           }
     }
     // if theres an _id, then its an edit
@@ -231,17 +233,18 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
 
         if (newAdventures.acknowledged && newAdventures.modifiedCount === 1) {
             setAdventures([...adventures.filter(a => {return a._id !== item._id}), item])
-            setModal({on: false, type: ""})
+            setDisplayDialog(false)
+            setDialogType('')
           }   
     }
     }
 
-    const deleteAdventure = async (item) => {
+    const deleteItem = async (collection, item) => {
         const response = await fetch(`${api}delete`, {
             method: "POST",
                 body: JSON.stringify(
                     {
-                    collection: 'adventures',
+                    collection: collection,
                     action: 'deleteone',
                     data: item
                 }),
@@ -252,7 +255,11 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
 
         const acknowledgement = await response.json()
         if (acknowledgement && acknowledgement.acknowledged && acknowledgement.deletedCount > 0) {
-            setAdventures([...adventures.filter(adventure => { return adventure._id !== item._id})])
+            switch (collection) {
+                case 'adventures': setAdventures([...adventures.filter(adventure => { return adventure._id !== item._id})]); break
+                case 'characters': setCharacters([...characters.filter(c => { return c._id !== item._id})]); break
+            }
+            
         }
     } 
 
@@ -289,7 +296,9 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
                         enemy: 'pc',
                         currentHp: character.maxHp,
                         userId: user.sub}])
-                setModal({on: false, type: ""})
+                // setModal({on: false, type: ""})
+                setDisplayDialog(false)
+                setDialogType('')
             }
         }
         // if theres an _id, then its an edit
@@ -309,28 +318,9 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
 
             if (updateCharacter.acknowledged && updateCharacter.modifiedCount === 1) {
                 setCharacters([...characters.filter(a => {return a._id !== character._id}), character])
-                setModal({on: false, type: ""})
+                setDisplayDialog(false)
+                setDialogType('')
             }   
-        }
-    }
-
-    const deleteCharacter = async (character) => {
-        const response = await fetch(`${api}delete`, {
-            method: "POST",
-                body: JSON.stringify(
-                    {
-                    collection: 'characters',
-                    action: 'deleteone',
-                    data: character
-                }),
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8"
-                }
-        })
-
-        const acknowledgement = await response.json()
-        if (acknowledgement && acknowledgement.acknowledged && acknowledgement.deletedCount > 0) {
-            setCharacters([...characters.filter(c => { return c._id !== character._id})])
         }
     }
 
@@ -416,6 +406,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
             visible={displayDialog} 
             style={{ "maxWidth": '50rem' }} 
             onHide={() => {setDisplayDialog(false); setDialogType('')}}>
+            
             {dialogType === 'edit monster' && 
                 <MonsterForm 
                     selected={selected}
@@ -424,6 +415,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
                     setParentModal={handleDialogModal}>
                 </MonsterForm>
             }
+            
             {dialogType === 'import monsters' &&
             <>
                 <FileUpload
@@ -437,31 +429,15 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
             </>
             }
 
+            {dialogType === 'adventure' && <BasicForm data={selected} updateFnc={updateAdventures} mongoCollection={modal.type}></BasicForm>}                        
+            {dialogType === 'character' && <CharacterForm data={selected} updateFnc={updateCharacter} mongoCollection={modal.type}></CharacterForm>}
 
         </Dialog>
-       {/* modal window */}
-       {modal.on && <div id="modal-window" className="modal">
-            {/* Modal content */}
-                <div className="modal-content">
-                    <span className="close" onClick={() => {setModal({"on": false, "type": "none"})}}>&times;</span>
-                    {modal.type === "adventures" &&
-                    <>
-                        <h3>Edit Campaign</h3>
-                        <BasicForm data={selected} updateFnc={updateAdventures} mongoCollection={modal.type}></BasicForm>
-                    </>}
-                    {modal.type === "characters" &&
-                    <>
-                        <h3>Edit Campaign</h3>
-                        <CharacterForm data={selected} updateFnc={updateCharacter} mongoCollection={modal.type}></CharacterForm>
-                    </>}
-                    
-                </div>
-        </div>}
 
         <section>
             <div className="one-column">
                 <h2>Adventures</h2>
-                    <button className="green" onClick={() => {setSelected({"name": "", "description": ""}, setModal({"on": true, "type": "adventures"}))}}>New</button>
+                    <button className="green" onClick={() => {setSelected({"name": "", "description": ""}); setDisplayDialog(true); setDialogType('adventure')}}>New</button>
 
                     {adventures.sort((a,b) => {return a.modified < b.modified}).map(adventure => (
                         <div key={adventure._id} className="list-item">
@@ -474,10 +450,10 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
 
                             <div>
                               <FaWindowClose style={{"cursor": "pointer"}} color="red"
-                                onClick={() => {deleteAdventure("adventures", adventure)}} />
+                                onClick={() => {deleteItem("adventures", adventure)}} />
 
                               <FaEdit style={{"cursor": "pointer"}} color="grey"
-                                onClick={() => {setSelected(adventure); setModal({"on": true, "type": "adventures"})}} />
+                                onClick={() => {setSelected(adventure); setDialogType('adventure'); setDisplayDialog(true)}} />
                             </div>
                         </div>
                     ))}
@@ -485,7 +461,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
 
             <div className="one-column">
                 <h2>Characters</h2>
-                <button className="green" onClick={() => {setSelected({}), setModal({"on": true, "type": "characters"})}}>New</button>
+                <button className="green" onClick={() => {setSelected({}); setDisplayDialog(true); setDialogType('character')}}>New</button>
 
                 {characters.map(character => (
                     <div key={character._id} className="list-item">
@@ -499,11 +475,11 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
                         <div><FaWindowClose 
                             style={{"cursor": "pointer"}} 
                             color="red"
-                            onClick={() => {deleteCharacter(character)}} />
+                            onClick={() => {deleteItem('characters', character)}} />
                         <FaEdit 
                             style={{"cursor": "pointer"}} 
                             color="grey"
-                            onClick={() => {setSelected(character); setModal({"on": true, "type": "characters"})}} />
+                            onClick={() => {setSelected(character); setDialogType('character'); setDisplayDialog(true)}} />
                         </div>
                     </div>
                 ))}
@@ -516,8 +492,10 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
                     .map(encounter => (
                         <div key={encounter._id} className="list-item">
                             <Link href={`/encounter/${encounter._id}`}>
+                                <div className="link">
                                 <h2>{encounter.name}</h2>
-                                {/* <p>{`In ${campaigns.filter(c => c.id === encounter.campaignId).name} > ${adventures.list.filter(c => c.id === encounter.adventureId)[0].name}`}</p> */}
+                                <p>{`In ${campaign.name} > ${adventures?.filter(a => { return a._id === encounter.adventureId })[0]?.name}`}</p>
+                                </div>
                             </Link>
                         </div>))}
             </div>
