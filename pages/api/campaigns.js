@@ -38,7 +38,7 @@ export default async function handler(req, res) {
     console.log(body.data)
     const campaignId = ObjectId(body.data.campaignId)
     const monsterId = ObjectId(body.data.monster._id)
-    response = await db.collection("campaigns").updateOne({_id: campaignId, "monsters._id": body.data.monster._id}, {$set: {"monsters.$": {...body.data.monster}}});
+    response = await db.collection("campaigns").updateOne({_id: campaignId, "monsters._id": monsterId}, {$set: {"monsters.$": {...body.data.monster, _id: monsterId}}});
   }
 
   if (method === 'POST' && body.action === 'deleteone') {
@@ -60,12 +60,13 @@ export default async function handler(req, res) {
    response = {
     initialData: body.data,
     confirm,
-    monster: {...body.data.monster, _id: NEWMONSTERID}
+    monster: {...body.data.monster}
    }
    console.log(response)
   }
 
-  if (method === 'POST' && body.action === 'edit monster') {
+  if (method === 'POST' && body.action === 'delete monster') {
+    console.log('delete monster')
     console.log(body.data)
     const CAMPAIGNID = new ObjectId(body.data.campaignId)
     const MONSTERID = new ObjectId(body.data.monster._id)

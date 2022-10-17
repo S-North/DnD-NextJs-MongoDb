@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 
@@ -9,16 +9,19 @@ import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
 
 import { truncate } from '../../../utils/utils'
 import { importMonster } from '../../../utils/import';
+import { monsterTemplate } from '../../../utils/Forms'
 
 import BasicForm from '../../../components/forms/BasicForm'
 import CharacterForm from '../../../components/forms/CharacterForm'
 import Nav from '../../../components/Nav';
 import { MonsterForm } from '../../monsters';
 
+import { v4 as uuidv4 } from 'uuid'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { FileUpload } from 'primereact/fileupload';
+import { Toast } from 'primereact/toast';
 import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
 import "primereact/resources/primereact.min.css";                  //core css
 import "primeicons/primeicons.css";                                //icons
@@ -38,15 +41,15 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
     const [ dialogType, setDialogType ] = useState('')
     const [ importMessage, setImportMessage ] = useState('')
     const [ failed, setFailed ] = useState([])
+    const toast = useRef(null);
 
-    const saveCustomMonster = async (monster) => {
-        console.log(monster)
-        monster = {...monster, sourceBook: 'Custom Edited', campaignMonster: true}
-        console.log(monster)
+    const saveCustomMonster = async (monster, reopen) => {
+        // monster = {...monster, sourceBook: 'Custom Edited', campaignMonster: true}
         const DATA = {
            campaignId: campaign._id,
-           monster: monster
+           monster: {...monster, sourceBook: 'Custom Edited', campaignMonster: true, _id: uuidv4()}
         }
+        if (!DATA.monster._id) DATA.monster._id = uuidv4()
         const response = await fetch(`/api/campaigns`, {
            method: "POST",
            body: JSON.stringify({
@@ -56,10 +59,12 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
            headers: { "Content-type": "application/json; charset=UTF-8" },
         });
         const reply = await response.json();
-        console.log(reply)
         if (reply.confirm.acknowledged && reply.confirm.modifiedCount > 0) {
            setCampaign({...campaign, monsters: [...campaign.monsters, reply.monster]})
-        //    setDialogType('')
+           !reopen && setDisplayDialog(false)
+           !reopen && setDialogType(''); toast.current.show({severity: 'success', summary: 'Monster Data Saved', detail: 'Your data has been saved'});
+           reopen && setSelected(reply.monster); toast.current.show({sticky: true, severity: 'info', summary: 'Monster Reopened', detail: 'You are now editing the new monster'});
+           
         } else setFailed([...failed, monster])
      }
 
@@ -94,7 +99,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
         setImportMessage('Files OK')
         
         monsters.forEach(monster => {
-            saveCustomMonster(monster)
+            saveCustomMonster({...monster, _id: uuidv4()})
         })
      }
     
@@ -209,6 +214,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
         newAdventures = await response.json()
 
         if (newAdventures.acknowledged && newAdventures.insertedId) {
+            toast.current.show({severity: 'success', summary: 'Data Saved', detail: 'Your data has been saved'});
             setAdventures([...adventures, {...item, _id: newAdventures.insertedId, userId: user.sub}])
             // setModal({on: false, type: ""})
             setDisplayDialog(false)
@@ -235,6 +241,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
             setAdventures([...adventures.filter(a => {return a._id !== item._id}), item])
             setDisplayDialog(false)
             setDialogType('')
+            toast.current.show({severity: 'success', summary: 'Data Saved', detail: 'Your data has been saved'});
           }   
     }
     }
@@ -299,6 +306,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
                 // setModal({on: false, type: ""})
                 setDisplayDialog(false)
                 setDialogType('')
+                toast.current.show({severity: 'success', summary: 'Data Saved', detail: 'Your data has been saved'});
             }
         }
         // if theres an _id, then its an edit
@@ -320,6 +328,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
                 setCharacters([...characters.filter(a => {return a._id !== character._id}), character])
                 setDisplayDialog(false)
                 setDialogType('')
+                toast.current.show({severity: 'success', summary: 'Data Saved', detail: 'Your data has been saved'});
             }   
         }
     }
@@ -329,6 +338,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
         setSelected(item)
         setDialogType(`edit ${type}`)
         setDisplayDialog(true)
+        toast.current.show({severity: 'success', summary: 'Data Saved', detail: 'Your data has been saved'});
     }
 
     const saveMonster = async (monster) => {
@@ -359,6 +369,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
                 monsters: [
                     ...campaign.monsters.filter(m => { return monster._id !== m._id}), monster]})
             setDialogType('')
+            toast.current.show({severity: 'success', summary: 'Monster Data Saved', detail: 'Your data has been saved'});
         }   
 
     }
@@ -369,12 +380,13 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
     }
 
     const deleteMonster = async (monster) => {
+        console.log(monster)
         const response = await fetch(`${api}campaigns`, {
             method: "POST",
                 body: JSON.stringify(
                     {
                     collection: 'campaigns',
-                    action: 'edit monster',
+                    action: 'delete monster',
                     data: {
                         campaignId: campaign._id,
                         monster: monster
@@ -401,6 +413,7 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
     return (
        <>
         <Nav location='campaign' campaign={campaign} user={user}></Nav>
+        <Toast ref={toast}></Toast>
         <Dialog 
             header={dialogType.toUpperCase()}
             visible={displayDialog} 
@@ -412,7 +425,18 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
                     selected={selected}
                     setSelected={setSelected}
                     update={saveMonster}
-                    setParentModal={handleDialogModal}>
+                    setParentModal={handleDialogModal}
+                    saveAsNew={saveCustomMonster}>
+                </MonsterForm>
+            }
+
+            {dialogType === 'add monster' && 
+                <MonsterForm 
+                    selected={selected}
+                    setSelected={setSelected}
+                    update={saveCustomMonster}
+                    setParentModal={handleDialogModal}
+                    saveAsNew={saveCustomMonster}>
                 </MonsterForm>
             }
             
@@ -501,11 +525,15 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
             </div>
 
             <div className="one-column">
-                <h2>Campaign Monsters</h2> 
+                <h2>Campaign Monsters</h2>
+                <div className='flex-row'>
                 <Button 
                     label='Import' 
                     onClick={() => {setDialogType('import monsters'); setDisplayDialog(true)}}>
                 </Button>
+                <Button label='New' className='p-button-success'
+                    onClick={(e) => {e.preventDefault(); setSelected(monsterTemplate); setDialogType('add monster'); setDisplayDialog(true); }} />
+                </div>
                 {campaign?.monsters?.sort((a,b) => {return a.name > b.name}).map(monster => (
                         <div key={monster._id} className="list-item">
                             <Link key={monster._id} href={`/monster/${monster._id}`}>

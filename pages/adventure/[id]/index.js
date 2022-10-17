@@ -183,8 +183,10 @@ const Adventure = ({adventure}) => {
                     .map(encounter => (
                         <div key={encounter._id} className="list-item">
                             <Link href={`/encounter/${encounter._id}`}>
+                                <div className="link">
                                 <h2>{encounter.name}</h2>
-                                {/* <p>{`In ${campaigns.filter(c => c.id === encounter.campaignId).name} > ${adventures.list.filter(c => c.id === encounter.adventureId)[0].name}`}</p> */}
+                                <p>{`In ${campaign.name} > ${adventure.name}`}</p>
+                                </div>
                             </Link>
                         </div>))}
             </div>

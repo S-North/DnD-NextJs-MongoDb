@@ -35,6 +35,7 @@ import { SpellList } from "../spells";
 
 import { FileUpload } from 'primereact/fileupload';
 import { Button } from 'primereact/button';
+import { SplitButton } from 'primereact/splitbutton';
 import { TieredMenu } from 'primereact/tieredmenu';
 import { RadioButton } from 'primereact/radiobutton';
 // import { Slider } from 'primereact/slider';
@@ -45,9 +46,9 @@ import "primeicons/primeicons.css";                                //icons
 
 export default withPageAuthRequired(function Monsters({ user }) {
    const api = "/api/";
-   const [selected, setSelected] = useState();
-   const [modal, setModal] = useState({ type: "none", on: false });
-   const [updated, setUpdated] = useState(0);
+   const [ selected, setSelected ] = useState();
+   const [ modal, setModal ] = useState({ type: "none", on: false });
+   const [ updated, setUpdated ] = useState(0);
    const [ importMessage, setImportMessage ] = useState("")
    const [ importTag, setImportTag ] = useState('nothing')
 
@@ -745,14 +746,14 @@ const MonsterView = ({ id }) => {
    );
 };
 
-const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=() => console.log('nothing') }) => {
+const MonsterForm = ({ selected, setSelected, update, saveAsNew, setModal: setParentModal=() => console.log('nothing') }) => {
    const api = "/api/";
-   const [modal, setModal] = useState({ on: false, view: "" });
-   const [tabs, setTabs] = useState("details");
-   const [item, setItem] = useState();
-   const [trait, setTrait] = useState();
-   const [action, setAction] = useState();
-   const [spells, setSpells] = useState();
+   const [ modal, setModal ] = useState({ on: false, view: "" });
+   const [ tabs, setTabs ] = useState("details");
+   const [ item, setItem ] = useState();
+   const [ trait, setTrait ] = useState();
+   const [ action, setAction ] = useState();
+   const [ spells, setSpells ] = useState();
    const actionTemplate = {
       name: "",
       description: "",
@@ -762,8 +763,8 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
       damage3: { enabled: false },
       dc: {},
    };
-   const [legendary, setLegendary] = useState();
-   const [monsters, setMonsters] = useState([]);
+   const [ legendary, setLegendary ] = useState();
+   const [ monsters, setMonsters ] = useState([]);
 
    // new skills button
    const skillsMenu = useRef(null);
@@ -1344,23 +1345,23 @@ const MonsterForm = ({ selected, setSelected, update, setModal: setParentModal=(
          )}
 
          {item && (
-            <form
-               onSubmit={(e) => {
-                  e.preventDefault();
-                  update(item);
-                  setParentModal({ on: false, type: "" })
-               }}
-            >
-               {/* submit button */}
-               <div className="flex-row">
-                  <button className="green" type="submit">
-                     Save
-                  </button>
-               </div>{" "}
-               <br />
-
+            <form>
                {/* tabs for sections */}
                <div id="tabs" className="flex-row">
+                  <SplitButton 
+                     className="p-button-sm mr-2 mb-2"
+                     label="Save"
+                     model={saveAsNew ? [{
+                        label: 'Save as new',
+                        // icon: 'pi pi-refresh',
+                        command: () => {
+                           let newItem = {...item}
+                           if (item.name === selected.name) newItem.name = item.name + ' (copy)';
+                           saveAsNew({...newItem, _id: undefined}, true)
+                        }
+                    }]
+                  : []}
+                     onClick={(e) => {e.preventDefault(); update(item); setParentModal({ on: false, type: "" })}} />
                   <button
                      type="button"
                      className="tab"
