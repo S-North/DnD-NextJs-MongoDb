@@ -18,6 +18,8 @@
     box-shadow: none;
     padding: 0;
     cursor: pointer;
+    z-index: 5;
+
 }
 
 .navigation {
