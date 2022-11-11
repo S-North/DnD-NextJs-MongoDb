@@ -1,14 +1,14 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react'
-import navStyles from '../styles/Nav.module.css'
+import navStyles from './Nav.module.css'
 import { useRouter } from "next/router";
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
-const Nav = ({campaign, adventure, encounter, user}) => {
+const Nav = ({campaign, adventure, encounter, user, location}) => {
     const { query, pathname, isReady } = useRouter()
     const path = pathname.split("/")[1]
     const id = query.id
-    // console.log(path)
+    console.log(path)
     // console.log(id)
 
     useEffect(() => {
@@ -20,15 +20,22 @@ const Nav = ({campaign, adventure, encounter, user}) => {
     }, [])    
     
     return (
-        <header>
+        <header className={navStyles.header}>
             <nav className={navStyles.nav}>
-                <Link href='/'>Home</Link>
-                {user &&<Link href={`/campaigns`}>Campaigns</Link>}
-                {path && path === "monsters" && <Link href={`/monsters`}>&gt; Monsters</Link>}
-                {path && path === "equipment" && <Link href={`/equipment`}>&gt; Equipment</Link>}
-                {path && path === "spells" && <Link href={`/spells`}>&gt; Spells</Link>}
+                <Link href='/'><a className={pathname === '/' ? navStyles.selected : navStyles.unselected}>Home | </a></Link>
+                {user && user.permission === 'admin' && <Link href='/admin'><a className={pathname === '/admin' ? navStyles.selected : navStyles.unselected}>Admin | </a></Link>}
+                {user &&
+                    <Link href={`/campaigns`}>
+                        <a 
+                            className={['/campaigns', '/campaign/[id]', '/encounter/[id]', '/adventure/[id]'].includes(pathname) ? navStyles.selected : navStyles.unselected}>
+                                Campaigns | 
+                        </a>
+                    </Link>}
+                {path && path === "monsters" && <Link href={`/monsters`}>Monsters</Link>}
+                {path && path === "equipment" && <Link href={`/equipment`}>Equipment</Link>}
+                {path && path === "spells" && <Link href={`/spells`}>Spells</Link>}
                 
-                {campaign && path && ['campaign', 'adventure', 'encounter'].includes(path) && <Link href={`/campaign/${campaign._id}`}><a>&gt; {campaign.name}</a></Link>}
+                {campaign && path && ['campaign', 'adventure', 'encounter'].includes(path) && <Link href={`/campaign/${campaign._id}`}><a>{campaign.name}</a></Link>}
 
                     
 

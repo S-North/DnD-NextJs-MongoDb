@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { withPageAuthRequired, useUser } from "@auth0/nextjs-auth0";
 
 import React, { useState, useEffect, createContext, useContext, useRef } from "react";
+import Image from "next/image";
 import {
    abilityModifier,
    diceRoll,
@@ -40,6 +41,7 @@ import { SplitButton } from 'primereact/splitbutton';
 import { TieredMenu } from 'primereact/tieredmenu';
 import { Toast } from 'primereact/toast';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
+import { Dialog } from "primereact/dialog";
 import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
 import "primereact/resources/primereact.min.css";                  //core css
 import "primeicons/primeicons.css";                                //icons
@@ -423,6 +425,10 @@ const Encounter = ({ initialEncounter }) => {
          setModal({ on: false, type: "" });
       }
    };
+
+   const moveMonsters = async (monsters) => {
+      // hook this up the to move monsters component
+   }
    
    const saveInitiative = async (initiative) => {
       console.log(initiative);
@@ -939,12 +945,24 @@ const CombatantDetails = ({ selected, doDamage }) => {
                            showSticky(combatant.name, 'Monster not saved')
                         }
                      }
+                  },
+                  {
+                     icon: 'pi pi-stopwatch',
+                     label: 'Add Concentration',
+                     command: () => console.log('add concentration')
+                  },
+                  {
+                     icon: 'pi pi-times-circle',
+                     label: 'Remove Concentration',
+                     disabled: !combatant.concentration,
+                     command: () => console.log('remove concentration')
                   }
-                  ]} 
+                  ]}
                   popup ref={menu}>
                </Menu>
                <Button
                   className="p-button-sm"
+                  style={{"maxHeight": "2rem"}}
                   icon="pi pi-ellipsis-v" 
                   onClick={(event) => menu.current.toggle(event)}/>
             </div>
@@ -1415,6 +1433,7 @@ const CombatantDetails = ({ selected, doDamage }) => {
                                        tooltip="Do Attack"
                                        // className={styles.btn}
                                        className="p-button-sm mr-2 mb-2"
+                                       style={{"maxHeight": "2rem"}}
                                        model={[
                                           {label: 'Advantage', command: () => doDamage(
                                              {

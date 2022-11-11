@@ -4,6 +4,7 @@
   /* colours */
   --toolbar-dark: rgb(42, 41, 51);
   --paper: rgb(245, 245, 245);
+  --paper-shade: rgb(200, 196, 196);
   --green: rgb(28, 141, 28);
   --blue: rgb(67, 83, 152);
   --red: rgb(199, 22, 54);
@@ -34,6 +35,10 @@ body {
   background-size: 100% auto;
   background-repeat: repeat;
   -ms-overflow-style: none;  /*IE and Edge */
+}
+
+#__next {
+  height: 100%;
 }
 
 a {
@@ -426,6 +431,7 @@ button:hover {
   border-radius: 1px;
   animation: shrink 0.05s ease-in 1 normal forwards;
   gap: 1ch;
+  min-height: 2.8rem;
 }
 
 .combatant-item .initiative {

@@ -38,7 +38,7 @@ export default withPageAuthRequired(function Spells({ user }) {
 
     return(
         <>
-        <Nav location='spells'></Nav>
+        <Nav location='spells' user={user}></Nav>
         {/* modal window */}
         {modal.on && 
         <div id="modal-window" className="modal">
