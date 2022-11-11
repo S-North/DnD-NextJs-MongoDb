@@ -1,0 +1,41 @@
+.abilityrow {
+    display: grid;
+    grid-template-columns: repeat(6, 5rem);
+    column-gap: 0.5rem;
+    /* max-width: 40ch; */
+    padding: 0 1ch;
+}
+
+.abilityrow h2 {
+    margin: 0;
+    padding: 0;
+}
+
+.abilitybox {
+    /* padding: 1ch; */
+    display: flex;
+    flex-direction: column;
+    gap: 0.5ch;
+    text-align: center;
+    min-width: 3rem;
+}
+
+.abilitybox p {
+    cursor: pointer;
+    transition: all 0.5s ease;
+    padding: 0.2rem 0;
+}
+
+.abilitybox p:hover {
+    background-color: rgba(53, 53, 53, 0.195);
+}
+
+.btn {
+    background-color: green;
+    color: ghostwhite;
+    transition: all 0.2s ease-in;
+}
+
+.btn:hover {
+    filter: brightness(1.5)
+}

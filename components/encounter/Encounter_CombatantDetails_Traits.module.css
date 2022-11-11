@@ -1,0 +1,25 @@
+.traits {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+}
+
+.traits > h2 {
+    text-align: center;
+}
+
+.trait {
+    padding: 0.5ch 1ch;
+    display: inline-block;
+    box-shadow: 0 0 2px grey;
+    transition: all 0.2s ease-in;
+    background-color: white;
+}
+
+.trait:hover {
+    background-color: rgba(231, 255, 234, 0.8);
+    border-radius: 4px;
+    box-shadow: 0 0 4px rgb(108, 108, 108);
+}

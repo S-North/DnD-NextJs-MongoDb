@@ -3,26 +3,13 @@ import { ObjectId } from "mongodb";
 import { v4 as uuidv4 } from 'uuid'
 
 import { withPageAuthRequired, useUser } from "@auth0/nextjs-auth0";
-
 import React, { useState, useEffect, createContext, useContext, useRef } from "react";
-import Image from "next/image";
-import {
-   abilityModifier,
-   diceRoll,
-   xpToLevel,
-   displayCrAsFraction,
-   calculateProficiencyBonus,
-   truncate,
-   crToXp,
-} from "../../../utils/utils";
-import { conditions } from "../../../utils/Forms";
-
-import styles from "../../../styles/CombatantDetails.module.css";
 import encounterStyle from "../../../styles/Encounter.module.css";
 
 import monsters, { MonsterForm } from "../../monsters";
-import CharacterForm from "../../../components/forms/CharacterForm";
 import InitiativeList from "../../../components/encounter/InitiativeList";
+import Encounter_CombatantDetails, { EncounterDetailsContext } from "../../../components/encounter/Encounter_CombatantDetails";
+import CharacterForm from "../../../components/forms/CharacterForm";
 import AddCharacter from "../../../components/encounter/AddCharacter";
 import AddMonster from "../../../components/encounter/AddMonster";
 import EditMonsters from "../../../components/encounter/EditMonsters";
@@ -31,21 +18,6 @@ import DamageCalculator from "../../../components/encounter/DamageCalculator";
 import EncounterList from "../../../components/encounter/EncounterList";
 import DoAttack from "../../../components/encounter/DoAttack";
 import Nav from "../../../components/Nav";
-
-import Select from 'react-select'
-
-import { Menubar } from 'primereact/menubar'
-import { Menu } from 'primereact/menu';
-import { Button } from 'primereact/button';
-import { SplitButton } from 'primereact/splitbutton';
-import { TieredMenu } from 'primereact/tieredmenu';
-import { Toast } from 'primereact/toast';
-import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
-import { Dialog } from "primereact/dialog";
-import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
-import "primereact/resources/primereact.min.css";                  //core css
-import "primeicons/primeicons.css";                                //icons
- 
 
 export const EncounterContext = createContext();
 
@@ -56,7 +28,7 @@ const Encounter = ({ initialEncounter }) => {
    const [characters, setCharacters] = useState();
    const [campaign, setCampaign] = useState({});
    const [adventure, setAdventure] = useState({});
-   const [initiative, setInitiative] = useState();
+   const [tab, setTab] = useState('details')
 
    // used as temporary storage during edit, then as the combatant to display during running
    const [selected, setSelected] = useState();
@@ -65,7 +37,6 @@ const Encounter = ({ initialEncounter }) => {
    const [tempCombatant, setTempCombatant] = useState();
    const [modal, setModal] = useState({ type: "none", on: false });
 
-   // console.log(user.name);
 
    useEffect(() => {
       // keybindings for keyboard commands. Needs some more research
@@ -74,19 +45,6 @@ const Encounter = ({ initialEncounter }) => {
          if (e.key === "Escape") {
             setModal({ on: false, type: "" });
          }
-         // else if (e.key === 'ArrowRight' && encounter.mode === 'running') {
-         //   incrementInitiative("forward")
-         //   console.log('right arrow')
-         // }
-         // else if (e.key === 'ArrowLeft' && encounter.mode === 'running') {
-         //   incrementInitiative("back")
-         //   console.log('left arrow')
-         // }
-         // else if (e.key === 'h' && e.getModifierState('Control') && e.getModifierState('Alt') && encounter.mode === 'running') {
-         //   // incrementInitiative("back")
-         //   console.log('hitpoints')
-         //   hpCalulatorForSelected()
-         // }
       });
 
       return () => {};
@@ -233,11 +191,6 @@ const Encounter = ({ initialEncounter }) => {
          return characters.filter(character => character._id === combatant._id)[0]
       } else return selected
    }
-
-   const selectMonster = (monster) => {
-      // utility function to handle setting the selected item state. Should propably rename as this is used for monsters, characters, npcs, etc
-      setSelected(monster);
-   };
 
    const addCharacters = async (charactersList) => {
       const response = await fetch(`${api}encounters`, {
@@ -514,12 +467,6 @@ const Encounter = ({ initialEncounter }) => {
       setModal({ on: true, type: "HpCalculator" });
    };
 
-   const hpCalulatorForSelected = () => {
-      console.log(selected);
-      console.log(encounter);
-      changeHP(selected);
-   };
-
    const doDamage = (attacker, attack, options) => {
       console.log(attacker);
       console.log(attack);
@@ -527,7 +474,7 @@ const Encounter = ({ initialEncounter }) => {
       setModal({ on: true, type: "doAttack" });
    };
 
-   const [ editButton, setEditButton ] = useState({state: 'Edit', icons: 'pi pi-fw pi-wrench'})
+   // const [ editButton, setEditButton ] = useState({state: 'Edit', icons: 'pi pi-fw pi-wrench'})
 
    const editEncounterState = () => {
       // console.log(encounterState.state)
@@ -553,155 +500,27 @@ const Encounter = ({ initialEncounter }) => {
       console.log(monsterList)
    };
 
-
-   const items = [
-      {
-         label: editButton.state,
-         icon: editButton.icons,
-         command: () => editEncounterState()
-      },
-      {
-         label:'Encounter',
-         icon:'pi pi-fw pi-file',
-         items:[
-            {
-               label:'Duplicate',
-               icon:'pi pi-fw pi-file-export',
-               command: ()=>{ window.confirm("Copy this encounter to a new encounter?"); }
-            },
-            {
-               label:'Delete',
-               icon:'pi pi-fw pi-trash',
-               command: ()=>{ window.confirm("Are you sure you want to delete this encounter?"); }
-            },
-            {
-               separator:true
-            },
-            {
-               label:'Export',
-               icon:'pi pi-fw pi-external-link',
-               command:()=>{ window.confirm("Are you sure you want to export this encounter>"); }
-            }
-         ]
-      },
-      {
-         label:'Edit',
-         icon:'pi pi-fw pi-pencil',
-         items:[
-            {
-               label:'Left',
-               icon:'pi pi-fw pi-align-left'
-            },
-            {
-               label:'Right',
-               icon:'pi pi-fw pi-align-right'
-            },
-            {
-               label:'Center',
-               icon:'pi pi-fw pi-align-center'
-            },
-            {
-               label:'Justify',
-               icon:'pi pi-fw pi-align-justify'
-            },
-
-         ]
-      },
-      {
-         label:'Users',
-         icon:'pi pi-fw pi-user',
-         items:[
-            {
-               label:'New',
-               icon:'pi pi-fw pi-user-plus',
-
-            },
-            {
-               label:'Delete',
-               icon:'pi pi-fw pi-user-minus',
-
-            },
-            {
-               label:'Search',
-               icon:'pi pi-fw pi-users',
-               items:[
-                  {
-                     label:'Filter',
-                     icon:'pi pi-fw pi-filter',
-                     items:[
-                        {
-                           label:'Print',
-                           icon:'pi pi-fw pi-print'
-                        }
-                     ]
-                  },
-                  {
-                     icon:'pi pi-fw pi-bars',
-                     label:'List'
-                  }
-               ]
-            }
-         ]
-      },
-      {
-         label:'Events',
-         icon:'pi pi-fw pi-calendar',
-         items:[
-            {
-               label:'Edit',
-               icon:'pi pi-fw pi-pencil',
-               items:[
-                  {
-                     label:'Save',
-                     icon:'pi pi-fw pi-calendar-plus'
-                  },
-                  {
-                     label:'Delete',
-                     icon:'pi pi-fw pi-calendar-minus'
-                  },
-
-               ]
-            },
-            {
-               label:'Archieve',
-               icon:'pi pi-fw pi-calendar-times',
-               items:[
-                  {
-                     label:'Remove',
-                     icon:'pi pi-fw pi-calendar-minus'
-                  }
-               ]
-            }
-         ]
-      },
-      {
-         label:'Archive',
-         icon:'pi pi-fw pi-power-off',
-         command:()=>{ window.confirm("Are you sure you want to mark this encounter as complete?"); }
-      }
-   ];
+   const contextValue = {
+      campaign,
+      encounter,
+      setEncounter,
+      characters,
+      editCharacter,
+      setCharacters,
+      selected,
+      setSelected,
+      editMonster,
+      modal,
+      setModal,
+      initiativeItemToFullStats,
+      saveMonster,
+      getCombatantStats,
+      saveCustomMonster
+   }
 
 
    return (
-      <EncounterContext.Provider
-         value={{
-            campaign,
-            encounter,
-            setEncounter,
-            characters,
-            editCharacter,
-            setCharacters,
-            selected,
-            setSelected,
-            editMonster,
-            modal,
-            setModal,
-            initiativeItemToFullStats,
-            saveMonster,
-            getCombatantStats,
-            saveCustomMonster
-         }}
-      >
+      <EncounterContext.Provider value={contextValue} >
          <>
             <Nav
                location="encounter"
@@ -786,9 +605,6 @@ const Encounter = ({ initialEncounter }) => {
                </div>
             )}
 
-            {/* <section style={{"marginBottom": "1em"}}>
-               <Menubar model={items}></Menubar>
-            </section> */}
             <section>
                {/* the edit list of combatants */}
                {encounter && encounter.mode === "editing" && (
@@ -814,13 +630,9 @@ const Encounter = ({ initialEncounter }) => {
 
                {selected && (
                   <div className="column-wide">
-                     <CombatantDetails
-                        selected={selected}
-                        // combatant={getCombatantStats(selected)}
-                        doDamage={doDamage}
-                        editCharacter={editCharacter}
-                        editMonster={editMonster}
-                     ></CombatantDetails>
+                     <EncounterDetailsContext.Provider value={{tab, setTab}}>
+                        <Encounter_CombatantDetails selected={selected} doDamage={doDamage} />
+                     </EncounterDetailsContext.Provider>
                   </div>
                )}
             </section>
@@ -829,805 +641,9 @@ const Encounter = ({ initialEncounter }) => {
    );
 };
 
-const CombatantDetails = ({ selected, doDamage }) => {
-   const context = useContext(EncounterContext)
-   const [ combatant, setCombatant ] = useState({})
-   const toast = useRef(null);
-   const showSticky = (title, message) => {
-      toast.current.show({severity: 'success', summary: title, detail: message, life: 5000});
-   }
-   const [visible, setVisible] = useState(false);
-   const confirm1 = (event) => {
-      confirmPopup({
-          target: event.currentTarget,
-          message: 'Are you sure you want to proceed?',
-          icon: 'pi pi-exclamation-triangle',
-          accept,
-          reject
-      });
-  };
-   
-   useEffect(() => {
-      if (selected?.enemy === 'monster' && context.encounter) {
-      setCombatant(context.encounter.monsters.filter(monster => {return selected._id === monster._id})[0])
-      }
-      // if (selected?.enemy === 'monster' && selected.sourceBook === 'Custom Edited' && context.encounter) {
-      //    console.log('set the combatant view to...')
-      //    console.log(context.campaign.monsters.filter(monster => {return selected._id === monster._id}))
-      //    // console.log(context.campaign.monsters.filter(monster => {return selected._id === monster._id})[0])
-      //    setCombatant(context.campaign.monsters.filter(monster => {return selected._id === monster._id})[0])
-      //    }
-      if (selected?.enemy === 'pc' && context.characters) {
-      setCombatant(context.characters.filter(character => {return selected._id === character._id})[0])
-      }
-   
-     return () => {}
-   }, [selected, context.encounter, context.characters])
-   
-
-   const [ tab, setTab ] = useState("details");
-   const conditionOptions = conditions.map(condition => (
-   {value: condition, label: condition}
-   ))
-
-   const calcSaveThrow = (combatant, save, ability) => {
-      if (context?.combatant?.saves?.includes(save)) {
-         return (
-            abilityModifier(ability) + calculateProficiencyBonus(combatant.cr)
-         );
-      } else return abilityModifier(ability);
-   };
-
-   const addCondition = (target, conditions) => {
-      const currentRound = context.encounter.round
-      console.log(currentRound)
-      const update = conditions.map(condition => (
-         {
-            name: condition.value,
-            started: currentRound,
-            source: 'manually added',
-            duration: 1000
-         }
-      )) 
-      console.log(target, conditions)
-      if (target.enemy === 'pc') context.editCharacter(target, {conditions: update})
-      if (target.enemy === 'monster') context.editMonster(target, {conditions: update})
-   }
-   const menu = useRef(null);
-
-   return (
-      <>
-         <Toast ref={toast} position="bottom-right" />
-         
-         {combatant &&<div className={styles.mainpanel}>
-            <div className={encounterStyle.title}>
-               {combatant.picture_url && (
-                  <a href={combatant.picture_url} target='blank'>
-                  <img
-                     src={combatant.picture_url}
-                     style={{ height: "8ch" }}
-                  ></img>
-                  </a>
-               )}
-               <div className={encounterStyle.title__info}>
-                  <h3>{combatant.name}</h3>
-                  <span>
-                     <p>
-                        <strong>
-                           {combatant.size && combatant.size}{" "}
-                           {combatant.type && combatant.type}
-                        </strong>
-                        ,<strong>Speed: </strong>
-                        {combatant.speed && combatant.speed},
-                        <strong>Languages: </strong>
-                        {combatant.languages && combatant.languages.join(", ")},
-                     </p>
-                     <p title={combatant.description}>
-                        <strong>Description: </strong>
-                        {truncate(combatant.description, 100)}
-                     </p>
-                  </span>
-               </div>
-               <Menu model={[
-                  {
-                     icon: 'pi pi-fw pi-file-export', 
-                     label: 'Save Custom',
-                     command: () => {
-                        let confirm = true
-                        if (context.campaign.monsters?.map(monster => (monster.name)).includes(combatant.name)) {
-                           confirm = window.confirm(`There is already a monster called ${combatant.name} in the campaign monsters. Are you sure you wan't to add this duplicate name?`)
-                        }
-                        if (confirm) {
-                           console.log(combatant)
-                           context.saveCustomMonster(combatant);
-                           showSticky(combatant.name, 'Saved to campaign monsters.')
-                        } else {
-                           showSticky(combatant.name, 'Monster not saved')
-                        }
-                     }
-                  },
-                  {
-                     icon: 'pi pi-stopwatch',
-                     label: 'Add Concentration',
-                     command: () => console.log('add concentration')
-                  },
-                  {
-                     icon: 'pi pi-times-circle',
-                     label: 'Remove Concentration',
-                     disabled: !combatant.concentration,
-                     command: () => console.log('remove concentration')
-                  }
-                  ]}
-                  popup ref={menu}>
-               </Menu>
-               <Button
-                  className="p-button-sm"
-                  style={{"maxHeight": "2rem"}}
-                  icon="pi pi-ellipsis-v" 
-                  onClick={(event) => menu.current.toggle(event)}/>
-            </div>
-
-            <div id={encounterStyle.tabs}>
-               <button
-                  className={encounterStyle.tab}
-                  style={tab === "details" ? { backgroundColor: "white" } : {}}
-                  onClick={() => setTab("details")}
-               >
-                  Details
-               </button>
-               <button
-                  className={encounterStyle.tab}
-                  style={tab === "traits" ? { backgroundColor: "white" } : {}}
-                  onClick={() => setTab("traits")}
-               >
-                  Traits (
-                  {combatant.traits?.length > 0 ? combatant.traits.length : 0})
-               </button>
-               <button
-                  className={encounterStyle.tab}
-                  style={tab === "actions" ? { backgroundColor: "white" } : {}}
-                  onClick={() => setTab("actions")}
-               >
-                  Actions (
-                  {combatant.actions?.length > 0 ? combatant.actions.length : 0}
-                  )
-               </button>
-               <button
-                  className={encounterStyle.tab}
-                  style={tab === "spells" ? { backgroundColor: "white" } : {}}
-                  onClick={() => setTab("spells")}
-               >
-                  Spells (
-                  {combatant.spellSlots?.reduce((total, current) => {
-                     if (typeof current === 'number') total += parseInt(current);
-                     return total
-                  },0
-                  )}
-                  )
-               </button>
-               <button
-                  className={encounterStyle.tab}
-                  style={
-                     tab === "legendary" ? { backgroundColor: "white" } : {}
-                  }
-                  onClick={() => setTab("legendary")}
-               >
-                  Legendary
-               </button>
-            </div>
-
-            <div className={styles.detailscontainer}>
-               <div
-                  style={
-                     tab === "details"
-                        ? { display: "block" }
-                        : { display: "none" }
-                  }
-                  id="details"
-               >
-                  <div className={styles.abilityrow}>
-                     <div className={styles.abilitybox}>
-                        <h2>Str</h2>
-                        <button
-                           className={styles.btn}
-                           title="Athletics"
-                           onClick={() => {
-                              window.alert(diceRoll(1,20, abilityModifier(combatant.str))[2]
-                              );
-                           }}
-                        >{combatant.str}
-                        </button>
-
-                        <button
-                           className={styles.btn}
-                           onClick={() => {
-                              window.alert( diceRoll( 1, 20, calcSaveThrow( combatant, "Str", combatant.str ) )[2] );
-                           }}
-                        >{calcSaveThrow(combatant, "Str", combatant.str)}
-                        </button>
-
-                        {combatant.skills &&
-                           combatant.skills.filter(skill => {return skill.name.toLowerCase() === 'athletics'})[0] && (
-                              <p
-                                 className={encounterStyle.link}
-                                 title={
-                                    abilityModifier(combatant.str) +
-                                    calculateProficiencyBonus(combatant.cr)
-                                 }
-                                 onClick={() => {
-                                    window.alert( diceRoll( 1, 20, 
-                                       combatant.skills.filter( skill => { return skill.name.toLowerCase() === 'athletics' } )[0].bonus
-                                       )[2]
-                                    );
-                                 }}
-                              >Athletics
-                              </p>
-                           )}
-                     </div>
-
-                     <div className={styles.abilitybox}>
-                        <h2>Dex</h2>
-                        <button
-                           className={styles.btn}
-                           title="Acrobatics, Sleight of Hand, Stealth"
-                           onClick={() => { window.alert( diceRoll(1, 20, abilityModifier( combatant.dex ) )[2]) }}
-                           >{combatant.dex}
-                        </button>
-
-                        <button
-                           className={styles.btn}
-                           onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    calcSaveThrow(
-                                       combatant,
-                                       "Dex",
-                                       combatant.dex
-                                    )
-                                 )[2]
-                              );
-                           }}
-                        >
-                           {calcSaveThrow(combatant, "Dex", combatant.dex)}
-                        </button>
-
-                        {/* generate clickable links for each of the skills of this ability stat */}
-                        {["Acrobatics", "Sleight of Hand", "Stealth"].map(skillName => (
-                           <React.Fragment key={skillName}>
-                           {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(1, 20, combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus)[2]
-                                    );
-                                 }}
-                                 title={combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus}
-                              >{skillName}
-                              </p>
-                           }
-                           </React.Fragment>
-                        ))
-                        }
-
-                     </div>
-
-                     <div className={styles.abilitybox}>
-                        <h2>Con</h2>
-                        <button
-                           className={styles.btn}
-                           onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    abilityModifier(combatant.con)
-                                 )[2]
-                              );
-                           }}
-                        >
-                           {combatant.con}
-                        </button>
-                        <button
-                           className={styles.btn}
-                           onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    calcSaveThrow(
-                                       combatant,
-                                       "Con",
-                                       combatant.con
-                                    )
-                                 )[2]
-                              );
-                           }}
-                        >
-                           {calcSaveThrow(combatant, "Con", combatant.con)}
-                        </button>
-                     </div>
-
-                     <div className={styles.abilitybox}> 
-                        <h2>Int</h2>
-                        <button
-                           className={styles.btn}
-                           title="Arcana, History, Investigation, Nature, Religion"
-                           onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    abilityModifier(combatant.int)
-                                 )[2]
-                              );
-                           }}
-                        >
-                           {combatant.int}
-                        </button>
-                        <button
-                           className={styles.btn}
-                           onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    calcSaveThrow(
-                                       combatant,
-                                       "Int",
-                                       combatant.int
-                                    )
-                                 )[2]
-                              );
-                           }}
-                        >
-                           {calcSaveThrow(combatant, "Int", combatant.int)}
-                        </button>
-
-                        {/* generate clickable links for each of the skills of this ability stat */}
-                        {["Arcana", "History", "Investigation", "Nature", "Religion"].map(skillName => (
-                           <React.Fragment key={skillName}>
-                           {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(1, 20, combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus)[2]
-                                    );
-                                 }}
-                                 title={combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus}
-                              >{skillName}
-                              </p>
-                           }
-                           </React.Fragment>
-                        ))
-                        }
-
-                     </div>
-
-                     <div className={styles.abilitybox}>
-                        <h2>Wis</h2>
-                        <button
-                           className={styles.btn}
-                           title="Animal Handling, Insight, Medicine, Perception, Survival"
-                           onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    abilityModifier(combatant.wis)
-                                 )[2]
-                              );
-                           }}
-                        >
-                           {combatant.wis}
-                        </button>
-                        <button
-                           className={styles.btn}
-                           onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    calcSaveThrow(
-                                       combatant,
-                                       "Wis",
-                                       combatant.wis
-                                    )
-                                 )[2]
-                              );
-                           }}
-                        >
-                           {calcSaveThrow(combatant, "Wis", combatant.wis)}
-                        </button>
-
-                        {/* generate clickable links for each of the skills of this ability stat */}
-                        {["Animal Handling", "Insight", "Medicine", "Perception", "Survival"].map(skillName => (
-                           <React.Fragment key={skillName}>
-                           {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(1, 20, combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus)[2]
-                                    );
-                                 }}
-                                 title={combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus}
-                              >{skillName}
-                              </p>
-                           }
-                           </React.Fragment>
-                        ))
-                        }
-
-                     </div>
-
-                     <div className={styles.abilitybox}>
-                        <h2>Cha</h2>
-                        <button
-                           className={styles.btn}
-                           title="Deception, Intimidation, Performance, Persuasion"
-                           onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    abilityModifier(combatant.cha)
-                                 )[2]
-                              );
-                           }}
-                        >
-                           {combatant.cha}
-                        </button>
-                        <button
-                           className={styles.btn}
-                           onClick={() => {
-                              window.alert(
-                                 diceRoll(
-                                    1,
-                                    20,
-                                    calcSaveThrow(
-                                       combatant,
-                                       "Cha",
-                                       combatant.cha
-                                    )
-                                 )[2]
-                              );
-                           }}
-                        >
-                           {calcSaveThrow(combatant, "Cha", combatant.cha)}
-                        </button>
-
-                        {/* generate clickable links for each of the skills of this ability stat */}
-                        {["Deception", "Intimidation", "Performance", "Persuasion"].map(skillName => (
-                           <React.Fragment key={skillName}>
-                           {combatant?.skills?.filter(skill => {return skill.name === skillName}).length === 1 &&
-                              <p
-                                 className={encounterStyle.link}
-                                 onClick={() => {
-                                    window.alert(
-                                       diceRoll(1, 20, combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus)[2]
-                                    );
-                                 }}
-                                 title={combatant?.skills?.filter(skill => {return skill.name === skillName})[0].bonus}
-                              >{skillName}
-                              </p>
-                           }
-                           </React.Fragment>
-                        ))
-                        }
-
-                     </div>
-                  </div>
-
-                  <div className={encounterStyle.vulnerabilites}>
-                     {combatant?.vulnerabilities?.length > 0 && (
-                        <p>
-                           <strong>Vulnerabilities: </strong>
-                           {combatant.vulnerabilities.join(", ")}
-                        </p>
-                     )}
-                     {combatant?.resistances?.length > 0 && (
-                        <p>
-                           <strong>Resistances: </strong>
-                           {combatant.resistances.join(", ")}
-                        </p>
-                     )}
-                     {combatant?.damageImmunity?.length > 0 && (
-                        <p>
-                           <strong>Damage Immunity: </strong>
-                           {combatant.damageImmunity.join(", ")}
-                        </p>
-                     )}
-                     {combatant?.conditionImmunity?.length > 0 && (
-                        <p>
-                           <strong>Condition Immunity: </strong>
-                           {combatant.conditionImmunity.join(", ")}
-                        </p>
-                     )}
-                  </div>
-                  <div className={encounterStyle.vulnerabilites}>
-                     {combatant?.senses?.length > 0 && (
-                        <p>
-                           <strong>Senses: </strong>
-                           {combatant.senses.join(", ")}
-                        </p>
-                     )}
-                     {combatant?.speed?.length > 0 && (
-                        <p>
-                           <strong>Speed: </strong>
-                           {combatant.speed.join(", ")}
-                        </p>
-                     )}
-                     {combatant?.cr && (
-                        <p>
-                           <strong>Challenge Rating: </strong>
-                           {combatant.cr} ({crToXp(combatant.cr)} XP)
-                        </p>
-                     )}
-                     {combatant?.cr && (
-                        <p>
-                           <strong>Proficiency Bonus: </strong>
-                           {calculateProficiencyBonus(combatant.cr)}
-                        </p>
-                     )}
-                  </div>
-                  <div className={styles.title_buttons}>
-                     <Select
-                        options={conditionOptions}
-                        value={combatant?.conditions?.map(condition => (
-                           {value: condition.name, label: condition.name}
-                        ))} 
-                        placeholder={'Condition'} 
-                        isMulti 
-                        onChange={(e) => {addCondition(combatant, e)}}
-                     />
-                  </div>
-               </div>
-
-               {combatant.traits && combatant.traits.length > 0 && (
-                  <div
-                     style={
-                        tab === "traits"
-                           ? { display: "block" }
-                           : { display: "none" }
-                     }
-                     id="details"
-                  >
-                     {combatant.traits && (
-                        <div className={styles.traits}>
-                           {combatant.traits &&
-                              combatant.traits.map((trait) => (
-                                 <div key={trait._id} className={styles.trait}>
-                                    <h2>{trait.name}</h2>
-                                    <p>{trait.description}</p>
-                                 </div>
-                              ))}
-                        </div>
-                     )}
-                  </div>
-               )}
-
-               <div
-                  style={
-                     tab === "actions"
-                        ? { display: "block" }
-                        : { display: "none" }
-                  }
-                  id="details"
-               >
-                  {combatant.actions && (
-                     <div className={styles.actions}>
-                        {combatant.actions &&
-                           combatant.actions.map((action) => (
-                              <div key={action._id} className={styles.action}>
-                                 <h2>{action.name}</h2>
-                                 <p>{action.description}</p>
-                                 {(action.attack && action.attack > 0) |
-                                 action.damage1.hdDice ? (
-                                    <SplitButton
-                                       // label="Attack"
-                                       icon='pi pi-bolt'
-                                       tooltip="Do Attack"
-                                       // className={styles.btn}
-                                       className="p-button-sm mr-2 mb-2"
-                                       style={{"maxHeight": "2rem"}}
-                                       model={[
-                                          {label: 'Advantage', command: () => doDamage(
-                                             {
-                                                _id: combatant._id,
-                                                name: combatant.name,
-                                                enemy: combatant.enemy,
-                                             },
-                                             action,
-                                             {advantage: 'advantage'}
-                                          )}, 
-                                          {label: 'Disadvantage', command: () => doDamage(
-                                             {
-                                                _id: combatant._id,
-                                                name: combatant.name,
-                                                enemy: combatant.enemy,
-                                             },
-                                             action,
-                                             {advantage: 'disadvantage'}
-                                          )}
-                                       ]}
-                                       onClick={() => {
-                                          doDamage(
-                                             {
-                                                _id: combatant._id,
-                                                name: combatant.name,
-                                                enemy: combatant.enemy,
-                                             },
-                                             action,
-                                             {advantage: 'normal'}
-                                          );
-                                       }}
-                                    >
-                                       
-                                    </SplitButton>
-                                 ) : (
-                                    <></>
-                                 )}
-                                 {action.damage && (
-                                    <button
-                                       onClick={() => {
-                                          window.alert(
-                                             diceRoll(
-                                                action.damage.dice,
-                                                action.damage.sides,
-                                                action.damage.bonus
-                                             )[2]
-                                          );
-                                       }}
-                                    >
-                                       damage: {action.damage.dice}d
-                                       {action.damage.sides}+
-                                       {action.damage.bonus}
-                                    </button>
-                                 )}
-                              </div>
-                           ))}
-                     </div>
-                  )}
-               </div>
-
-               {combatant?.spells?.length > 0 && (
-                  <div
-                     style={
-                        tab === "spells"
-                           ? { display: "block", padding: '1ch', width: '100%' }
-                           : { display: "none" }
-                     }
-                     id="spells"
-                  >
-                     <SpellPane combatant={combatant} />
-                  </div>
-               )}
-            </div>
-         </div>}
-      </>
-   );
-};
-
-const SpellPane = ({ combatant }) => {
-   const context = useContext(EncounterContext)
-   const castSpell = () => {}
-   const [ spells, setSpells ] = useState([])
-   const [ maxCastLevel, setMaxCastLevel ] = useState(0)
-   const api = '/api/'
-
-   useEffect(() => {
-      if (combatant?.spells) {
-         const getSpells = async (spells) => {
-            const response = await fetch(`${api}spells`, {
-               method: "POST",
-               body: JSON.stringify({
-                  action: "monster",
-                  data: { name: { $in: spells } },
-                  sort: {},
-               }),
-               headers: { "Content-type": "application/json; charset=UTF-8" },
-            });
-            const spellList = await response.json();
-            setSpells(spellList);
-         }
-         getSpells(combatant.spells)
-      }
-
-      if (combatant?.spellSlots) {
-         setMaxCastLevel(combatant.spellSlots.filter(level => {return level | level > 0}).length)
-      }
-   
-      return () => {}
-   }, [combatant])
-
-   const spellCastButtons = (min, slots) => {
-      // console.log(min)
-      // console.log(slots)
-      const castableSlots = []
-      slots.forEach((slot, index) => {
-         if (typeof slot === 'number' & slot > 0 & index +1 >= min & min != 0) castableSlots.push(index + 1)
-      });
-      // console.log(castableSlots)
-      return castableSlots
-   }
-   
-
-   return(
-      <>
-      <div id="spellslots" className={encounterStyle.spellslots}>
-         {combatant.spellSlots.map((slot, index) => (
-            <label key={index} htmlFor={index}>
-               {index + 1}
-               <input
-                  id={index}
-                  type="number"
-                  value={slot}
-                  onChange={(e) => {combatant.spellSlots[index] = parseInt(e.target.value); context.editMonster(combatant, {spellSlots: combatant.spellSlots})}}
-               ></input>
-            </label>
-         ))}
-         </div>
-
-         <div id="spell-list">
-            {spells?.sort((a, b) => {return a.level - b.level}).map((spell) => (
-               <div 
-                  key={spell._id} 
-                  className={encounterStyle.spell_line} 
-                  style={{'display':'flex', 'justifyContent': 'space-between', 'width': '100%'}}
-                  onClick={() => console.log("click")}>
-
-                  <div className={encounterStyle.spell_title}>
-                     <p>{spell.level} - <strong>{spell.name}</strong> ({spell.concentration ? 'C' : ''}{spell.ritual ? 'R' : ''})</p>
-                     <span class={encounterStyle.description_tooltip}>
-                        <h3>{spell.name}</h3>
-                        <p><strong>Range: </strong>{spell.range}</p>
-                        <p><strong>Cast Time: </strong>{spell.time}</p>
-                        <p><strong>Duration: </strong>{spell.duration}</p>
-                        <p>{spell.description}</p>
-                        </span>
-                  </div>
-                  <div className={encounterStyle.spell_cast_buttons}>
-                     {
-                        spellCastButtons(
-                           spell.level, 
-                           combatant.spellSlots.filter(slot => {return typeof slot === 'number' })
-                           )
-                           .map((slot, index) => (
-                              <button
-                                 key={index}
-                                 className={encounterStyle.spell_cast_button} 
-                                 onClick={() => {
-                                    if (spell.concentration) {
-                                       if (combatant.concentrating?.active) {
-                                          if (window.confirm(`This monster is already concentrating on a spell (${combatant.concentrating?.spellName}). Do you want to drop the old spell?`)) {
-                                             console.log('switched concentration')
-                                          }
-                                          else return
-                                       }
-                                       if (window.confirm('This is a concentration spell. Add the concentration flag to this monster?')) console.log('add concentration')
-                                       else return
-                                    }
-                                    const spellSlots = combatant.spellSlots
-                                    spellSlots[slot -1] = spellSlots[slot -1 ] - 1
-                                    context.editMonster(combatant, {spellSlots: spellSlots})
-                                 }}
-                              >{slot}
-                              </button>
-                           ))
-                     }
-                  </div>
-               </div>
-            ))}
-         </div>
-      </>
-   )
-}
 
 export default withPageAuthRequired(Encounter);
+
 export async function getServerSideProps(context) {
    const { db } = await connectToDatabase();
    const id = new ObjectId(context.params.id);
