@@ -127,57 +127,59 @@ export default withPageAuthRequired(function Campaign({ }) {
     }
   }
   
-  return <>
-      <Nav location='campaigns' user={user}></Nav>
-      {/* modal window */}
-      {modal.on && <div id="modal-window" className="modal">
-          {/* Modal content */}
-              <div className="modal-content">
-                  <span className="close" onClick={() => {setModal({"on": false, "type": "none"})}}>&times;</span>
-                  {modal.type === "campaigns" &&
-                  <>
-                      <h3>Edit Campaign</h3>
-                      <BasicForm data={selected} updateFnc={updateCampaigns} mongoCollection={modal.type}></BasicForm>
-                  </>}
-              </div>
-      </div>}
+  return (
+    <>
+        <Nav location='campaigns' user={user}></Nav>
+        {/* modal window */}
+        {modal.on && <div id="modal-window" className="modal">
+            {/* Modal content */}
+                <div className="modal-content">
+                    <span className="close" onClick={() => {setModal({"on": false, "type": "none"})}}>&times;</span>
+                    {modal.type === "campaigns" &&
+                    <>
+                        <h3>Edit Campaign</h3>
+                        <BasicForm data={selected} updateFnc={updateCampaigns} mongoCollection={modal.type}></BasicForm>
+                    </>}
+                </div>
+        </div>}
 
-      <section>
-          <div className="one-column">
-              <h2>Campaigns</h2>
-                  <button className="green" onClick={() => {setSelected({"name": "", "description": ""}, setModal({"on": true, "type": "campaigns"}))}}>New</button>
+        <section>
+            <div className="one-column">
+                <h2>Campaigns</h2>
+                    <button className="green" onClick={() => {setSelected({"name": "", "description": ""}, setModal({"on": true, "type": "campaigns"}))}}>New</button>
 
-                  {campaigns.sort((a,b) => {return a.modified < b.modified}).map(campaign => (
-                      <div key={campaign._id} className="list-item">
-                          <Link key={campaign.id} href={`/campaign/${campaign._id}`} legacyBehavior>
-                              <div className="link">
-                                      <h2>{campaign.name}</h2>
-                                      <em>{truncate(campaign.description, 50)}</em>
-                              </div>
-                          </Link>
+                    {campaigns.sort((a,b) => {return a.modified < b.modified}).map(campaign => (
+                        <div key={campaign._id} className="list-item">
+                            <Link key={campaign.id} href={`/campaign/${campaign._id}`}>
+                                <div className="link">
+                                        <h2>{campaign.name}</h2>
+                                        <em>{truncate(campaign.description, 50)}</em>
+                                </div>
+                            </Link>
 
-                          <div>
-                            <FaWindowClose style={{"cursor": "pointer"}} color="red"
-                              onClick={() => {deleteCampaign("campaigns", campaign)}} />
+                            <div>
+                              <FaWindowClose style={{"cursor": "pointer"}} color="red"
+                                onClick={() => {deleteCampaign("campaigns", campaign)}} />
 
-                            <FaEdit style={{"cursor": "pointer"}} color="grey"
-                              onClick={() => {setSelected(campaign); setModal({"on": true, "type": "campaigns"})}} />
-                          </div>
-                      </div>
-                  ))}
-          </div>
+                              <FaEdit style={{"cursor": "pointer"}} color="grey"
+                                onClick={() => {setSelected(campaign); setModal({"on": true, "type": "campaigns"})}} />
+                            </div>
+                        </div>
+                    ))}
+            </div>
 
-          <div className="one-column">
-              <h2>Running Encounters</h2>
-              {encounters && encounters
-                  .filter(e => { return e.mode === "running"})
-                  .map(encounter => (
-                      <div key={encounter._id} className="list-item">                          
-                          <EncounterLink encounter={encounter}></EncounterLink>
-                      </div>))}
-          </div>
-      </section>
-  </>;
+            <div className="one-column">
+                <h2>Running Encounters</h2>
+                {encounters && encounters
+                    .filter(e => { return e.mode === "running"})
+                    .map(encounter => (
+                        <div key={encounter._id} className="list-item">                          
+                            <EncounterLink encounter={encounter}></EncounterLink>
+                        </div>))}
+            </div>
+        </section>
+    </>
+  )
 })
 
 export function EncounterLink ({encounter}) {
@@ -230,7 +232,7 @@ export function EncounterLink ({encounter}) {
 
 
   return (
-    <Link href={`/encounter/${encounter._id}`} legacyBehavior>
+    <Link href={`/encounter/${encounter._id}`}>
       <div className='link'>
         <h2>{encounter.name}</h2>
         {campaign && adventure && <p>{campaign.name} > {adventure.name}</p>}

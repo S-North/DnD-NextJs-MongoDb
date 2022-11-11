@@ -222,7 +222,7 @@ export const importMonster = (inputFile) => {
     const parseLegendaryActionCount = (text) => {
         if (text && Array.isArray(text)) {
             const regex = /\d legendary actions/i;
-            return parseInt(regex.exec(text[0].text)[0].split(/\s+/)[0]);
+            return parseInt(regex.exec(text[0].text)[0].split(/\s+/)[0])
         } else return 0
     }
 
@@ -391,7 +391,7 @@ export const importMonster = (inputFile) => {
         spells: parseSpells(monster.spells),
         sourceBook: parseSourceBook(monster.description),
         campaignMonster: monster.campaignMonster ? true : false
-    };
+    }
 }
 
 export const importSpell = (spell) => {
