@@ -135,64 +135,62 @@ const Adventure = ({adventure}) => {
     }
   } 
     
-    return (
-       <>
-       <Nav location='adventure' campaign={campaign} adventure={adventure} user={user}></Nav>
-       {/* modal window */}
-       {modal.on && <div id="modal-window" className="modal">
-            {/* Modal content */}
-                <div className="modal-content">
-                    <span className="close" onClick={() => {setModal({"on": false, "type": "none"})}}>&times;</span>
-                    {modal.type === "encounters" &&
-                    <>
-                        <h3>Edit Encounter</h3>
-                        <BasicForm data={selected} updateFnc={updateEncounters} mongoCollection={modal.type}></BasicForm>
-                    </>}
-                </div>
-        </div>}
+    return <>
+    <Nav location='adventure' campaign={campaign} adventure={adventure} user={user}></Nav>
+    {/* modal window */}
+    {modal.on && <div id="modal-window" className="modal">
+         {/* Modal content */}
+             <div className="modal-content">
+                 <span className="close" onClick={() => {setModal({"on": false, "type": "none"})}}>&times;</span>
+                 {modal.type === "encounters" &&
+                 <>
+                     <h3>Edit Encounter</h3>
+                     <BasicForm data={selected} updateFnc={updateEncounters} mongoCollection={modal.type}></BasicForm>
+                 </>}
+             </div>
+     </div>}
 
-        <section>
-            <div className="one-column">
-                <h2>Encounters</h2>
-                    <button className="green" onClick={() => {setSelected({"name": "", "description": ""}, setModal({"on": true, "type": "encounters"}))}}>New</button>
+     <section>
+         <div className="one-column">
+             <h2>Encounters</h2>
+                 <button className="green" onClick={() => {setSelected({"name": "", "description": ""}, setModal({"on": true, "type": "encounters"}))}}>New</button>
 
-                    {encounters.map(encounter => (
-                        <div key={encounter._id} className="list-item">
-                            <Link href={`/encounter/${encounter._id}`}>
-                                <div className="link">
-                                        <h2>{encounter.name}</h2>
-                                        <em>{truncate(encounter.description, 50)}</em>
-                                </div>
-                            </Link>
+                 {encounters.map(encounter => (
+                     <div key={encounter._id} className="list-item">
+                         <Link href={`/encounter/${encounter._id}`} legacyBehavior>
+                             <div className="link">
+                                     <h2>{encounter.name}</h2>
+                                     <em>{truncate(encounter.description, 50)}</em>
+                             </div>
+                         </Link>
 
-                            <div>
-                              <FaWindowClose style={{"cursor": "pointer"}} color="red"
-                                onClick={() => {deleteEncounter("encounters", encounter._id)}} />
+                         <div>
+                           <FaWindowClose style={{"cursor": "pointer"}} color="red"
+                             onClick={() => {deleteEncounter("encounters", encounter._id)}} />
 
-                              <FaEdit style={{"cursor": "pointer"}} color="grey"
-                                onClick={() => {setSelected(encounter); setModal({"on": true, "type": "encounters"})}} />
-                            </div>
-                        </div>
-                    ))}
-            </div>
+                           <FaEdit style={{"cursor": "pointer"}} color="grey"
+                             onClick={() => {setSelected(encounter); setModal({"on": true, "type": "encounters"})}} />
+                         </div>
+                     </div>
+                 ))}
+         </div>
 
-            <div className="one-column">
-                <h2>Running Encounters</h2>
-                {encounters && campaign && encounters
-                    .filter(e => { return e.mode === "running"})
-                    .map(encounter => (
-                        <div key={encounter._id} className="list-item">
-                            <Link href={`/encounter/${encounter._id}`}>
-                                <div className="link">
-                                <h2>{encounter.name}</h2>
-                                <p>{`In ${campaign.name} > ${adventure.name}`}</p>
-                                </div>
-                            </Link>
-                        </div>))}
-            </div>
-        </section>
-       </>
-    );
+         <div className="one-column">
+             <h2>Running Encounters</h2>
+             {encounters && campaign && encounters
+                 .filter(e => { return e.mode === "running"})
+                 .map(encounter => (
+                     <div key={encounter._id} className="list-item">
+                         <Link href={`/encounter/${encounter._id}`} legacyBehavior>
+                             <div className="link">
+                             <h2>{encounter.name}</h2>
+                             <p>{`In ${campaign.name} > ${adventure.name}`}</p>
+                             </div>
+                         </Link>
+                     </div>))}
+         </div>
+     </section>
+    </>;
 }
 
 export default withPageAuthRequired(Adventure)

@@ -410,152 +410,150 @@ export default withPageAuthRequired(function Campaign({ initialCampaign }) {
 
     }
      
-    return (
-       <>
-        <Nav location='campaign' campaign={campaign} user={user}></Nav>
-        <Toast ref={toast}></Toast>
-        <Dialog 
-            header={dialogType.toUpperCase()}
-            visible={displayDialog} 
-            style={{ "maxWidth": '50rem' }} 
-            onHide={() => {setDisplayDialog(false); setDialogType('')}}>
-            
-            {dialogType === 'edit monster' && 
-                <MonsterForm 
-                    selected={selected}
-                    setSelected={setSelected}
-                    update={saveMonster}
-                    setParentModal={handleDialogModal}
-                    saveAsNew={saveCustomMonster}>
-                </MonsterForm>
-            }
+    return <>
+     <Nav location='campaign' campaign={campaign} user={user}></Nav>
+     <Toast ref={toast}></Toast>
+     <Dialog 
+         header={dialogType.toUpperCase()}
+         visible={displayDialog} 
+         style={{ "maxWidth": '50rem' }} 
+         onHide={() => {setDisplayDialog(false); setDialogType('')}}>
+         
+         {dialogType === 'edit monster' && 
+             <MonsterForm 
+                 selected={selected}
+                 setSelected={setSelected}
+                 update={saveMonster}
+                 setParentModal={handleDialogModal}
+                 saveAsNew={saveCustomMonster}>
+             </MonsterForm>
+         }
 
-            {dialogType === 'add monster' && 
-                <MonsterForm 
-                    selected={selected}
-                    setSelected={setSelected}
-                    update={saveCustomMonster}
-                    setParentModal={handleDialogModal}
-                    saveAsNew={saveCustomMonster}>
-                </MonsterForm>
-            }
-            
-            {dialogType === 'import monsters' &&
-            <>
-                <FileUpload
-                    accept="application/json"
-                    customUpload
-                    onClear={() => setImportMessage('')}
-                    uploadHandler={(e) => getFile(e.files[0])}
-                    emptyTemplate={<p className="m-0">Drag and drop files to here to upload.</p>}>
-                </FileUpload>
-                <p>{importMessage}</p>
-            </>
-            }
+         {dialogType === 'add monster' && 
+             <MonsterForm 
+                 selected={selected}
+                 setSelected={setSelected}
+                 update={saveCustomMonster}
+                 setParentModal={handleDialogModal}
+                 saveAsNew={saveCustomMonster}>
+             </MonsterForm>
+         }
+         
+         {dialogType === 'import monsters' &&
+         <>
+             <FileUpload
+                 accept="application/json"
+                 customUpload
+                 onClear={() => setImportMessage('')}
+                 uploadHandler={(e) => getFile(e.files[0])}
+                 emptyTemplate={<p className="m-0">Drag and drop files to here to upload.</p>}>
+             </FileUpload>
+             <p>{importMessage}</p>
+         </>
+         }
 
-            {dialogType === 'adventure' && <BasicForm data={selected} updateFnc={updateAdventures} mongoCollection={modal.type}></BasicForm>}                        
-            {dialogType === 'character' && <CharacterForm data={selected} updateFnc={updateCharacter} mongoCollection={modal.type}></CharacterForm>}
+         {dialogType === 'adventure' && <BasicForm data={selected} updateFnc={updateAdventures} mongoCollection={modal.type}></BasicForm>}                        
+         {dialogType === 'character' && <CharacterForm data={selected} updateFnc={updateCharacter} mongoCollection={modal.type}></CharacterForm>}
 
-        </Dialog>
+     </Dialog>
 
-        <section>
-            <div className="one-column">
-                <h2>Adventures</h2>
-                    <button className="green" onClick={() => {setSelected({"name": "", "description": ""}); setDisplayDialog(true); setDialogType('adventure')}}>New</button>
+     <section>
+         <div className="one-column">
+             <h2>Adventures</h2>
+                 <button className="green" onClick={() => {setSelected({"name": "", "description": ""}); setDisplayDialog(true); setDialogType('adventure')}}>New</button>
 
-                    {adventures.sort((a,b) => {return a.modified < b.modified}).map(adventure => (
-                        <div key={adventure._id} className="list-item">
-                            <Link key={adventure.id} href={`/adventure/${adventure._id}`}>
-                                <div className="link">
-                                        <h2>{adventure.name}</h2>
-                                        <em>{truncate(adventure.description, 50)}</em>
-                                </div>
-                            </Link>
+                 {adventures.sort((a,b) => {return a.modified < b.modified}).map(adventure => (
+                     <div key={adventure._id} className="list-item">
+                         <Link key={adventure.id} href={`/adventure/${adventure._id}`} legacyBehavior>
+                             <div className="link">
+                                     <h2>{adventure.name}</h2>
+                                     <em>{truncate(adventure.description, 50)}</em>
+                             </div>
+                         </Link>
 
-                            <div>
-                              <FaWindowClose style={{"cursor": "pointer"}} color="red"
-                                onClick={() => {deleteItem("adventures", adventure)}} />
+                         <div>
+                           <FaWindowClose style={{"cursor": "pointer"}} color="red"
+                             onClick={() => {deleteItem("adventures", adventure)}} />
 
-                              <FaEdit style={{"cursor": "pointer"}} color="grey"
-                                onClick={() => {setSelected(adventure); setDialogType('adventure'); setDisplayDialog(true)}} />
-                            </div>
-                        </div>
-                    ))}
-            </div>
+                           <FaEdit style={{"cursor": "pointer"}} color="grey"
+                             onClick={() => {setSelected(adventure); setDialogType('adventure'); setDisplayDialog(true)}} />
+                         </div>
+                     </div>
+                 ))}
+         </div>
 
-            <div className="one-column">
-                <h2>Characters</h2>
-                <button className="green" onClick={() => {setSelected({}); setDisplayDialog(true); setDialogType('character')}}>New</button>
+         <div className="one-column">
+             <h2>Characters</h2>
+             <button className="green" onClick={() => {setSelected({}); setDisplayDialog(true); setDialogType('character')}}>New</button>
 
-                {characters.map(character => (
-                    <div key={character._id} className="list-item">
-                        <Link href={`/character/${character.id}`}>
-                            <div className="link">
-                                    <h2>{character.name}</h2>
-                                    <em>{truncate(character.description, 50)}</em>
-                            </div>
-                        </Link>
+             {characters.map(character => (
+                 <div key={character._id} className="list-item">
+                     <Link href={`/character/${character.id}`} legacyBehavior>
+                         <div className="link">
+                                 <h2>{character.name}</h2>
+                                 <em>{truncate(character.description, 50)}</em>
+                         </div>
+                     </Link>
 
-                        <div><FaWindowClose 
-                            style={{"cursor": "pointer"}} 
-                            color="red"
-                            onClick={() => {deleteItem('characters', character)}} />
-                        <FaEdit 
-                            style={{"cursor": "pointer"}} 
-                            color="grey"
-                            onClick={() => {setSelected(character); setDialogType('character'); setDisplayDialog(true)}} />
-                        </div>
-                    </div>
-                ))}
-            </div>
+                     <div><FaWindowClose 
+                         style={{"cursor": "pointer"}} 
+                         color="red"
+                         onClick={() => {deleteItem('characters', character)}} />
+                     <FaEdit 
+                         style={{"cursor": "pointer"}} 
+                         color="grey"
+                         onClick={() => {setSelected(character); setDialogType('character'); setDisplayDialog(true)}} />
+                     </div>
+                 </div>
+             ))}
+         </div>
 
-            <div className="one-column">
-                <h2>Running Encounters</h2>
-                {encounters && encounters
-                    .filter(e => { return e.mode === "running"})
-                    .map(encounter => (
-                        <div key={encounter._id} className="list-item">
-                            <Link href={`/encounter/${encounter._id}`}>
-                                <div className="link">
-                                <h2>{encounter.name}</h2>
-                                <p>{`In ${campaign.name} > ${adventures?.filter(a => { return a._id === encounter.adventureId })[0]?.name}`}</p>
-                                </div>
-                            </Link>
-                        </div>))}
-            </div>
+         <div className="one-column">
+             <h2>Running Encounters</h2>
+             {encounters && encounters
+                 .filter(e => { return e.mode === "running"})
+                 .map(encounter => (
+                     <div key={encounter._id} className="list-item">
+                         <Link href={`/encounter/${encounter._id}`} legacyBehavior>
+                             <div className="link">
+                             <h2>{encounter.name}</h2>
+                             <p>{`In ${campaign.name} > ${adventures?.filter(a => { return a._id === encounter.adventureId })[0]?.name}`}</p>
+                             </div>
+                         </Link>
+                     </div>))}
+         </div>
 
-            <div className="one-column">
-                <h2>Campaign Monsters</h2>
-                <div className='flex-row'>
-                <Button 
-                    label='Import' 
-                    onClick={() => {setDialogType('import monsters'); setDisplayDialog(true)}}>
-                </Button>
-                <Button label='New' className='p-button-success'
-                    onClick={(e) => {e.preventDefault(); setSelected(monsterTemplate); setDialogType('add monster'); setDisplayDialog(true); }} />
-                </div>
-                {campaign?.monsters?.sort((a,b) => {return a.name > b.name}).map(monster => (
-                        <div key={monster._id} className="list-item">
-                            <Link key={monster._id} href={`/monster/${monster._id}`}>
-                                <div className="link">
-                                        <h2>{monster.name}</h2>
-                                        <em>{truncate(monster.description, 50)}</em>
-                                </div>
-                            </Link>
+         <div className="one-column">
+             <h2>Campaign Monsters</h2>
+             <div className='flex-row'>
+             <Button 
+                 label='Import' 
+                 onClick={() => {setDialogType('import monsters'); setDisplayDialog(true)}}>
+             </Button>
+             <Button label='New' className='p-button-success'
+                 onClick={(e) => {e.preventDefault(); setSelected(monsterTemplate); setDialogType('add monster'); setDisplayDialog(true); }} />
+             </div>
+             {campaign?.monsters?.sort((a,b) => {return a.name > b.name}).map(monster => (
+                     <div key={monster._id} className="list-item">
+                         <Link key={monster._id} href={`/monster/${monster._id}`} legacyBehavior>
+                             <div className="link">
+                                     <h2>{monster.name}</h2>
+                                     <em>{truncate(monster.description, 50)}</em>
+                             </div>
+                         </Link>
 
-                            <div>
-                              <FaWindowClose style={{"cursor": "pointer"}} color="red"
-                                onClick={() => {deleteMonster(monster)}} />
+                         <div>
+                           <FaWindowClose style={{"cursor": "pointer"}} color="red"
+                             onClick={() => {deleteMonster(monster)}} />
 
-                              <FaEdit style={{"cursor": "pointer"}} color="grey"
-                                onClick={() => {updateItem(monster, 'monster')}} />
-                            </div>
-                        </div>
-                    ))}
-            </div>
-        </section>
-       </>
-    );
+                           <FaEdit style={{"cursor": "pointer"}} color="grey"
+                             onClick={() => {updateItem(monster, 'monster')}} />
+                         </div>
+                     </div>
+                 ))}
+         </div>
+     </section>
+    </>;
 })
 
 export async function getServerSideProps(context) {
