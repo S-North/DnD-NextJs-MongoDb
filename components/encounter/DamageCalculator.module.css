@@ -1,7 +1,20 @@
-.section {
-    background-color: rgba(62, 57, 78, 0.373);
-    margin: 1ch 0;
-    padding: 2ch 1ch;
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.title {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding: 0;
 }
 
 .align_row {
@@ -20,6 +33,55 @@
 }
 
 .label {
-    /* color: ghostwhite; */
-    min-width: 10ch;
+    font-size: 0.6rem;
+    font-weight: bold;
+    min-width: max-content;
+    color: black;
 }
+
+.modifierWrapper {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    /* background-color: rgba(236, 190, 252, 0.863); */
+}
+
+.modifierWrapper p {
+    min-width: 4rem;
+    font-weight: bold;
+}
+
+.modifier {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    background-color: rgba(49, 43, 105, 0.796);
+    color: ghostwhite;
+}
+
+.concentrationWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background-color: rgb(255, 210, 210);
+    box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.6);
+    /* margin: 1rem 0; */
+    padding: 0.5rem;
+    /* border: 1px solid red; */
+    border-radius: 3px;
+}
+
+.concentrationHeader {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.611);
+    padding: 0.5rem 1rem;
+}
+
+.concentrationRow {
+    display: grid;
+    grid-template-columns: max-content auto max-content max-content;
+    column-gap: 0.5rem;
+    align-items: center;
+}
+

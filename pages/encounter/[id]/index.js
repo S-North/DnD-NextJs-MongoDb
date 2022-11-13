@@ -6,6 +6,7 @@ import { withPageAuthRequired, useUser } from "@auth0/nextjs-auth0";
 import React, { useState, useEffect, createContext, useContext, useRef } from "react";
 import encounterStyle from "../../../styles/Encounter.module.css";
 
+import { calculateConcentrationRemaining } from "../../../utils/encounterUtils";
 import monsters, { MonsterForm } from "../../monsters";
 import InitiativeList from "../../../components/encounter/InitiativeList";
 import Encounter_CombatantDetails, { EncounterDetailsContext } from "../../../components/encounter/Encounter_CombatantDetails";
@@ -18,6 +19,8 @@ import DamageCalculator from "../../../components/encounter/DamageCalculator";
 import EncounterList from "../../../components/encounter/EncounterList";
 import DoAttack from "../../../components/encounter/DoAttack";
 import Nav from "../../../components/Nav";
+
+import { Dialog } from 'primereact/dialog';
 
 export const EncounterContext = createContext();
 
@@ -107,15 +110,19 @@ const Encounter = ({ initialEncounter }) => {
    }, [encounter]);
 
    useEffect(() => {
-      // when the turn is changed to a new combatant, make them selected (this will be used to update the details view)
-      const combatant = encounter.initiative[encounter.turn];
-      // console.log(combatant)
+      // when the turn is changed to a new combatant, get their full stats and do some stuff
+      let combatant = {}
+      if (encounter?.initiative?.length > 0) combatant = getCombatantStats(encounter.initiative[encounter.turn]);
 
+      // Turn alerts e.g. spell ends, has condition, is dead
+      if (combatant?.concentration && calculateConcentrationRemaining(combatant, encounter.round) === 0) window.alert(`Spell "${combatant.concentration.name}" has ended`) 
+
+      // set the [selected] variable to the current combatant
       if (
          characters &&
          encounter &&
-         encounter.turn !== undefined &&
-         encounter.mode === "running"
+         encounter?.turn !== undefined &&
+         encounter?.mode === "running"
       ) {
          // console.log(combatant);
          switch (true) {
@@ -137,7 +144,8 @@ const Encounter = ({ initialEncounter }) => {
       }
 
       return () => {};
-   }, [encounter.turn, characters]);
+   }, [encounter?.turn, characters]);
+
 
    const saveCustomMonster = async (monster) => {
       console.log(monster)
@@ -179,14 +187,14 @@ const Encounter = ({ initialEncounter }) => {
    };
 
    const getCombatantStats = (combatant) => {
-      console.log(combatant._id)
-      console.log(encounter.monsters.map(monster => {return monster._id}).includes(combatant._id))
+      // console.log(combatant._id)
+      // console.log(encounter.monsters.map(monster => {return monster._id}).includes(combatant._id))
       if (encounter.monsters.map(monster => {return monster._id}).includes(combatant._id)) {
          // return encounter.monsters.filter(monster => monster._id = combatant._id)[0]
          // console.log(encounter.monsters.filter(monster => monster._id = combatant._id)[0])
          return encounter.monsters.filter(monster => monster._id === combatant._id)[0]
       } 
-      if (characters.map(character => {return character._id}).includes(combatant._id)) {
+      if (characters?.map(character => {return character._id}).includes(combatant._id)) {
          // console.log(characters.filter(character => character._id = combatant._id)[0])
          return characters.filter(character => character._id === combatant._id)[0]
       } else return selected
@@ -307,9 +315,6 @@ const Encounter = ({ initialEncounter }) => {
 
       // console.log(monster)
       // console.log(update)
-      const initiativeItem = encounter.initiative.filter(
-         (i) => i._id === monster._id
-      );
 
       if (!update) update = monster;
       // console.log(update)
@@ -334,6 +339,7 @@ const Encounter = ({ initialEncounter }) => {
       });
       const updateStatus = await response.json();
       if (updateStatus.acknowledged && updateStatus.modifiedCount === 1) {
+         console.log(updateStatus)
          setEncounter({
             ...encounter,
             monsters: [
@@ -464,14 +470,14 @@ const Encounter = ({ initialEncounter }) => {
    const changeHP = (combatant) => {
       console.log("here i am");
       setTempCombatant(combatant);
-      setModal({ on: true, type: "HpCalculator" });
+      setModal({ on: true, type: "Damage Calculator" });
    };
 
    const doDamage = (attacker, attack, options) => {
       console.log(attacker);
       console.log(attack);
       setTempCombatant({ attacker, attack, options });
-      setModal({ on: true, type: "doAttack" });
+      setModal({ on: true, type: "Attack" });
    };
 
    // const [ editButton, setEditButton ] = useState({state: 'Edit', icons: 'pi pi-fw pi-wrench'})
@@ -531,79 +537,77 @@ const Encounter = ({ initialEncounter }) => {
             ></Nav>
 
             {/* modal window for popup forms */}
-            {modal.on && (
-               <div id="modal-window" className="modal">
-                  {/* Modal content */}
-                  <div className="modal-content">
-                     <span
-                        className="close"
-                        onClick={() => {
-                           setModal({ on: false, type: "none" });
-                        }}
-                     >
-                        &times;
-                     </span>
+            <Dialog visible={modal.on} onHide={() => setModal({...modal, on: false})} header={modal.type}>
+               {/* Modal content */}
+               {/* <div className="modal-content"> */}
+                  {/* <span
+                     className="close"
+                     onClick={() => {
+                        setModal({ on: false, type: "none" });
+                     }}
+                  >
+                     &times;
+                  </span> */}
 
-                     {modal.type === "addPC" && (
-                        <AddCharacter
-                           addCharacters={addCharacters}
-                        ></AddCharacter>
+                  {modal.type === "Add Character" && (
+                     <AddCharacter
+                        addCharacters={addCharacters}
+                     ></AddCharacter>
+                  )}
+
+                  {modal.type === "Add Monster" && (
+                     <div className={encounterStyle.monster_select}>
+                        <AddMonster></AddMonster>
+                     </div>
+                  )}
+
+                  {modal.type === "Edit Monster" && (
+                     <EditMonsters addMonsters={addMonsters}></EditMonsters>
+                  )}
+
+                  {modal.type === "Edit Combatant" &&
+                     selected &&
+                     selected.enemy === "monster" && (
+                        <MonsterForm
+                           selected={selected}
+                           setSelected={setSelected}
+                           update={editMonster}
+                           setModal={setModal}
+                        ></MonsterForm>
+                     )}
+                  {modal.type === "Edit Combatant" &&
+                     selected &&
+                     selected.enemy === "pc" && (
+                        <CharacterForm
+                           data={selected}
+                           update={editMonster}
+                        ></CharacterForm>
                      )}
 
-                     {modal.type === "addMonster" && (
-                        <div className={encounterStyle.monster_select}>
-                           <AddMonster></AddMonster>
-                        </div>
-                     )}
+                  {modal.type === "Roll Initiative" && (
+                     <RollInitiative
+                        saveInitiative={saveInitiative}
+                     ></RollInitiative>
+                  )}
 
-                     {modal.type === "editMonsters" && (
-                        <EditMonsters addMonsters={addMonsters}></EditMonsters>
-                     )}
+                  {modal.type === "Damage Calculator" && (
+                     <DamageCalculator
+                        targets={tempCombatant}
+                        editMonster={editMonster}
+                        editCharacter={editCharacter}
+                        setCampaign={setCampaign}
+                     ></DamageCalculator>
+                  )}
 
-                     {modal.type === "editCombatant" &&
-                        selected &&
-                        selected.enemy === "monster" && (
-                           <MonsterForm
-                              selected={selected}
-                              setSelected={setSelected}
-                              update={editMonster}
-                              setModal={setModal}
-                           ></MonsterForm>
-                        )}
-                     {modal.type === "editCombatant" &&
-                        selected &&
-                        selected.enemy === "pc" && (
-                           <CharacterForm
-                              data={selected}
-                              update={editMonster}
-                           ></CharacterForm>
-                        )}
-
-                     {modal.type === "rollInitiative" && (
-                        <RollInitiative
-                           saveInitiative={saveInitiative}
-                        ></RollInitiative>
-                     )}
-
-                     {modal.type === "HpCalculator" && (
-                        <DamageCalculator
-                           targets={tempCombatant}
-                           editMonster={editMonster}
-                           editCharacter={editCharacter}
-                           setCampaign={setCampaign}
-                        ></DamageCalculator>
-                     )}
-
-                     {modal.type === "doAttack" && tempCombatant && (
-                        <DoAttack
-                           tempCombatant={tempCombatant}
-                           encounter={encounter}
-                           characters={characters}
-                        ></DoAttack>
-                     )}
-                  </div>
-               </div>
-            )}
+                  {modal.type === "Attack" && tempCombatant && (
+                     <DoAttack
+                        tempCombatant={tempCombatant}
+                        encounter={encounter}
+                        characters={characters}
+                     ></DoAttack>
+                  )}
+               {/* </div> */}
+            </Dialog>
 
             <section>
                {/* the edit list of combatants */}
@@ -611,7 +615,7 @@ const Encounter = ({ initialEncounter }) => {
                   <InitiativeList
                      displayItem={(selected) => {
                         setSelected(selected);
-                        setModal({ on: true, type: "editCombatant" });
+                        setModal({ on: true, type: "Edit Combatant" });
                      }}
                      deleteItem={deleteCombatant}
                      initiativeItemToFullStats={initiativeItemToFullStats}

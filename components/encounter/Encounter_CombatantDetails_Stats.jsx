@@ -7,7 +7,7 @@ import { EncounterContext } from '../../pages/encounter/[id]';
 import Select from 'react-select'
 
 
-export default function Encounter_CombatantDetails_Stats({ combatant, tab }) {
+export default function Encounter_CombatantDetails_Stats({ combatant, tab, addCondition }) {
     const context = useContext(EncounterContext)
     const conditionOptions = conditions.map(condition => (
         {value: condition, label: condition}
@@ -21,21 +21,7 @@ export default function Encounter_CombatantDetails_Stats({ combatant, tab }) {
         } else return abilityModifier(ability);
     };
     
-    const addCondition = (target, conditions) => {
-        const currentRound = context.encounter.round
-        console.log(currentRound)
-        const update = conditions.map(condition => (
-            {
-                name: condition.value,
-                started: currentRound,
-                source: 'manually added',
-                duration: 1000
-            }
-        )) 
-        console.log(target, conditions)
-        if (target.enemy === 'pc') context.editCharacter(target, {conditions: update})
-        if (target.enemy === 'monster') context.editMonster(target, {conditions: update})
-    }
+    
     const menu = useRef(null);
 
     return (

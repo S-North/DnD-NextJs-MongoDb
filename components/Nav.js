@@ -8,7 +8,7 @@ const Nav = ({campaign, adventure, encounter, user, location}) => {
     const { query, pathname, isReady } = useRouter()
     const path = pathname.split("/")[1]
     const id = query.id
-    console.log(path)
+    // console.log(path)
     // console.log(id)
 
     useEffect(() => {

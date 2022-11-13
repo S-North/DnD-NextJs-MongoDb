@@ -1,7 +1,9 @@
 import { useState, useEffect, useContext } from "react"
 import { EncounterContext } from "../../pages/encounter/[id]"
 import styles from './Encounter_CombatantDetails_Spellpane.module.css'
-export default function Encounter_CombatantDetails_SpellPane({ combatant }) {
+
+
+export default function Encounter_CombatantDetails_SpellPane({ combatant, addConcentration, removeConcentration }) {
     const context = useContext(EncounterContext)
     const castSpell = () => {}
     const [ spells, setSpells ] = useState([])
@@ -43,6 +45,55 @@ export default function Encounter_CombatantDetails_SpellPane({ combatant }) {
         // console.log(castableSlots)
         return castableSlots
     }
+
+    const doSpellCast = (spell, slot) => {
+        console.log(spell)
+        console.log(slot)
+        const parseDuration = (duration) => {
+            if (duration.length === 0) {console.log('duration is empty') ;return 0}
+            let amount
+            let unit
+            const words = duration.split(' ')
+            console.log(words)
+            words.forEach(word => {
+                // console.log(word)
+                switch (word) {
+                    case 'minute' || 'minutes': unit = 10; break
+                    case 'hour' || 'hours': unit = 600; break
+                }
+                const number = parseInt(word)
+                console.log(number)
+                console.log(typeof number)
+                if (!isNaN(number) && typeof number === 'number') {
+                    // console.log(`${word} is a number`)
+                    amount = number
+                } 
+                // else console.error(`${word} is not a number`)
+                
+            })
+            console.log(amount)
+            console.log(unit)
+            return amount*unit
+
+        }
+
+        if (spell.concentration && combatant?.concentration) {
+            if (!window.confirm(`This monster is already concentrating on a spell (${combatant.concentration?.name}). Do you want to drop the old spell?`)) return
+        }
+        
+        const change = {}
+        if (spell.concentration) {
+            let concentration = {round: context.encounter.round, name: spell.name, duration: parseDuration(spell.duration)}
+            change.concentration = concentration
+        }
+        
+        const spellSlots = combatant.spellSlots
+        spellSlots[slot -1] = spellSlots[slot -1 ] - 1
+        change.spellSlots = spellSlots
+        console.log(change)
+        // problem is here, running multible calls to editMonster()
+        context.editMonster(combatant, change)
+    }
   
     return (
         <div className={styles.container}>
@@ -65,8 +116,7 @@ export default function Encounter_CombatantDetails_SpellPane({ combatant }) {
                 <div 
                     key={spell._id} 
                     className={styles.spell_line} 
-                    style={{'display':'flex', 'justifyContent': 'space-between', 'width': '100%'}}
-                    onClick={() => console.log("click")}>
+                    style={{'display':'flex', 'justifyContent': 'space-between', 'width': '100%'}}>
 
                     <div className={styles.spell_title}>
                         <p>{spell.level} - <strong>{spell.name}</strong> ({spell.concentration ? 'C' : ''}{spell.ritual ? 'R' : ''})</p>
@@ -88,21 +138,7 @@ export default function Encounter_CombatantDetails_SpellPane({ combatant }) {
                                 <button
                                     key={index}
                                     className={styles.spell_cast_button} 
-                                    onClick={() => {
-                                        if (spell.concentration) {
-                                        if (combatant.concentrating?.active) {
-                                            if (window.confirm(`This monster is already concentrating on a spell (${combatant.concentrating?.spellName}). Do you want to drop the old spell?`)) {
-                                                console.log('switched concentration')
-                                            }
-                                            else return
-                                        }
-                                        if (window.confirm('This is a concentration spell. Add the concentration flag to this monster?')) console.log('add concentration')
-                                        else return
-                                        }
-                                        const spellSlots = combatant.spellSlots
-                                        spellSlots[slot -1] = spellSlots[slot -1 ] - 1
-                                        context.editMonster(combatant, {spellSlots: spellSlots})
-                                    }}
+                                    onClick={() => doSpellCast(spell, slot)}
                                 >{slot}
                                 </button>
                             ))

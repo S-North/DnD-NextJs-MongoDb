@@ -23,10 +23,10 @@ export default async function handler(req, res) {
     name: {$regex: `[\w*]?${body.data.search}[\w*]?`, $options: "i"}
   }
 
-  console.log(body.data.type)
-  console.log(body.data)
+  // console.log(body.data.type)
+  // console.log(body.data)
   if (body.data.school && body.data.school !== 'none') query = {...query, school: body.data.school}
-  console.log(query)
+  // console.log(query)
 
   
   let response = {}
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
   if (method === 'POST' && body.action === 'monster') {
     // returns all monsters from the collection but with selected fields #projection
     console.log('get full list of spells for a monster')
-    console.log(body.data)
+    // console.log(body.data)
     if (body.data && body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
     response = await db.collection("spells").find(body.data
       ).collation( { locale: 'en', strength: 2 } ) // case insensitive query using a mongodb index with collation https://www.mongodb.com/docs/manual/core/index-case-insensitive/
@@ -74,7 +74,7 @@ export default async function handler(req, res) {
   if (method === 'POST' && body.action === 'addmany') {
     // returns all monsters from the collection but with selected fields #projection
     console.log('insert array of spells')
-    console.log(body.data)
+    // console.log(body.data)
     if (body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
     response = await db.collection("spells").insertMany(body.data)
   }
@@ -89,10 +89,10 @@ export default async function handler(req, res) {
   if (method === 'POST' && body.action === 'deleteone') {
     console.log('delete spell')
     const _id = new ObjectId(body.data._id)
-    console.log(_id)
+    // console.log(_id)
     response = await db.collection('spells').deleteOne({_id: _id});
   }
 
-  console.log(response)
+  // console.log(response)
   res.json(response)
 }

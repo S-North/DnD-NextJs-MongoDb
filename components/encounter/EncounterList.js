@@ -64,9 +64,9 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                 })
 
                 adventures = await advResponse.json(advResponse)
-                console.log(adventures)
+                // console.log(adventures)
                 encounters = await encResponse.json(encResponse)
-                console.log(encounters)
+                // console.log(encounters)
 
                 setEncounterTargets(adventures.map(a => (
                     {
@@ -103,14 +103,14 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
     }
 
     const moveMonsters = async (monsters, target) => {
-        console.log(monsters)
-        console.log(target)
+        // console.log(monsters)
+        // console.log(target)
         // e.preventDefault()
         const data = {
             target: target._id,
             monsters
         }
-        data.target ? console.log(data) : console.log('create a new encounter')
+        // data.target ? console.log(data) : console.log('create a new encounter')
         setSelectedMonsters([])
         setSelectedTarget()
         setMoveDialog(false)
@@ -205,7 +205,7 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                         {getExpandedStats(combatant).conditions && Array.isArray(getExpandedStats(combatant).conditions) && <p>{getExpandedStats(combatant).conditions.map(condition => (condition.name)).join(", ")}</p>}
                     </div>
 
-                    <div className="hitpoints" style={getExpandedStats(combatant).currentHp > 0 ? {cursor: "pointer"} : {cursor: "pointer", "backgroundColor": "red"}} onClick={() => { changeHP([combatant])} }>
+                    <div className="hitpoints" style={getExpandedStats(combatant).currentHp > 0 ? {cursor: "pointer"} : {cursor: "pointer", "backgroundColor": "#b90000"}} onClick={() => { changeHP([combatant])} }>
                         <h2>
                         {getExpandedStats(combatant).currentHp}/{getExpandedStats(combatant).maxHp}
                         </h2>
