@@ -42,7 +42,7 @@
 .target {
     display: grid;
     grid-template-columns: 2ch max-content auto 20% max-content;
-    column-gap: 1ch;
+    column-gap: 1rem;
     justify-items: left;
     align-items: center;
     padding-left: 1.5ch;

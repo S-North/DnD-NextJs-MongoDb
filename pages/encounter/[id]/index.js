@@ -537,7 +537,7 @@ const Encounter = ({ initialEncounter }) => {
             ></Nav>
 
             {/* modal window for popup forms */}
-            <Dialog visible={modal.on} onHide={() => setModal({...modal, on: false})} header={modal.type}>
+            <Dialog visible={modal.on} onHide={() => setModal({...modal, on: false})} header={modal.type} style={{"width": "100vw", "maxWidth": "45rem"}}>
                {/* Modal content */}
                {/* <div className="modal-content"> */}
                   {/* <span

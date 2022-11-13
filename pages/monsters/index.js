@@ -549,7 +549,7 @@ const MonsterList = ({
                            setModal({ on: true, view: "view" });
                         }}
                      >
-                        <div className="link">
+                        {/* <div className="link"> */}
                            <h2>{monster.name}</h2>
                            <div style={{ display: "flex" }}>
                               <p>
@@ -559,7 +559,7 @@ const MonsterList = ({
                                  {monster.size} {monster.type}
                               </em>
                            </div>
-                        </div>
+                        {/* </div> */}
                      </div>
                     {admin === 'admin' && <div className="actions">
                         {deleteMonster && (

@@ -15,7 +15,7 @@
 
 .action {
     display: grid;
-    grid-template-columns: 10ch auto auto;
+    grid-template-columns: 5rem minmax(5rem, 30rem) 5rem;
     /* grid-template-rows: ; */
     row-gap: 1ch;
     column-gap: 1ch;

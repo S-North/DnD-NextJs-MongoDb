@@ -148,20 +148,20 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
             </Dialog>
 
             <div className="flex-row">
-            <h3>{`Round: ${context.encounter.round + 1} Turn: ${
-                context.encounter.turn + 1
-            }`}</h3>
-            <button onClick={ () => { incrementInitiative("back") } }
-            >
-                <FaBackward />
-            </button>
-            <button onClick={ () => { editEncounter({mode: 'editing'})}}> Edit </button>
-            <button onClick={() => { incrementInitiative("forward")}}> <FaForward /> </button>
-            <Button
-                label="Move" 
-                className="p-button-sm"
-                onClick={(e) => {e.preventDefault(); setMoveDialog(true)}}
-            />
+                <h3>{`Round: ${context.encounter.round + 1} Turn: ${
+                    context.encounter.turn + 1
+                }`}</h3>
+                <button onClick={ () => { incrementInitiative("back") } }
+                >
+                    <FaBackward />
+                </button>
+                <button onClick={ () => { editEncounter({mode: 'editing'})}}> Edit </button>
+                <button onClick={() => { incrementInitiative("forward")}}> <FaForward /> </button>
+                <Button
+                    label="Move" 
+                    className="p-button-sm"
+                    onClick={(e) => {e.preventDefault(); setMoveDialog(true)}}
+                />
             </div>
 
             {context?.encounter?.initiative && context?.characters && context.encounter.initiative
