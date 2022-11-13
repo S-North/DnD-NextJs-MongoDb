@@ -1,0 +1,21 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.button {
+    padding: 1rem;
+    background-color: var(--green);
+    color: var(--paper);
+    font-weight: bold;
+    font-size: large;
+    transition: all 0.3s ease-in-out;
+    box-shadow: var(--box-shadow);
+    border: none;
+    border-radius: 3px;
+}
+
+.button:hover {
+    filter: brightness(1.2);
+}

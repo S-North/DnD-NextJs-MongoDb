@@ -3,14 +3,20 @@ import { useState } from 'react';
 import styles from './Toolbar.module.css'
 import { FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import { useRouter } from 'next/router';
+import { withPageAuthRequired } from "@auth0/nextjs-auth0";
+import DiceRoller from './DiceRoller';
+import { Dialog } from 'primereact/dialog';
 
-const Toolbar = () => {
+export default withPageAuthRequired(function Toolbar({ user }) {
     const router = useRouter()
-    // console.log(router)
     const [ open, setOpen ] = useState(true)
+    const [ diceRoller, setDiceRoller] = useState(false)
 
     return (
         <>
+            <Dialog visible={diceRoller} header='Dice Roller' onHide={() => setDiceRoller(false)} dismissableMask={true} modal={false} >
+                <DiceRoller></DiceRoller>
+            </Dialog>
             <div className={styles.container}>
             <button 
                 className={styles.open_button} 
@@ -22,12 +28,13 @@ const Toolbar = () => {
             
             {open && <div className={styles.navigation}>
                 <Link href={'/'}>Home</Link><br></br>
+                {user?.permission === 'admin' && <><Link href={'/admin'}>Admin</Link><br></br></>}
                 <Link href={'/campaigns'}>Campaigns</Link><br></br>
                 <Link href={'/monsters'}>Monsters</Link><br></br>
                 <Link href={'/equipment'}>Equipment</Link><br></br>
                 <Link href={'/spells'}>Spells</Link>
                 <hr></hr>
-                <Link href={'/spells'}>Dice Roller</Link>
+                <Link href={'#'}><div style={{"cursor": "pointer"}} onClick={() => setDiceRoller(true)}>Dice Roller</div></Link>
                 <div style={{"minHeight": "10ch"}}></div>
                 <Link href={'/spells'}>Loot Gen</Link>
                 <div style={{"minHeight": "10ch"}}></div>
@@ -36,6 +43,6 @@ const Toolbar = () => {
             </div>
         </>
     );
-}
+})
 
-export default Toolbar
+// export default Toolbar

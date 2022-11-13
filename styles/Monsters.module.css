@@ -1,8 +1,9 @@
 /* list component */
 .monster_filter_container {
     display: flex;
-    gap: 1ch;
+    gap: 0.5rem;
     min-height: 6ch;
+    margin-bottom: 1rem;
 }
 
 .btn_add_new_monster {
@@ -15,19 +16,24 @@
 .item_list {
     display: flex;
     flex-direction: column;
-    gap: 0.5ch;
+    gap: 0.5rem;
 }
 
 .item_list .list_item {
     display: flex;
-    background-color: var(--paper);
-    padding: 0 0.5ch;
+    column-gap: 1rem;
+    background-color: white;
+    padding: 0.5rem;
     box-shadow: var(--box-shadow)
 }
 
 .item_text {
+    display: grid;
+    grid-template-columns: max-content auto;
+    column-gap: 1rem;
     cursor: pointer; 
     width: 100%;
+    /* width: 100%; */
 }
 
 .action_form {

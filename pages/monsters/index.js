@@ -160,7 +160,7 @@ export default withPageAuthRequired(function Monsters({ user }) {
 
    return (
       <>
-         <Nav location="monsters"></Nav>
+         <Nav location="monsters" user={user}></Nav>
          {/* modal window */}
          {modal.on && (
             <div id="modal-window" className="modal">
@@ -549,7 +549,7 @@ const MonsterList = ({
                            setModal({ on: true, view: "view" });
                         }}
                      >
-                        <div className="link">
+                        {/* <div className="link"> */}
                            <h2>{monster.name}</h2>
                            <div style={{ display: "flex" }}>
                               <p>
@@ -559,7 +559,7 @@ const MonsterList = ({
                                  {monster.size} {monster.type}
                               </em>
                            </div>
-                        </div>
+                        {/* </div> */}
                      </div>
                     {admin === 'admin' && <div className="actions">
                         {deleteMonster && (

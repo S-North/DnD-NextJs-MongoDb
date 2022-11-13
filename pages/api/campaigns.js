@@ -11,23 +11,23 @@ export default async function handler(req, res) {
   // method to return filtered results from the collection
   if (method === 'POST' && body.action === 'query') {
     console.log('get filtered campaigns')
-    console.log(body.data)
+    // console.log(body.data)
     if (body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
-    console.log(body.data)
+    // console.log(body.data)
     response = await db.collection("campaigns").find(body.data).toArray()
   }
 
   // method to add a new document
   if (method === 'POST' && body.action === 'addone') {
     console.log('insert one campaign')
-    console.log(body.data)
+    // console.log(body.data)
     response = await db.collection("campaigns").insertOne(body.data);
   }
 
   // method to edit an existing document
   if (method === 'POST' && body.action === 'editone') {
     console.log('edit one campaign')
-    console.log(body.data)
+    // console.log(body.data)
     const id = ObjectId(body.data._id)
     response = await db.collection("campaigns").updateOne({_id: id}, {$set: {...body.data, _id: id}});
   }
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
   // method to edit an elenent in an existing document!!!
   if (method === 'PATCH' && body.action === 'editmonster') {
     console.log('edit one monster')
-    console.log(body.data)
+    // console.log(body.data)
     const campaignId = ObjectId(body.data.campaignId)
     const monsterId = ObjectId(body.data.monster._id)
     response = await db.collection("campaigns").updateOne({_id: campaignId, "monsters._id": monsterId}, {$set: {"monsters.$": {...body.data.monster, _id: monsterId}}});
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
   if (method === 'POST' && body.action === 'deleteone') {
     console.log('delete campaign')
     const id = new ObjectId(body.data._id)
-    console.log(id)
+    // console.log(id)
     response = await db.collection('campaigns').deleteOne({_id: id});
   }
 
@@ -62,27 +62,27 @@ export default async function handler(req, res) {
     confirm,
     monster: {...body.data.monster}
    }
-   console.log(response)
+  //  console.log(response)
   }
 
   if (method === 'POST' && body.action === 'delete monster') {
     console.log('delete monster')
-    console.log(body.data)
+    // console.log(body.data)
     const CAMPAIGNID = new ObjectId(body.data.campaignId)
     const MONSTERID = new ObjectId(body.data.monster._id)
-    console.log(CAMPAIGNID)
-    console.log(MONSTERID)
+    // console.log(CAMPAIGNID)
+    // console.log(MONSTERID)
 
     const RESULT = await db.collection('campaigns').updateOne(
       { _id: CAMPAIGNID },
       { $pull: { monsters: { _id: MONSTERID } } }
     )
-      console.log(RESULT)
+      // console.log(RESULT)
     response = RESULT
   }
 
   // console.log(`response is ${response}`)
-  console.log(response)
+  // console.log(response)
 
   res.json(response)
 }

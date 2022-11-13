@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   if (method == 'POST' && body.action === 'query') {
     console.log('get filtered encounters')
-    console.log(req.body.data)
+    // console.log(req.body.data)
     if (body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
 
     response = await db.collection("encounters").find(req.body.data).toArray()
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
   if (method == 'POST' && body.action === 'minilist') {
     console.log('get filtered encounters')
-    console.log(req.body.data)
+    // console.log(req.body.data)
     if (body.data._id) body.data = {...body.data, _id: new ObjectId(body.data._id)}
 
     response = await db.collection("encounters").find(req.body.data, { projection: 
@@ -44,19 +44,20 @@ export default async function handler(req, res) {
 
   if (method == 'POST' && body.action === 'editone') {
     console.log('edit 1 encounter')
+    
     const id = new ObjectId(body.data._id)
     response = await db.collection("encounters").updateOne({_id: id}, {$set: {...body.data, _id: id}});
 
-    console.log(response)
+    // console.log(response)
   }
 
   if (method == 'POST' && body.action === 'deleteone') {
     console.log('delete encounter')
     const id = new ObjectId(body.data._id)
-    console.log(id)
+    // console.log(id)
     response = await db.collection('encounters').deleteOne({_id: id});
   }
 
-  console.log(response)
+  // console.log(response)
   res.json(response)
 }

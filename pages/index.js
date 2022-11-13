@@ -2,7 +2,6 @@ import connectToDatabase from '../utils/mongodb'
 import Link from 'next/link';
 import { useUser } from '@auth0/nextjs-auth0';
 import Nav from '../components/Nav';
-import Toolbar from '../components/Toolbar'
 import styles from '../styles/Home.module.css'
 
 export default function Home({ }) {

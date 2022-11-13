@@ -1,0 +1,16 @@
+.card {
+    display: flex;
+    gap: 1rem;
+}
+
+.spinner > input {
+    margin: 0 !important
+}
+
+.result {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+}

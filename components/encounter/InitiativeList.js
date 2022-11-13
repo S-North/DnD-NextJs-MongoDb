@@ -77,26 +77,26 @@ export default function InitiativeList ({displayItem, deleteItem, initiativeItem
             {encounter.characters && (
                 <button className="blue" 
                     onClick={() => {
-                        encounter.setModal({ type: "addPC", on: true });
+                        encounter.setModal({ type: "Add Character", on: true });
                     }}> Add PC
                 </button>
             )}
 
             <button className="blue"
                 onClick={() => {
-                    encounter.setModal({ type: "addNPC", on: true });
+                    encounter.setModal({ type: "Add NPC", on: true });
                 }}> Add NPC
             </button>
 
             <button className="blue"
                 onClick={() => {
-                    encounter.setModal({ type: "addMonster", on: true });
+                    encounter.setModal({ type: "Add Monster", on: true });
                 }}>Add Monster
             </button>
 
             <button className="green"
                 onClick={() => {
-                    encounter.setModal({ type: "rollInitiative", on: true });
+                    encounter.setModal({ type: "Roll Initiative", on: true });
                 }}> Run
             </button>
         </div>
