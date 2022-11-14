@@ -12,9 +12,7 @@ const Nav = ({campaign, adventure, encounter, user, location}) => {
     // console.log(id)
 
     useEffect(() => {
-      if (localStorage.sidebar === undefined) {
-        localStorage.sidebar = 'open'
-      }
+      
     
       return () => {}
     }, [])    
