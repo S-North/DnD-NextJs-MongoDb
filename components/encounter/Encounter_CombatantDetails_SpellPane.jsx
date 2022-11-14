@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react"
 import { EncounterContext } from "../../pages/encounter/[id]"
+import { Dialog } from "primereact/dialog"
 import styles from './Encounter_CombatantDetails_Spellpane.module.css'
 
 
@@ -7,6 +8,8 @@ export default function Encounter_CombatantDetails_SpellPane({ combatant, addCon
     const context = useContext(EncounterContext)
     const castSpell = () => {}
     const [ spells, setSpells ] = useState([])
+    const [ dialogOpen, setdialogOpen ] = useState(false)
+    const [ dialogInfo, setdialogInfo ] = useState('')
     const [ maxCastLevel, setMaxCastLevel ] = useState(0)
     const api = '/api/'
 
@@ -35,6 +38,12 @@ export default function Encounter_CombatantDetails_SpellPane({ combatant, addCon
         return () => {}
     }, [combatant])
 
+    const handleSpellInfo = (e, spell) => {
+        e.preventDefault()
+        console.log(spell.name)
+        setdialogInfo(spell)
+        setdialogOpen(true)
+    }
     const spellCastButtons = (min, slots) => {
         // console.log(min)
         // console.log(slots)
@@ -92,11 +101,30 @@ export default function Encounter_CombatantDetails_SpellPane({ combatant, addCon
         change.spellSlots = spellSlots
         console.log(change)
         // problem is here, running multible calls to editMonster()
-        context.editMonster(combatant, change)
+        if (combatant?.enemy === 'monster') context.editMonster(combatant, change)
+        if (combatant?.enemy === 'pc') context.editCharacter(combatant, change)
     }
   
     return (
         <div className={styles.container}>
+            <Dialog visible={dialogOpen} onHide={() => setdialogOpen(false)} header={dialogInfo.name} style={{"width": "100%", "maxWidth": "45rem"}}>
+                {dialogInfo && <div className={styles.spellInfo}>
+                <div className={styles.spellInfoMetaLine}>
+                    <p className={styles.key}>Range:</p>
+                    <p>{dialogInfo.range}</p>
+                </div>
+                <div className={styles.spellInfoMetaLine}>
+                    <p className={styles.key}>Cast Time</p>
+                    <p>{dialogInfo.time}</p>
+                </div>
+                <div className={styles.spellInfoMetaLine}>
+                    <p className={styles.key}>Duration</p>
+                    <p>{dialogInfo.duration}</p>
+                </div>
+                <p className={styles.spellInfoMetaLineDescription}>{dialogInfo.description}</p>
+                </div>}
+                
+            </Dialog>
             {combatant?.spellSlots?.length > 0 ? <><div id="spellslots" className={styles.spellslots}>
             {combatant.spellSlots.map((slot, index) => (
                 <label key={index} htmlFor={index}>
@@ -118,15 +146,8 @@ export default function Encounter_CombatantDetails_SpellPane({ combatant, addCon
                     className={styles.spell_line} 
                     style={{'display':'flex', 'justifyContent': 'space-between', 'width': '100%'}}>
 
-                    <div className={styles.spell_title}>
-                        <p>{spell.level} - <strong>{spell.name}</strong> ({spell.concentration ? 'C' : ''}{spell.ritual ? 'R' : ''})</p>
-                        <span class={styles.description_tooltip}>
-                            <h3>{spell.name}</h3>
-                            <p><strong>Range: </strong>{spell.range}</p>
-                            <p><strong>Cast Time: </strong>{spell.time}</p>
-                            <p><strong>Duration: </strong>{spell.duration}</p>
-                            <p>{spell.description}</p>
-                            </span>
+                    <div className={styles.spellTitle} onClick={e => handleSpellInfo(e, spell)}>
+                        <p><button className={styles.infoButton} onClick={e => handleSpellInfo(e, spell)}>{spell.level}</button><strong>{spell.name}</strong> ({spell.concentration ? 'C' : ''}{spell.ritual ? 'R' : ''})</p>
                     </div>
                     <div className={styles.spell_cast_buttons}>
                         {

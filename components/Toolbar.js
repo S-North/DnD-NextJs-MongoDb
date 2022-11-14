@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './Toolbar.module.css'
 import { FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import { useRouter } from 'next/router';
@@ -11,6 +11,26 @@ export default withPageAuthRequired(function Toolbar({ user }) {
     const router = useRouter()
     const [ open, setOpen ] = useState(true)
     const [ diceRoller, setDiceRoller] = useState(false)
+
+    useEffect(() => {
+        if (localStorage.sidebar === undefined) {
+            localStorage.sidebar = 'open'
+        }
+        console.log(localStorage.sidebar)
+
+        if (localStorage.sidebar === 'true') setOpen(true)
+        if (localStorage.sidebar === 'false') setOpen(false)
+    
+      return
+    }, [])
+
+    useEffect(() => {
+        localStorage.sidebar = open
+    
+        return
+    },  [open])
+    
+    
 
     return (
         <>

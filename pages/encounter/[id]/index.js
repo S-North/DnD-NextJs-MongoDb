@@ -112,7 +112,9 @@ const Encounter = ({ initialEncounter }) => {
    useEffect(() => {
       // when the turn is changed to a new combatant, get their full stats and do some stuff
       let combatant = {}
-      if (encounter?.initiative?.length > 0) combatant = getCombatantStats(encounter.initiative[encounter.turn]);
+      if (encounter?.initiative?.length > 0 && encounter?.turn) combatant = getCombatantStats(encounter.initiative[encounter.turn])
+      else if (encounter.turn) combatant = getCombatantStats(encounter.initiative[0])
+      // else combatant = null
 
       // Turn alerts e.g. spell ends, has condition, is dead
       if (combatant?.concentration && calculateConcentrationRemaining(combatant, encounter.round) === 0) window.alert(`Spell "${combatant.concentration.name}" has ended`) 
@@ -418,21 +420,26 @@ const Encounter = ({ initialEncounter }) => {
       setSelected(initiativeItemToFullStats(initiative[0]));
    };
 
-   const editEncounter = async (update) => {
+   const editEncounter = async (update, alternateEncounterId) => {
+      const encounterId = alternateEncounterId || encounter._id
+      // console.log(encounterId)
+      // console.log(update)
+
       // update should be an object containing the changed fields in the encounter
       const response = await fetch(`/api/encounters`, {
          method: "POST",
          body: JSON.stringify({
             action: "editone",
             data: {
-               _id: encounter._id,
+               _id: encounterId,
                ...update,
             },
          }),
          headers: { "Content-type": "application/json; charset=UTF-8" },
       });
       const updateStatus = await response.json();
-      setEncounter({ ...encounter, ...update });
+      // console.log(updateStatus)
+      if (encounterId === encounter._id) setEncounter({ ...encounter, ...update });
    };
 
    const incrementInitiative = (direction) => {
@@ -561,7 +568,7 @@ const Encounter = ({ initialEncounter }) => {
                      </div>
                   )}
 
-                  {modal.type === "Edit Monster" && (
+                  {modal.type === "editMonsters" && (
                      <EditMonsters addMonsters={addMonsters}></EditMonsters>
                   )}
 
