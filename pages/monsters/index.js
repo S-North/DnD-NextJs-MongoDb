@@ -834,10 +834,6 @@ const MonsterForm = ({ selected, setSelected, update, saveAsNew, setModal: setPa
       });
    };
 
-   const addAction = () => {
-      console.log("add action");
-   };
-
    const editAction = async (action) => {
       console.log(action);
       const damages = {};
@@ -1845,9 +1841,7 @@ const MonsterForm = ({ selected, setSelected, update, saveAsNew, setModal: setPa
                      </div>
                   </div>
 
-                  <hr />
                   <h2>Saves</h2>
-                  <br />
                   <div className="flex-checkboxes">
                      {abilityList.map((c) => (
                         <div key={c} className="checkboxs">

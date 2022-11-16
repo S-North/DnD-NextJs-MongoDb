@@ -21,13 +21,13 @@ export default function Encounter_CombatantDetails_Stats({ combatant, tab, addCo
         } else return abilityModifier(ability);
     };
     
-    
     const menu = useRef(null);
 
     return (
         <div 
+            className={styles.detailsContainer}
             style={tab === "details"
-                        ? { display: "block" }
+                        ? { display: "flex" }
                         : { display: "none" }
                   }
             id="details">
@@ -387,7 +387,7 @@ export default function Encounter_CombatantDetails_Stats({ combatant, tab, addCo
                 value={combatant?.conditions?.map(condition => (
                     {value: condition.name, label: condition.name}
                 ))} 
-                placeholder={'Condition'} 
+                placeholder={'Conditions'} 
                 isMulti
                 menuPosition="fixed"
                 menuPlacement="auto"

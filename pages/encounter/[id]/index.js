@@ -7,7 +7,8 @@ import React, { useState, useEffect, createContext, useContext, useRef } from "r
 import encounterStyle from "../../../styles/Encounter.module.css";
 
 import { calculateConcentrationRemaining } from "../../../utils/encounterUtils";
-import monsters, { MonsterForm } from "../../monsters";
+// import monsters, { MonsterForm } from "../../monsters";
+import MonsterForm from "../../../components/monsters/MonsterForm";
 import InitiativeList from "../../../components/encounter/InitiativeList";
 import Encounter_CombatantDetails, { EncounterDetailsContext } from "../../../components/encounter/Encounter_CombatantDetails";
 import CharacterForm from "../../../components/forms/CharacterForm";
@@ -544,7 +545,7 @@ const Encounter = ({ initialEncounter }) => {
             ></Nav>
 
             {/* modal window for popup forms */}
-            <Dialog visible={modal.on} onHide={() => setModal({...modal, on: false})} header={modal.type} style={{"width": "100vw", "maxWidth": "45rem"}}>
+            <Dialog visible={modal.on} onHide={() => setModal({...modal, on: false})} header={modal.type} style={{"width": "100vw", "maxWidth": "45rem"}} position='top'>
                {/* Modal content */}
                {/* <div className="modal-content"> */}
                   {/* <span
