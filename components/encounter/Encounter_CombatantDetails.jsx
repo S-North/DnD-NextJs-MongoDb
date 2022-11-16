@@ -135,7 +135,6 @@ export default function Encounter_CombatantDetails({ selected, doDamage }) {
         if (target.enemy === 'monster') context.editMonster(target, {concentration: newSpell})
     }
 
-    
     const removeConcentration = (target) => {
         console.log('remove old concentration')
         console.log(target)

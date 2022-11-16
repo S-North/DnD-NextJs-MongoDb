@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { EncounterContext } from "../../pages/encounter/[id]";
 import { v4 as uuidv4 } from 'uuid'
-import { MonsterForm } from "../../pages/monsters";
+import MonsterForm from "../monsters/MonsterForm"
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import styles from './DamageCalculator.module.css'
 
