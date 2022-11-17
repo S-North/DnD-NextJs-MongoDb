@@ -212,17 +212,6 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
         {modal.on && (
             <>
             <Dialog visible={modal.on} onHide={() => setModal({on: false, type: ''})} header={modal.view} style={{width: "100%", maxWidth: "45rem"}}>
-            {/* <div id="modal-window" className="modal"> */}
-            {/* Modal content */}
-            {/* <div className="modal-content"> */}
-                {/* <span
-                    className="close"
-                    onClick={() => {
-                        setModal({ on: false, type: "" });
-                    }}
-                >
-                    &times;
-                </span> */}
 
                 {modal.view === "trait" && (
                     <form

@@ -1,11 +1,12 @@
 import connectToDatabase from '../../utils/mongodb'
 import { withPageAuthRequired, useUser } from '@auth0/nextjs-auth0';
-import { useState, useEffect } from 'react'
+import { useState, useEffect, CSSProperties } from 'react'
 import { truncate } from '../../utils/utils'
 import Link from 'next/link'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
 import BasicForm from '../../components/forms/BasicForm'
 import Nav from '../../components/Nav';
+import GridLoader from "react-spinners/GridLoader";
 
 
 export default withPageAuthRequired(function Campaign({ }) {
@@ -15,7 +16,9 @@ export default withPageAuthRequired(function Campaign({ }) {
   const [ encounters, setEncounters ] = useState([])
   const [ selected, setSelected ] =useState();
   const [ modal, setModal ] = useState({"type": "none", "on": false})
-  
+  const [ loadingCampaigns, setLoadingCampaigns ] = useState(true);
+  const [ loadingEncounters, setLoadingEncounters ] = useState(true);
+ 
   useEffect(() => {
     const getCampaigns = async () => {
       const response = await fetch(`${api}campaigns`, {
@@ -30,7 +33,9 @@ export default withPageAuthRequired(function Campaign({ }) {
       }
       })
       const allcampaigns = await response.json(response)
+      
       setCampaigns(allcampaigns)
+      setLoadingCampaigns(false)
     }
     getCampaigns()
 
@@ -53,7 +58,8 @@ export default withPageAuthRequired(function Campaign({ }) {
 
       const runningEncounters = await response.json()
       // console.log(runningEncounters)
-      if (runningEncounters) setEncounters(runningEncounters)
+      setEncounters(runningEncounters)
+      setLoadingEncounters(false)
     }
     getRunningEncounters()
 
@@ -146,6 +152,19 @@ export default withPageAuthRequired(function Campaign({ }) {
         <section>
             <div className="one-column">
                 <h2>Campaigns</h2>
+                <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+                  {loadingCampaigns &&<h2 style={{fontSize: "1.5rem", marginBottom: "1rem"}}>LOADING</h2>}
+                  <GridLoader
+                    color={'#36d7b7'}
+                    loading={loadingCampaigns}
+                    // cssOverride={override}
+                    size={30}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                  />
+                </div>
+                {!loadingCampaigns && <div>
+                  <div style={{display: "flex", flexDirection: "column", gap: "0.5rem", boxShadow: "var(--box-shadow)"}}>
                     <button className="green" onClick={() => {setSelected({"name": "", "description": ""}, setModal({"on": true, "type": "campaigns"}))}}>New</button>
 
                     {campaigns.sort((a,b) => {return a.modified < b.modified}).map(campaign => (
@@ -166,11 +185,24 @@ export default withPageAuthRequired(function Campaign({ }) {
                             </div>
                         </div>
                     ))}
+                    </div>
+                </div>}
             </div>
 
             <div className="one-column">
                 <h2>Running Encounters</h2>
-                {encounters && encounters
+                <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+                  {loadingEncounters &&<h2 style={{fontSize: "1.5rem", marginBottom: "1rem"}}>LOADING</h2>}
+                  <GridLoader
+                    color={'#36d7b7'}
+                    loading={loadingEncounters}
+                    // cssOverride={override}
+                    size={30}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                  />
+                </div>
+                {!loadingEncounters && encounters && encounters
                     .filter(e => { return e.mode === "running"})
                     .map(encounter => (
                         <div key={encounter._id} className="list-item">                          

@@ -16,6 +16,7 @@ const Adventure = ({adventure}) => {
     const [ campaign, setCampaign ] = useState()
     const [ selected, setSelected ] = useState();
     const [ modal, setModal ] = useState({"type": "none", "on": false})
+
     
     useEffect(() => {
         const getEncounters = async () => {
