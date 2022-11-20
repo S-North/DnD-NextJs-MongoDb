@@ -16,9 +16,6 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
     const [ moveDialog, setMoveDialog ] = useState(false);
     const [ encounterTargets, setEncounterTargets ] = useState(null);
     const [ move, setMove ] = useState({execute: false, monsters: [], target: {}});
-    const [ selectedMonsters, setSelectedMonsters ] = useState(null);
-    const [ selectedTarget, setSelectedTarget ] = useState(null);
-    const [ executeMove, setexecuteMove ] = useState(false)
 
     useEffect(() => {
         if (context?.encounter?._id) {

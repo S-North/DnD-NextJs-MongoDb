@@ -1,0 +1,52 @@
+.filterbox {
+    background-color: white;
+    padding: 0.5rem;
+    box-shadow: var(--box-shadow);
+    font-size: 0.7rem;
+}
+
+.checkbox_container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.details > div {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.item_list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.list_item {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    background-color: white;
+    padding: 0.5rem;
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+}
+
+.item_text {
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+.actionDiv {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}

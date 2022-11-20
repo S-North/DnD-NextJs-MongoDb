@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'
 import BasicForm from '../../components/forms/BasicForm'
 import Nav from '../../components/Nav';
-import GridLoader from "react-spinners/GridLoader";
+import GridLoader from "react-spinners/PuffLoader";
 
 
 export default withPageAuthRequired(function Campaign({ }) {
@@ -152,17 +152,17 @@ export default withPageAuthRequired(function Campaign({ }) {
         <section>
             <div className="one-column">
                 <h2>Campaigns</h2>
-                <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-                  {loadingCampaigns &&<h2 style={{fontSize: "1.5rem", marginBottom: "1rem"}}>LOADING</h2>}
+                {loadingCampaigns &&<div style={{display: "flex", flexDirection: "column", alignItems: "center", backgroundColor: "rgba(0, 0, 0, 0.6)", color: "white", padding: "1rem", borderRadius: "3%"}}>
+                  <h2 style={{fontSize: "1.5rem", marginBottom: "1rem", color: "white"}}>LOADING</h2>
                   <GridLoader
                     color={'#36d7b7'}
                     loading={loadingCampaigns}
                     // cssOverride={override}
-                    size={30}
+                    size={150}
                     aria-label="Loading Spinner"
                     data-testid="loader"
                   />
-                </div>
+                </div>}
                 {!loadingCampaigns && <div>
                   <div style={{display: "flex", flexDirection: "column", gap: "0.5rem", boxShadow: "var(--box-shadow)"}}>
                     <button className="green" onClick={() => {setSelected({"name": "", "description": ""}, setModal({"on": true, "type": "campaigns"}))}}>New</button>
@@ -191,17 +191,17 @@ export default withPageAuthRequired(function Campaign({ }) {
 
             <div className="one-column">
                 <h2>Running Encounters</h2>
-                <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-                  {loadingEncounters &&<h2 style={{fontSize: "1.5rem", marginBottom: "1rem"}}>LOADING</h2>}
+                {loadingEncounters &&<div style={{display: "flex", flexDirection: "column", alignItems: "center", backgroundColor: "rgba(0, 0, 0, 0.6)", color: "white", padding: "1rem", borderRadius: "3%"}}>
+                  <h2 style={{fontSize: "1.5rem", marginBottom: "1rem", color: "white"}}>LOADING</h2>
                   <GridLoader
                     color={'#36d7b7'}
                     loading={loadingEncounters}
                     // cssOverride={override}
-                    size={30}
+                    size={150}
                     aria-label="Loading Spinner"
                     data-testid="loader"
                   />
-                </div>
+                </div>}
                 {!loadingEncounters && encounters && encounters
                     .filter(e => { return e.mode === "running"})
                     .map(encounter => (

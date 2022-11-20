@@ -2,8 +2,8 @@ import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 import { useState, useEffect } from 'react';
 import Nav from '../../components/Nav';
 import styles from '../../styles/Spells.module.css'
-import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, monsterTemplate, schools, spellSlotLevels } from '../../utils/Forms'
-import { truncate, abilityModifier, diceRoll, crToXp, displayCrAsFraction } from '../../utils/utils'
+import { schools, spellSlotLevels } from '../../utils/Forms'
+import { displayCrAsFraction } from '../../utils/utils'
 import ReactPaginate from 'react-paginate'; // https://www.npmjs.com/package/react-paginate
 // import spellBook from '../../spells.json'
 import SpellForm from '../../components/spells/SpellForm';
@@ -50,6 +50,7 @@ export default withPageAuthRequired(function Spells({ user }) {
                     </>}
             </div>
         </div>}
+
         <section>
             <div className="one-column">
                 <SpellList selected={selected} setSelected={setSelected} setModal={setModal} deleteItem={true} editItem={true} user={user}/>

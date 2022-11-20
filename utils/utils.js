@@ -1,6 +1,6 @@
 export function calculateEncounterDifficulty (monsterXPs, charactersXp) {
-    console.log(charactersXp)
-    console.log(monsterXPs)
+    // console.log(charactersXp)
+    // console.log(monsterXPs)
     const difficultyArray = [
         [25, 50, 75, 125, 250, 300, 350, 450, 550, 600, 800, 1000, 1100, 1250, 1400, 1600, 2000, 2100, 2400, 2800],
         [50, 100, 150, 250, 500, 600, 750, 900, 1100, 1200, 1600, 2000, 2200, 2500, 2800, 3200, 3900, 4200, 4900, 5700],
@@ -30,12 +30,11 @@ export function calculateEncounterDifficulty (monsterXPs, charactersXp) {
     }
     // console.log(adjustedMonsterXP)
     // need to include the adjustment for party size before returning a result
-    debugger
-    if (adjustedMonsterXP < partyThresholds[0]) return 'trivial'
-    if (adjustedMonsterXP < partyThresholds[1]) return 'easy'
-    if (adjustedMonsterXP < partyThresholds[2]) return 'medium'
-    if (adjustedMonsterXP < partyThresholds[3]) return 'hard'
-    if (adjustedMonsterXP >= partyThresholds[3]) return 'deadly'
+    if (adjustedMonsterXP < partyThresholds[0]) return {partyThresholds, adjustedMonsterXP, difficulty: 'trivial'}
+    if (adjustedMonsterXP < partyThresholds[1]) return {partyThresholds, adjustedMonsterXP, difficulty: 'easy'}
+    if (adjustedMonsterXP < partyThresholds[2]) return {partyThresholds, adjustedMonsterXP, difficulty: 'medium'}
+    if (adjustedMonsterXP < partyThresholds[3]) return {partyThresholds, adjustedMonsterXP, difficulty: 'hard'}
+    if (adjustedMonsterXP >= partyThresholds[3]) return {partyThresholds, adjustedMonsterXP, difficulty: 'deadly'}
 }
 
 export const truncate = (string="", maxlength) => {

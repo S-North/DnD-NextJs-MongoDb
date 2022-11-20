@@ -1,7 +1,9 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { EncounterContext } from "../../pages/encounter/[id]";
 import { FaWindowClose } from 'react-icons/fa'
 import { xpToLevel, displayCrAsFraction, calculateEncounterDifficulty } from "../../utils/utils";
+import { Menu } from 'primereact/menu';
+import { Button } from "primereact/button";
 
 // Initiative list is used to add and remove people to an encounter in deit mode (before the encounter is run).
 // If you want the list of combatants shown while the encounter is running, you need EncounterList.js
@@ -37,6 +39,19 @@ export function InitiativeItem ({init, displayItem, deleteItem}) {
 export default function InitiativeList ({displayItem, deleteItem, initiativeItemToFullStats}) {
     const encounter = useContext(EncounterContext)
     const [ encounterDifficulty, setEncounterDifficulty ] = useState()
+    const menu = useRef()
+    const ButtonItems = [
+        {
+            label: 'Notes',
+            icon: 'pi pi-file',
+            command: (e) => encounter.setModal({on: true, type: 'View Notes'})
+        },
+        {
+            label: 'Add Note',
+            icon: 'pi pi-file-edit',
+            command: (e) => encounter.setModal({on: true, type: 'Add Note'})
+        }
+    ]
 
     useEffect(() => {
         //  get the monsters difficulty stats
@@ -72,26 +87,33 @@ export default function InitiativeList ({displayItem, deleteItem, initiativeItem
 
         {/* the actions for adding new combatants and running the encounter */}
         <div className="flex-row">
-            <h2 style={{color: 'ghostwhite'}}>{encounterDifficulty}</h2>
+            <Menu model={ButtonItems} popup ref={menu} />
+            <Button label="" icon="pi pi-bars" onClick={e => menu.current.toggle(e)} style={{maxHeight: "2rem"}}/>
         <div className="flex-row" style={{ justifyContent: "flex-end" }}>
+            <button className="blue"
+                onClick={() => {
+                    encounter.setModal({ type: "Add Note", on: true });
+                }}> Note
+            </button>
+
             {encounter.characters && (
                 <button className="blue" 
                     onClick={() => {
                         encounter.setModal({ type: "Add Character", on: true });
-                    }}> Add PC
+                    }}> PC
                 </button>
             )}
-
+            
             <button className="blue"
                 onClick={() => {
                     encounter.setModal({ type: "Add NPC", on: true });
-                }}> Add NPC
+                }}> NPC
             </button>
 
             <button className="blue"
                 onClick={() => {
                     encounter.setModal({ type: "Add Monster", on: true });
-                }}>Add Monster
+                }}> Monster
             </button>
 
             <button className="green"
@@ -101,7 +123,12 @@ export default function InitiativeList ({displayItem, deleteItem, initiativeItem
             </button>
         </div>
         </div>
-
+        {encounterDifficulty &&
+            <h2 
+                title={`Adjusted Monster XP: ${encounterDifficulty.adjustedMonsterXP}\nParty Thresholds: (Easy: ${encounterDifficulty.partyThresholds[0]}, Medium: ${encounterDifficulty.partyThresholds[1]}, Difficult: ${encounterDifficulty.partyThresholds[2]}, Deadly: ${encounterDifficulty.partyThresholds[3]})`} 
+                style={{color: 'ghostwhite'}}>
+                {encounterDifficulty.difficulty}
+            </h2>}
         {/* list of player characters, we do these first just so they appear at the top of the list for DM convenience */}
         {encounter && encounter.encounter.initiative && 
             encounter.encounter.initiative.map(init => (

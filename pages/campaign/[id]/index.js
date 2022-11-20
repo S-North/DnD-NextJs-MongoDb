@@ -14,7 +14,7 @@ import { monsterTemplate } from '../../../utils/Forms'
 import BasicForm from '../../../components/forms/BasicForm'
 import CharacterForm from '../../../components/forms/CharacterForm'
 import Nav from '../../../components/Nav';
-import { MonsterForm } from '../../monsters';
+import MonsterForm from '../../../components/monsters/MonsterForm';
 
 import { v4 as uuidv4 } from 'uuid'
 import { FaEdit, FaWindowClose } from 'react-icons/fa'

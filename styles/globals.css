@@ -150,7 +150,7 @@ section {
   padding: 0.5ch;
   display: flex;
   flex-direction: column;
-  gap: 0.5ch;
+  gap: 0.5rem;
   /* opacity: 0.6; */
 }
 
