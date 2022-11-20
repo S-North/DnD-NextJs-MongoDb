@@ -11,6 +11,9 @@ const sizes =["tiny", "small", "medium", "large", "huge", "gargantuan"]
 const abilityList = ["Str", "Dex", "Con", "Int", "Wis", "Cha"]
 const languagesList = ["Aarakocra", "Auran", "Common", "Dwarvish", "Elvish", "Giant", "Gnomish", "Goblin", "Halfling", "Orc", "Abyssal", "Celestial", "Deep Speech", "Draconic", "Infernal", "Primordial", "Sylvan", "Undercommon", "Terran"]
 const skillList = ["Acrobatics", "Animal Handling", "Arcana", "Athletics", "Deception", "History", "Insight", "Intimidation", "Investigation", "Medicine", "Nature", "Perception", "Performance", "Persuasion", "Religion", "Sleight of Hand", "Stealth", "Survival"]
+const equipmentTypes = ['Ammo', 'Valuable', "Heavy Armor", "Light Armor", "Melee", "Medium Armor", "Ranged", "Shield", "Potion", "Rod", "Ring", "Scroll", "Staff", "Wonderous Item", "Wand", "Gear"].sort()
+const equipmentRarity = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary', 'Artifact']
+const equipmentProperies = ['2 Handed', 'Ammunition', 'Finesse', 'Heavy', 'Light', 'Loading', 'Thrown', 'Versatile', 'Reach', 'Special'].sort()
 const skillToAbility = (skill) => {
     switch (true) {
         default:
@@ -67,4 +70,4 @@ const monsterTemplate = {
     spells: [],
     spellSlots: []
   }
-export { types, crRange, classes, races, damageTypes, conditions, sizes, sensesList, abilityList, skillList, skillToAbility, monsterTemplate, languagesList, schools, spellSlotLevels, spellClasses }
+export { types, crRange, classes, races, damageTypes, conditions, sizes, sensesList, abilityList, skillList, skillToAbility, monsterTemplate, languagesList, schools, spellSlotLevels, spellClasses, equipmentTypes, equipmentRarity, equipmentProperies }

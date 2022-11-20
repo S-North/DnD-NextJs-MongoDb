@@ -11,6 +11,8 @@ import { calculateConcentrationRemaining } from "../../../utils/encounterUtils";
 import MonsterForm from "../../../components/monsters/MonsterForm";
 import InitiativeList from "../../../components/encounter/InitiativeList";
 import Encounter_CombatantDetails, { EncounterDetailsContext } from "../../../components/encounter/Encounter_CombatantDetails";
+import NoteForm from '../../../components/forms/NoteForm'
+import ViewNotes from "../../../components/encounter/Encounter_ViewNotes";
 import CharacterForm from "../../../components/forms/CharacterForm";
 import AddCharacter from "../../../components/encounter/AddCharacter";
 import AddMonster from "../../../components/encounter/AddMonster";
@@ -33,6 +35,7 @@ const Encounter = ({ initialEncounter }) => {
    const [campaign, setCampaign] = useState({});
    const [adventure, setAdventure] = useState({});
    const [tab, setTab] = useState('details')
+   const [note, setnote] = useState()
 
    // used as temporary storage during edit, then as the combatant to display during running
    const [selected, setSelected] = useState();
@@ -113,7 +116,10 @@ const Encounter = ({ initialEncounter }) => {
    useEffect(() => {
       // when the turn is changed to a new combatant, get their full stats and do some stuff
       let combatant = {}
-      if (encounter?.initiative?.length > 0 && encounter?.turn) combatant = getCombatantStats(encounter.initiative[encounter.turn])
+      if (encounter?.initiative?.length > 0 && encounter?.turn !== undefined || null) {
+         combatant = getCombatantStats(encounter.initiative[encounter.turn])
+         console.log(combatant)
+      }
       else if (encounter.turn) combatant = getCombatantStats(encounter.initiative[0])
       // else combatant = null
 
@@ -426,7 +432,7 @@ const Encounter = ({ initialEncounter }) => {
       // console.log(encounterId)
       // console.log(update)
 
-      // update should be an object containing the changed fields in the encounter
+      // update should be an object containing the changed fields in the encounter e.g. {round: 2, turn: 6}
       const response = await fetch(`/api/encounters`, {
          method: "POST",
          body: JSON.stringify({
@@ -518,6 +524,7 @@ const Encounter = ({ initialEncounter }) => {
       campaign,
       encounter,
       setEncounter,
+      editEncounter,
       characters,
       editCharacter,
       setCharacters,
@@ -545,17 +552,18 @@ const Encounter = ({ initialEncounter }) => {
             ></Nav>
 
             {/* modal window for popup forms */}
-            <Dialog visible={modal.on} onHide={() => setModal({...modal, on: false})} header={modal.type} style={{"width": "100vw", "maxWidth": "45rem"}} position='top'>
+            <Dialog visible={modal.on} onHide={() => {setModal({...modal, on: false}); setnote()}} header={modal.type} style={{"width": "100vw", "maxWidth": "45rem"}} position='top'>
                {/* Modal content */}
-               {/* <div className="modal-content"> */}
-                  {/* <span
-                     className="close"
-                     onClick={() => {
-                        setModal({ on: false, type: "none" });
-                     }}
-                  >
-                     &times;
-                  </span> */}
+
+                  {modal.type === "Add Note" && (
+                     <NoteForm note={note} setnote={setnote}
+                        
+                     ></NoteForm>
+                  )}
+
+                  {modal.type === "View Notes" && (
+                     <ViewNotes setnote={setnote}></ViewNotes>
+                  )}
 
                   {modal.type === "Add Character" && (
                      <AddCharacter

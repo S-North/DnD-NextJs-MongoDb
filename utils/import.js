@@ -1,4 +1,4 @@
-import { crToXp, skillToAbility, calculateProficiencyBonus, abilityModifier, fractionalCrtoNumber } from './utils'
+import { skillToAbility, calculateProficiencyBonus, abilityModifier, fractionalCrtoNumber } from './utils'
 import { damageTypes } from './Forms'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -7,6 +7,7 @@ export const importMonster = (inputFile) => {
     const tag = inputFile.importTag
     // console.log(monster)
     const dcRegex = /DC\s\d+\s\w+/g
+
     const getSize = (size) => {
         switch (size) {
             default:
@@ -326,7 +327,49 @@ export const importMonster = (inputFile) => {
                 case '1/8': return 0.125
             }
         }
-        return parseInt(cr)
+        return parseFloat(cr)
+    }
+
+    const crToXp = (cr) => {
+        const crInt = parseCR(cr)
+        switch(crInt) {
+            case 0: return 10;
+            case 0.125: return 25;
+            case 0.25: return 50;
+            case 0.5: return 100;
+            case 1: return 200;
+            case 2: return 450;
+            case 3: return 700;
+            case 4: return 1100;
+            case 5: return 1800;
+            case 6: return 2300;
+            case 7: return 2900;
+            case 8: return 3900;
+            case 9: return 5000;
+            case 10: return 5900;
+            case 11: return 7200;
+            case 12: return 8400;
+            case 13: return 10000;
+            case 14: return 11500;
+            case 15: return 13000;
+            case 16: return 15000;
+            case 17: return 18000;
+            case 18: return 20000;
+            case 19: return 22000;
+            case 20: return 25000;
+            case 21: return 33000;
+            case 22: return 41000;
+            case 23: return 50000;
+            case 24: return 62000;
+            case 25: return 75000;
+            case 26: return 90000;
+            case 27: return 105000;
+            case 28: return 120000;
+            case 29: return 135000;
+            case 30: return 155000;
+            default: return 0
+        }
+
     }
 
     const parseSpeed = (speedString) => {
@@ -489,7 +532,263 @@ export const importSpell = (spell) => {
 }
 
 export const importEquipment = (equipment) => {
+    const parsed = {}
 
+    const parseDescription = (text) => {
+        if (!text) return []
+        if (typeof text === 'string') return ['text']
+        const textArr = []
+        if (Array.isArray(text)) {
+            text.forEach(line => {
+                if (line && !line.includes('Rarity:')) textArr.push(line)
+            })
+        }
+        return textArr
+    }
+    const parseAttunement = (text) => {
+        if (!text) return false
+        if (typeof text === 'string' && text.toLowerCase() === 'requires attunement') return true
+        const attunement = false
+        if (Array.isArray(text)) {
+            text.forEach(line => {
+                if (line?.toLowerCase() === 'requires attunement') attunement = true
+            })
+        }
+        return attunement
+    }
+    const parseSource = (text) => {
+        if (!text) return ''
+        if (typeof text === 'string' && text.toLowerCase().includes('source:')) return text.split('Source: ' || 'source: ')[1]
+        const source = ''
+        if (Array.isArray(text)) {
+            text.forEach(line => {
+                if (line?.toLowerCase().includes('source:')) source = line.split('Source: ' || 'source: ')[1]
+            })
+        }
+        return source
+    }
+    const parseType = (type) => {
+        switch (type) {
+            case 'LA': return 'Light Armor'
+            case 'MA': return 'Medium Armor'
+            case 'HA': return 'Heavy Armor'
+            case 'A': return 'Ammo'
+            case 'M': return 'Melee'
+            case 'R': return 'Ranged'
+            case 'S': return 'Shield'
+            case 'ST': return 'Staff'
+            case 'P': return 'Potion'
+            case 'RD': return 'Rod'
+            case 'RG': return 'Ring'
+            case 'SC': return 'Scroll'
+            case 'W': return 'Wonderous Item'
+            case 'WD': return 'Wand'
+            case '$': return 'Valuable'
+            case 'G': return 'Gear'
+            default: {console.log(type); return type}
+        }
+    }
+    const parseMagic = (magic) => {
+        if (!magic) return false
+        if (parseInt(magic) === 0) return false
+        if (parseInt(magic) === 1) return true
+        else return false
+    }
+    const parseMagicValue = (name) => {
+        switch (true) {
+            case name.includes('+1'): return 1 
+            case name.includes('+2'): return 2
+            case name.includes('+3'): return 3
+            case name.includes('+4'): return 4
+            case name.includes('+5'): return 5
+            default: return 0
+        }
+    }
+    const parseProperty = (property) => {
+        if (!property) return []
+
+        const propertyArr = []
+        let properties
+        if (typeof property === 'string') properties = property.split(',')
+        if (Array.isArray(properties)) {
+            properties.forEach(property => {
+                switch (property) {
+                    case '2H' || '2h': propertyArr.push('2 Handed'); break
+                    case 'A' || 'a': propertyArr.push('Ammunition'); break
+                    case 'F' || 'f': propertyArr.push('Finesse'); break
+                    case 'H' || 'h': propertyArr.push('Heavy'); break
+                    case 'L' || 'l': propertyArr.push('Light'); break
+                    case 'LD' || 'ld': propertyArr.push('Loading'); break
+                    case 'T' || 't': propertyArr.push('Thrown'); break
+                    case 'V' || 'v': propertyArr.push('Versatile'); break           
+                    case 'R' || 'r': propertyArr.push('Reach'); break       
+                    case 'S' || 's': propertyArr.push('Special'); break   // check this    
+                }
+        })}
+        return propertyArr
+    }
+    const parseValue = (value) => {
+        const valueObj = {amount: 0, type: ''}
+        if (typeof value === 'string') {
+            if (value.toLowerCase().includes('pp')) {
+                valueObj.type = 'PP'
+                valueObj.amount = value.split('pp')[0]
+            }
+            if (value.toLowerCase().includes('gp')) {
+                valueObj.type = 'GP'
+                valueObj.amount = value.split('gp')[0]
+            }
+            if (value.toLowerCase().includes('ep')) {
+                valueObj.type = 'EP'
+                valueObj.amount = value.split('ep')[0]
+            }
+            if (value.toLowerCase().includes('sp')) {
+                valueObj.type = 'SP'
+                valueObj.amount = value.split('sp')[0]
+            }if (value.toLowerCase().includes('cp')) {
+                valueObj.type = 'CP'
+                valueObj.amount = value.split('cp')[0]
+            }
+        }
+        return valueObj
+    }
+    const parseActions = (dmg1, dmg2, dmgType, roll) => {
+        // ISSUES:
+        // potion of healing uses roll for different things. ["4d4+4"] "You regain 4d4 + 4 hit points when you drink this potion.  The potion's red liquid glimmers when agitated.", ["1d4"] "When you drink this potion, you gain the \"reduce\" effect of the enlarge/reduce spell for 1d4 hours (no concentration required). The red in the potion's liquid continuously contracts to a tiny bead and then expands to color the clear liquid around it. Shaking the bottle fails to interrupt this process."
+        // parseExtraDamageType('description) is returning the damage type
+        // scrolls are getting an action for some reason. ["1d20+SPELL","1d20+5"]. "If the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC is 11.  On a failed check, the spell disappears from the scroll with no other effect.", "A spell cast from this scroll has a save DC of 13 and an attack bonus of +5."
+        // staffs use roll to regain charges. "This staff has 10 charges and regains 1d6 + 4 expended charges daily at dawn. If you expend the last charge, roll a d20. On a 1, a swarm of insects consumes and destroys the staff, then disperses."
+        // staffs also use roll for extra damage. "You can use an action to cause a bolt of lightning to leap from the staff's tip in a line that is 5 feet wide and 120 feet long. Each creature in that line must make a DC 17 Dexterity saving throw, taking 9d6 lightning damage on a failed save, or half as much damage on a successful one."
+        // I notice that magical staffs do not include dmg1 etc for normal damage :( 
+        // some items include attack rolls & damage rolls in the roll array. "Tentacle Rod" ["1d20+9","1d6"]"Made by the drow, this rod is a magic weapon that ends in three rubbery tentacles. While holding the rod, you can use an action to direct each tentacle to attack a creature you can see within 15 feet of you. Each tentacle makes a melee attack roll with a +9 bonus. On a hit, the tentacle deals 1d6 bludgeoning damage. If you hit a target with all three tentacles, it must make a DC 15 Constitution saving throw. On a failure, the creature's speed is halved, it has disadvantage on Dexterity saving throws, and it can't use reactions for 1 minute. Moreover, on each of its turns, it can take either an action or a bonus action, but not both. At the end of each of its turns, it can repeat the saving throw, ending the effect on itself on a success." 
+        // some rings also have a recharge roll
+        let index = 1
+        const parseDamageType = () => {
+            switch (dmgType) {
+                case 'B': return "bludgeoning"; break
+                case 'P': return "piercing"; break
+                case 'S': return "slashing"; break
+                default: return undefined
+            }
+        }
+        const parseExtraDamageType = (action) => {
+            let damageType = ''
+            let damageDescription = ''
+            parsed.description.forEach(description => {
+                damageTypes.forEach(type => {
+                    if (description.includes(type)) {
+                        damageType = type
+                        damageDescription = description
+                    }
+                })
+            })
+            if (action = 'type') return damageType
+            if (action = 'description') return damageDescription
+        }
+
+        const action = {
+            _id: uuidv4(),
+            name: equipment.name,
+            description: parsed.description,
+            attack: parsed.magicValue || 0,
+        }
+        if (dmg1) {
+            const hdDice = parseInt(dmg1.split('d')[0])
+            const hdSides = parseInt(dmg1.split('d')[1])
+            const hdBonus = 0
+            const type = parseDamageType()
+            action[`damage${index}`] = {hdDice, hdSides, hdBonus, type, enabled: true}
+            index += 1
+        }
+        if (dmg2) {
+            const hdDice = parseInt(dmg2.split('d')[0])
+            const hdSides = parseInt(dmg2.split('d')[1])
+            const hdBonus = 0
+            const type = parseDamageType()
+            action[`damage${index}`] = {hdDice, hdSides, hdBonus, type, enabled: true}
+            index += 1
+        }
+        if (roll) {
+            roll.forEach(r => {
+                
+                const hdDice = parseInt(r.split('d')[0])
+                const hdSides = parseInt(r.split('d')[1])
+                const hdBonus = 0
+                const type = parseExtraDamageType('type') || parseDamageType()
+                const description = parseExtraDamageType('description')
+
+                action[`damage${index}`] = {hdDice, hdSides, hdBonus, type, enabled: true, description}
+                index += 1
+            })
+        }
+
+        return action
+    }
+
+    const parseRange = (range) => {
+        const parsedRange = {}
+        parsedRange.normal = parseInt(range.split('/')[0])
+        parsedRange.long = parseInt(range.split('/')[1])
+
+        return parsedRange
+    }
+
+    const parseModifiers = (modifiers) => {
+        // console.log(modifiers)
+        const adjustedArr = []
+
+        if (!Array.isArray(modifiers) && typeof modifiers === 'object') modifiers = [modifiers]
+        if (Array.isArray(modifiers)) {
+            // console.log('has modifier')
+            modifiers.forEach(modifier => {
+                const newMod = {
+                    category: modifier._category,
+                    type: modifier.__text.split(' +')[0] || '',
+                    bonus: parseInt(modifier.__text.split(' +')[1]) || 0
+                }
+                if (newMod.category === 'ability score') {
+                    newMod.type = newMod.type.slice(0, 3)
+                }
+                adjustedArr.push(newMod)
+            })
+        }
+
+        return adjustedArr
+    }
+    
+    const parseRolls = (rolls) => {
+        const newArr = []
+        rolls.forEach(roll => {
+            const hdDice = parseInt(roll.split('d'))
+            let remainder = roll.split('d')[1]
+            const hdSides = parseInt(remainder.split('+')[0])
+            let hdBonus = parseInt(remainder.split('+')[1]) || remainder.split('+')[1] || 0
+            newArr.push({hdDice, hdSides, hdBonus})
+        })
+
+        return newArr
+    }
+
+    parsed.name = equipment.name
+    parsed.description = parseDescription(equipment.text)
+    if (equipment.ac) parsed.ac = parseInt(equipment.ac) || undefined
+    parsed.type = parseType(equipment.type)
+    parsed.weight = parseFloat(equipment.weight) || 0
+    parsed.magic = parseMagic(equipment.magic)
+    if (parsed.magic) parsed.magicValue = parseMagicValue(equipment.name)
+    if (parsed.magic) parsed.attunement = parseAttunement(equipment.text)
+    parsed.value = parseValue(equipment.value)
+    parsed.source = parseSource(equipment.text)
+    parsed.rarity = equipment.rarity || 'Common'
+    parsed.property = parseProperty(equipment.property)
+    if (equipment.stealth) parsed.strength = parseInt(equipment.strength) || undefined
+    if (equipment.stealth === 'YES' || equipment.stealth === '1') parsed.stealth = true
+    if ((equipment.type === 'M' || equipment.type === 'A' || equipment.range) && (equipment.dmg1 || equipment.dmg2 || equipment.roll)) parsed.actions = parseActions(equipment.dmg1, equipment.dmg2, equipment.dmgType, equipment.roll)
+    if (!(equipment.type === 'M' || equipment.type === 'A' || equipment.range) && equipment.roll) parsed.rolls = parseRolls(equipment.roll)
+    if (equipment.range) parsed.range = parseRange(equipment.range)
+    if (equipment.modifier) parsed.modifiers = parseModifiers(equipment.modifier)
+
+    return parsed
 }
 
 export const importCharacter = (equipment) => {

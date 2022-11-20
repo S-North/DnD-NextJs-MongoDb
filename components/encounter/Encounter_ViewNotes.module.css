@@ -1,0 +1,9 @@
+.header:focus {
+    box-shadow: none;
+}
+
+.header a {
+    box-shadow: none !important;
+    padding: 0.4rem !important;
+    color: black !important;
+}

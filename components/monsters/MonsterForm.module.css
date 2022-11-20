@@ -172,3 +172,36 @@
 .action_dmg3Option3 { grid-area: dmg3Option3; }
 .action_dmg3Option4 { grid-area: dmg3Option4; }
 .action_save { grid-area: save;}
+
+.equipmentContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.equipmentContainer button:first-child {
+    background-color: green;
+    color: white;
+    border: 0;
+    border-radius: 0.1rem;
+    padding: 1rem;
+}
+
+.equipmentList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    /* flex-wrap: wrap; */
+}
+
+.equipmentLine {
+    display: flex;
+    justify-content: space-between;
+    box-shadow: var(--box-shadow);
+    padding: 0.3rem;
+    gap: 0.5rem;
+}
+
+.equipmentLine button {
+
+}

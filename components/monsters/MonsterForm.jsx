@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { SpellList } from "../../pages/spells";
 import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, spellSlotLevels } from "../../utils/Forms";
-import { abilityModifier, skillToAbility, calculateProficiencyBonus } from "../../utils/utils";
+import { abilityModifier, skillToAbility, calculateProficiencyBonus, diceRoll, crToXp } from "../../utils/utils";
 import { SplitButton } from "primereact/splitbutton";
 import { TieredMenu } from "primereact/tieredmenu";
 import { FaDiceSix, FaWindowClose } from "react-icons/fa";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
+import { SpellList } from "../../pages/spells";
+import EquipmentList from "../equipment/EquipmentList";
 
 import styles from './MonsterForm.module.css'
 import { v4 as uuidv4 } from "uuid";
@@ -55,7 +56,8 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
  
     useEffect(() => {
        // set item to value of selected
-       if (selected) setItem(selected);
+       if (selected && !selected.equipment) setItem({...selected, equipment: []});
+       else if  (selected) setItem(selected);
        if (selected?.spells) {
           const getSpells = async () => {
              const response = await fetch(`${api}spells`, {
@@ -205,6 +207,32 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
     const deleteSkill = (skill) => {
        setItem({...item, skills: [...item.skills.filter(item => {return skill.name !== item.name})]})
     }
+
+    const addEquipment = async (equipment) => {
+        const response = await fetch(`/api/equipment`, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "query",
+                query: {_id: equipment._id},
+                projection: {name: 1, description: 1, ac: 1, type: 1, weight: 1, magic: 1, magicValue: 1, attunement: 1, value: 1, source: 1, rarity: 1, property: 1, strength: 1, stealth: 1, modifiers: 1, actions: 1}
+                // sort: { name: sortName, cr: sortCr },
+            }),
+            headers: { "Content-type": "application/json; charset=UTF-8" },
+        });
+        let apiResponse = await response.json();
+        console.log(apiResponse)
+        if (apiResponse?.length > 0) {setItem({
+            ...item,
+            equipment: [...item.equipment, {...apiResponse[0], _id: uuidv4(), equiped: false, attuned: false}],
+            });}
+    }
+
+    const deleteEquipment = (equipment) => {
+        setItem({
+            ...item,
+            equipment: [...item.equipment.filter(eq => eq._id !== equipment._id)],
+         });
+    }
  
     return (
     <>
@@ -212,17 +240,6 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
         {modal.on && (
             <>
             <Dialog visible={modal.on} onHide={() => setModal({on: false, type: ''})} header={modal.view} style={{width: "100%", maxWidth: "45rem"}}>
-            {/* <div id="modal-window" className="modal"> */}
-            {/* Modal content */}
-            {/* <div className="modal-content"> */}
-                {/* <span
-                    className="close"
-                    onClick={() => {
-                        setModal({ on: false, type: "" });
-                    }}
-                >
-                    &times;
-                </span> */}
 
                 {modal.view === "trait" && (
                     <form
@@ -603,8 +620,10 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
                         <input type="number" value={item.actions}></input>
                     </>
                 )}
-            {/* </div> */}
-            {/* </div> */}
+                {modal.view === "equipment" && (
+                    <EquipmentList clickFunction={addEquipment} modalFunction={setModal} />
+                )}
+            
             </Dialog>
             </>
         )}
@@ -708,6 +727,16 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
                         }}
                     >
                         spells
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.tab}
+                        style={
+                            tabs === "equipment" ? { backgroundColor: "var(---paper)" } : {}
+                        } onClick={() => {
+                            setTabs("equipment");
+                        }}
+                    > Equipment
                     </button>
                 </div>
 
@@ -1716,6 +1745,28 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
                             <br></br>
                         </div>
                     )}
+                </div>
+
+                <div className={styles.equipmentContainer}
+                    style={
+                        tabs === "equipment"
+                            ? { display: "flex" }
+                            : { display: "none" }
+                    }>
+                    <button onClick={e => {e.preventDefault(); setModal({ on: true, view: "equipment" })}}>Add Equipment</button>
+                    {item?.equipment && <div className={styles.equipmentList}>
+                        {item.equipment.map(equipment => (
+                            <div className={styles.equipmentLine}>
+                                <input type="checkbox" name="" id="equiped" checked={equipment.equiped} onChange={e => setItem({...item, equipment: [...item.equipment.filter(eq => eq._id !== equipment._id), {...equipment, equiped: e.target.checked}]})} />
+                                <p>{equipment.name}</p>
+                                <FaWindowClose 
+                                    style={{"cursor": "pointer"}} 
+                                    color="red"
+                                    onClick={() => {deleteEquipment(equipment)}} />
+                            </div>
+                        ))}
+
+                    </div>}
                 </div>
             </form>
         )}
