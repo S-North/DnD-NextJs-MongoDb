@@ -56,6 +56,7 @@ export default function Encounter_CombatantDetails({ selected, doDamage }) {
         ]
 
     useEffect(() => {
+        // debugger
         if (selected?.enemy === 'monster' && context.encounter) {
         setCombatant(context.encounter.monsters.filter(monster => {return selected._id === monster._id})[0])
         }

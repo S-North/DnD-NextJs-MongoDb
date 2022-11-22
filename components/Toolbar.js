@@ -16,10 +16,17 @@ export default withPageAuthRequired(function Toolbar({ user }) {
         if (localStorage.sidebar === undefined) {
             localStorage.sidebar = 'open'
         }
-        console.log(localStorage.sidebar)
+        // console.log(localStorage.sidebar)
 
         if (localStorage.sidebar === 'true') setOpen(true)
         if (localStorage.sidebar === 'false') setOpen(false)
+
+        document.addEventListener("keydown", function (e) {
+            // e.preventDefault()
+            if (e.altKey && e.key === "d") {
+               setDiceRoller(true);
+            }
+         });
     
       return
     }, [])

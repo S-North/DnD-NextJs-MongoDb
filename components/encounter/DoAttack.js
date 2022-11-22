@@ -60,19 +60,19 @@ export function ListResults ({ tempCombatant, combatantsHit, targets, toHitRoll,
                     <p>{combatant.advantage} roll: <strong>{toHitRoll[combatant.advantage] + toHitRoll.bonus}</strong> {toHitRoll[combatant.advantage] === 20 ? <strong>CRITICAL HIT</strong> : ''}</p>
                     <p>hits AC: <strong>{combatant.ac}</strong></p>
                     <p>HP: <strong>{combatant.currentHp}</strong></p>
-                    {tempCombatant.attack.damage1.enabled && 
+                    {tempCombatant.attack.damage1?.enabled && 
                         <Button 
                             onClick={() => rollDamage(tempCombatant.attack.damage1, combatant)} 
                             className="p-button-sm">
-                            {tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1.hdSides} + {tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}
+                            {tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1?.hdSides} + {tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}
                         </Button>}
-                    {tempCombatant.attack.damage2.enabled && 
+                    {tempCombatant.attack?.damage2?.enabled && 
                         <Button 
                             onClick={() => rollDamage(tempCombatant.attack.damage2, combatant)} 
                             className="p-button-sm">
-                                {tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2.hdSides} + {tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}
+                                {tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2?.hdSides} + {tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}
                         </Button>}
-                    {tempCombatant.attack.damage3.enabled && 
+                    {tempCombatant.attack?.damage3?.enabled && 
                         <Button
                             onClick={() => rollDamage(tempCombatant.attack.damage3, combatant)} 
                             className="p-button-sm">

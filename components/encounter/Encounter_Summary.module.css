@@ -1,0 +1,54 @@
+.summaryContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.summaryContainer h2 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.summaryContainer p {
+    font-size: 0.9rem;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    box-shadow: var(--box-shadow);
+    padding: 0.5rem;
+    background-color: var(--paper);
+}
+
+.section summary {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.8rem;
+
+    background-color: var(--blue);
+    color: white;
+    padding: 0.5rem;
+    box-shadow: var(--box-shadow);
+    /* margin-bottom: 0.5rem; */
+}
+
+.section details > div {
+    padding-left: 0.5rem;
+    margin-top: 0.3rem;
+}
+
+.section details p {
+    padding: 0.2rem;
+    cursor: pointer;
+}
+
+.section details p:hover {
+    /* transition: all 0.1s ease-out; */
+    background-color: white;
+    /* font-weight: 600; */
+    box-shadow: var(--box-shadow);
+}
+
