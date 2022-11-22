@@ -1,5 +1,5 @@
 import styles from './Encounter_CombatantDetails_Actions.module.css'
-import { abilityModifier, diceRoll } from '../../utils/utils';
+import { abilityModifier, diceRoll, calculateProficiencyBonus } from '../../utils/utils';
 import { SplitButton } from 'primereact/splitbutton';
 import { modifiedAbilityScore } from '../../utils/encounterUtils';
 import { useContext } from 'react';
@@ -18,7 +18,9 @@ export default function Encounter_CombatantDetails_Actions({ combatant, tab, doD
         const damages = Object.keys(action).filter(k => k.includes('damage'))
 
         if (eq.type === 'Melee') {
-            action.attack = action.attack + abilityModifier(modifiedAbilityScore('str', combatant))
+            if (combatant.enemy === 'monster') action.attack = action.attack + abilityModifier(modifiedAbilityScore('str', combatant)) + calculateProficiencyBonus(combatant.cr)
+            // will need to use xp or level for PCs and NPCs
+
             damages?.forEach(damage => {
                 action[damage].hdBonus += abilityModifier(modifiedAbilityScore('str', combatant))
                 eq.modifiers?.filter(mod => mod.category === 'bonus' && mod.type === 'melee damage').forEach(mod => {
@@ -28,7 +30,7 @@ export default function Encounter_CombatantDetails_Actions({ combatant, tab, doD
         }
 
         if (eq.type === 'Ranged') {
-            action.attack = action.attack + abilityModifier(modifiedAbilityScore('dex', combatant))
+            action.attack = action.attack + abilityModifier(modifiedAbilityScore('dex', combatant)) + calculateProficiencyBonus(combatant.cr)
             damages?.forEach(damage => {
                 action[damage].hdBonus += abilityModifier(modifiedAbilityScore('dex', combatant))
                 eq.modifiers?.filter(mod => mod.category === 'bonus' && mod.type === 'ranged damage').forEach(mod => {
@@ -51,7 +53,7 @@ export default function Encounter_CombatantDetails_Actions({ combatant, tab, doD
         >
             {combatant?.equipment && combatant?.equipment?.filter(eq => eq.actions).map(eq => (
                 <>
-                {(eq.actions?.attack || eq.actions?.attack === 0) && ((eq.equiped && eq.attunement === false) || (eq.equiped && eq.attunement && eq.attuned === true)) && <div key={eq._id} className={styles.actions}>
+                {(eq.actions?.attack || eq.actions?.attack === 0) && ((eq.equiped && !eq.attunement) || (eq.equiped && eq.attunement && eq.attuned === true)) && <div key={eq._id} className={styles.actions}>
                     <div className={styles.action}>
                     <h2>{eq.name}</h2>
                     <p>{eq.description}</p>
