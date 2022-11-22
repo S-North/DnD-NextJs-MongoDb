@@ -19,11 +19,13 @@ export default function Encounter_CombatantDetails_Actions({ combatant, tab, doD
 
         if (eq.type === 'Melee') {
             // finesse use highest modifier of dex or str
-            if (combatant.enemy === 'monster') action.attack = action.attack + abilityModifier(modifiedAbilityScore('str', combatant)) + calculateProficiencyBonus(combatant.cr)
+            const finesseStat = 'str'
+            if (eq.property.includes("Finesse") && abilityModifier(modifiedAbilityScore('dex', combatant) > abilityModifier(modifiedAbilityScore('str', combatant)))) finesseStat = 'dex'
+            if (combatant.enemy === 'monster') action.attack = action.attack + abilityModifier(modifiedAbilityScore(finesseStat, combatant)) + calculateProficiencyBonus(combatant.cr)
             // will need to use xp or level for PCs and NPCs
 
             damages?.forEach(damage => {
-                action[damage].hdBonus += abilityModifier(modifiedAbilityScore('str', combatant))
+                action[damage].hdBonus += abilityModifier(modifiedAbilityScore(finesseStat, combatant))
                 eq.modifiers?.filter(mod => mod.category === 'bonus' && mod.type === 'melee damage').forEach(mod => {
                     action[damage].hdBonus += mod.bonus
                 })
