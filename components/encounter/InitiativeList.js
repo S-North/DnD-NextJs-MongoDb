@@ -60,13 +60,13 @@ export default function InitiativeList ({displayItem, deleteItem, initiativeItem
     ]
 
     useEffect(() => {
-        const monster = () => {encounter.setModal({ on: true, type: "Add Monster" });}
-        const character = () => {encounter.setModal({ on: true, type: "Add Character" });}
+        const monster = () => { encounter.setModal({ on: true, type: "Add Monster" }) }
+        const character = () => { encounter.setModal({ on: true, type: "Add Character" }) }
         
 
         document.addEventListener("keydown", function (e) {
             // e.preventDefault()
-            if (e.altKey && e.ctrlKey && e.key === "m") {
+            if (e.altKey && e.ctrlKey && e.key === "m")  {
                monster()
             }
         });
