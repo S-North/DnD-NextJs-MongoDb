@@ -5,6 +5,9 @@ import { EncounterDetailsContext } from "./Encounter_CombatantDetails";
 
 export default function Encounter_CombatantDetails_Tabs({ combatant, tab, setTab }) {
     const context = useContext(EncounterContext)
+    const getEquipmentActions = (equipment) => {
+
+    }
     
     // const details = useContext(EncounterDetailsContext)
 
@@ -31,7 +34,7 @@ export default function Encounter_CombatantDetails_Tabs({ combatant, tab, setTab
                 onClick={() => setTab("actions")}
             >
                 Actions (
-                {combatant.actions?.length > 0 ? combatant.actions.length : 0}
+                {combatant.actions?.length + combatant.equipment?.filter(eq => eq.actions).length > 0 ? combatant.actions?.length + combatant.equipment?.filter(eq => eq.actions).length : 0}
                 )
             </button>
             <button
@@ -55,6 +58,15 @@ export default function Encounter_CombatantDetails_Tabs({ combatant, tab, setTab
                 onClick={() => setTab("legendary")}
             >
                 Legendary
+            </button>
+            <button
+                className={styles.tab}
+                style={
+                    tab === "equipment" ? { backgroundColor: "white", zIndex: "1" } : {}
+                }
+                onClick={() => setTab("equipment")}
+            >
+                Equipment
             </button>
         </div>}
         </>

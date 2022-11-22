@@ -22,6 +22,7 @@ import DamageCalculator from "../../../components/encounter/DamageCalculator";
 import EncounterList from "../../../components/encounter/EncounterList";
 import DoAttack from "../../../components/encounter/DoAttack";
 import Nav from "../../../components/Nav";
+import Encounter_Summary from "../../../components/encounter/Encounter_Summary";
 
 import { Dialog } from 'primereact/dialog';
 
@@ -54,10 +55,32 @@ const Encounter = ({ initialEncounter }) => {
          }
       });
 
+      document.addEventListener("keydown", function (e) {
+         // e.preventDefault()
+         if (e.altKey && e.ctrlKey && e.key === "s") {
+            setModal({ on: true, type: "Summary" });
+         }
+      });
+
+      document.addEventListener("keydown", function (e) {
+         // e.preventDefault()
+         if (e.altKey && e.ctrlKey && e.key === "n") {
+            setModal({ on: true, type: "View Notes" });
+         }
+      });
+
+      // document.addEventListener("keydown", function (e) {
+      //    // e.preventDefault()
+      //    if (e.altKey && e.ctrlKey && e.key === "ArrowRight") {
+      //       incrementInitiative('forward')
+      //    }
+      // });
+
       return () => {};
    }, []);
 
    useEffect(() => {
+      // debugger
       if (encounter && !characters) {
          const getCharacters = async () => {
             const response = await fetch(`${api}characters`, {
@@ -118,7 +141,7 @@ const Encounter = ({ initialEncounter }) => {
       let combatant = {}
       if (encounter?.initiative?.length > 0 && encounter?.turn !== undefined || null) {
          combatant = getCombatantStats(encounter.initiative[encounter.turn])
-         console.log(combatant)
+         // console.log(combatant)
       }
       else if (encounter.turn) combatant = getCombatantStats(encounter.initiative[0])
       // else combatant = null
@@ -210,6 +233,7 @@ const Encounter = ({ initialEncounter }) => {
    }
 
    const addCharacters = async (charactersList) => {
+      // debugger
       const response = await fetch(`${api}encounters`, {
          method: "POST",
          body: JSON.stringify({
@@ -262,6 +286,7 @@ const Encounter = ({ initialEncounter }) => {
    };
 
    const addMonsters = async (monsters) => {
+      // debugger
       // identify the collection and document then update the initiative & monsters
       const response = await fetch(`${api}encounters`, {
          method: "POST",
@@ -318,6 +343,8 @@ const Encounter = ({ initialEncounter }) => {
    };
 
    const editMonster = async (monster, update) => {
+      console.log('[id]/index.js editMonster() ran')
+      // debugger
       // {monster} is an object containing the full stats of the monster
       // updated is an object containing the keys and values to update
       // update should be an object containing the changed fields in the monster e.g. {currentHp: 15, conditions: [...conditions, 'blinded']}
@@ -361,6 +388,7 @@ const Encounter = ({ initialEncounter }) => {
    };
 
    const deleteCombatant = async (combatant) => {
+      // debugger
       const response = await fetch(`${api}encounters`, {
          method: "POST",
          body: JSON.stringify({
@@ -400,6 +428,7 @@ const Encounter = ({ initialEncounter }) => {
    
    const saveInitiative = async (initiative) => {
       console.log(initiative);
+      // debugger
       // update the encounter with the initiative rolls, then set the encounter to "running"
       const response = await fetch(`${api}encounters`, {
          method: "POST",
@@ -428,6 +457,7 @@ const Encounter = ({ initialEncounter }) => {
    };
 
    const editEncounter = async (update, alternateEncounterId) => {
+      // debugger
       const encounterId = alternateEncounterId || encounter._id
       // console.log(encounterId)
       // console.log(update)
@@ -450,6 +480,7 @@ const Encounter = ({ initialEncounter }) => {
    };
 
    const incrementInitiative = (direction) => {
+      // debugger
       // console.log(`length: ${encounter.initiative.length} turn: ${encounter.turn}`)
       switch (direction) {
          case "forward":
@@ -488,8 +519,9 @@ const Encounter = ({ initialEncounter }) => {
    };
 
    const doDamage = (attacker, attack, options) => {
-      console.log(attacker);
-      console.log(attack);
+      // debugger
+      // console.log(attacker);
+      // console.log(attack);
       setTempCombatant({ attacker, attack, options });
       setModal({ on: true, type: "Attack" });
    };
@@ -621,6 +653,13 @@ const Encounter = ({ initialEncounter }) => {
                         encounter={encounter}
                         characters={characters}
                      ></DoAttack>
+                  )}
+
+                  {modal.type === "Summary" && (
+                     <Encounter_Summary
+                        encounter={encounter}
+                        characters={characters}
+                     ></Encounter_Summary>
                   )}
                {/* </div> */}
             </Dialog>

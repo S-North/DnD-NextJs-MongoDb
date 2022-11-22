@@ -1,3 +1,12 @@
+export const abilityScores = ['Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha']
+export const abilityToSkills = {
+    str: ['Athletics'],
+    dex: ["Acrobatics", "Sleight of Hand", "Stealth"],
+    con: [],
+    int: ["Arcana", "History", "Investigation", "Nature", "Religion"],
+    wis: ["Animal Handling", "Insight", "Medicine", "Perception", "Survival"],
+    cha: ["Deception", "Intimidation", "Performance", "Persuasion"]
+}
 const types = ["aberration", "beast", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "giant", "humanoid", "monstrosity", "ooze", "plant", "undead"];
 const schools = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation']
 const spellSlotLevels = [1,2,3,4,5,6,7,8,9]

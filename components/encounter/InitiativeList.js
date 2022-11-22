@@ -4,6 +4,7 @@ import { FaWindowClose } from 'react-icons/fa'
 import { xpToLevel, displayCrAsFraction, calculateEncounterDifficulty } from "../../utils/utils";
 import { Menu } from 'primereact/menu';
 import { Button } from "primereact/button";
+import EditMonsters from "./EditMonsters";
 
 // Initiative list is used to add and remove people to an encounter in deit mode (before the encounter is run).
 // If you want the list of combatants shown while the encounter is running, you need EncounterList.js
@@ -50,8 +51,39 @@ export default function InitiativeList ({displayItem, deleteItem, initiativeItem
             label: 'Add Note',
             icon: 'pi pi-file-edit',
             command: (e) => encounter.setModal({on: true, type: 'Add Note'})
+        },
+        {
+            label: 'View Summary',
+            icon: 'pi pi-file-edit',
+            command: (e) => encounter.setModal({on: true, type: 'Summary'})
         }
     ]
+
+    useEffect(() => {
+        const monster = () => { encounter.setModal({ on: true, type: "Add Monster" }) }
+        const character = () => { encounter.setModal({ on: true, type: "Add Character" }) }
+        
+
+        document.addEventListener("keydown", function (e) {
+            // e.preventDefault()
+            if (e.altKey && e.ctrlKey && e.key === "m")  {
+               monster()
+            }
+        });
+
+        document.addEventListener("keydown", function (e) {
+            // e.preventDefault()
+            if (e.altKey && e.ctrlKey && e.key === "c") {
+                character()
+        }
+        });
+    
+      return () => {
+        document.removeEventListener("keydown", monster)
+        document.removeEventListener("keydown", character)
+      }
+    }, [])
+    
 
     useEffect(() => {
         //  get the monsters difficulty stats

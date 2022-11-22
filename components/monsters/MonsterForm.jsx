@@ -8,6 +8,7 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { SpellList } from "../../pages/spells";
 import EquipmentList from "../equipment/EquipmentList";
+import EquipmentView from "../equipment/EquipmentView";
 
 import styles from './MonsterForm.module.css'
 import { v4 as uuidv4 } from "uuid";
@@ -29,7 +30,7 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
        damage3: { enabled: false },
        dc: {},
     };
-    const [ legendary, setLegendary ] = useState();
+    const [ equipmentDetail, setEquipmentDetail ] = useState();
     const [ monsters, setMonsters ] = useState([]);
  
     // new skills button
@@ -239,7 +240,7 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
         {/* modal window */}
         {modal.on && (
             <>
-            <Dialog visible={modal.on} onHide={() => setModal({on: false, type: ''})} header={modal.view} style={{width: "100%", maxWidth: "45rem"}}>
+            <Dialog visible={modal.on} onHide={() => setModal({on: false, type: ''})} header={modal.view} style={{width: "100%", maxWidth: "45rem"}} position={'top'}>
 
                 {modal.view === "trait" && (
                     <form
@@ -623,6 +624,9 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
                 {modal.view === "equipment" && (
                     <EquipmentList clickFunction={addEquipment} modalFunction={setModal} />
                 )}
+                {modal.view === "Equipment Detail" && (
+                    <EquipmentView equipment={equipmentDetail} />
+                )}
             
             </Dialog>
             </>
@@ -633,6 +637,7 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
             {/* tabs for sections */}
                 <div className={styles.tabs}>
                     <SplitButton 
+                        style={{maxHeight: "2rem", maxWidth: "6rem"}}
                         className="p-button-sm mr-2 mb-2"
                         label="Save"
                         model={saveAsNew ? [{
@@ -1755,13 +1760,18 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
                     }>
                     <button onClick={e => {e.preventDefault(); setModal({ on: true, view: "equipment" })}}>Add Equipment</button>
                     {item?.equipment && <div className={styles.equipmentList}>
-                        {item.equipment.map(equipment => (
-                            <div className={styles.equipmentLine}>
-                                <input type="checkbox" name="" id="equiped" checked={equipment.equiped} onChange={e => setItem({...item, equipment: [...item.equipment.filter(eq => eq._id !== equipment._id), {...equipment, equiped: e.target.checked}]})} />
-                                <p>{equipment.name}</p>
-                                <FaWindowClose 
+                        {item.equipment.sort((a,b) => {return a.name > b.name}).map(equipment => (
+                            <div key={equipment._id} className={styles.equipmentLine}>
+                                <strong style={{width: "100%"}} onClick={() => {setEquipmentDetail(equipment); setModal({on: true, view:'Equipment Detail'})}}>{equipment.name}</strong>
+                                {equipment.attunement && <input id='attune' type="checkbox" style={{maxWidth: "max-content"}} checked={equipment.attuned} onChange={e => setItem({...item, equipment: [...item.equipment.filter(eq => eq._id !== equipment._id), {...equipment, attuned: e.target.checked}]})} />}
+                                {equipment.attunement && <label label htmlFor="attune" style={{maxWidth: "max-content"}}>Attune</label>}
+                                <input id='equiped' type="checkbox" style={{maxWidth: "max-content"}} checked={equipment.equiped} onChange={e => setItem({...item, equipment: [...item.equipment.filter(eq => eq._id !== equipment._id), {...equipment, equiped: e.target.checked}]})} />
+                                <label htmlFor="equiped" style={{maxWidth: "max-content"}}>Equip</label>
+                                <FaWindowClose
+                                    title="Delete"
                                     style={{"cursor": "pointer"}} 
                                     color="red"
+                                    size={'1.5rem'}
                                     onClick={() => {deleteEquipment(equipment)}} />
                             </div>
                         ))}

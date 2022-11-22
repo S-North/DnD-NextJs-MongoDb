@@ -14,6 +14,7 @@ import Encounter_CombatantDetails_Stats from "./Encounter_CombatantDetails_Stats
 import Encounter_CombatantDetails_Traits from "./Encounter_CombatantDetails_Traits";
 import Encounter_CombatantDetails_SpellPane from "./Encounter_CombatantDetails_SpellPane";
 import Encounter_CombatantDetails_Actions from "./Encounter_CombatantDetails_Actions";
+import Encounter_CombatantDetails_Equipment from "./Encounter_CombatantDetails_Equipment";
 import { spellClasses } from "../../utils/Forms";
 
 export const EncounterDetailsContext = createContext();
@@ -56,6 +57,7 @@ export default function Encounter_CombatantDetails({ selected, doDamage }) {
         ]
 
     useEffect(() => {
+        // debugger
         if (selected?.enemy === 'monster' && context.encounter) {
         setCombatant(context.encounter.monsters.filter(monster => {return selected._id === monster._id})[0])
         }
@@ -203,6 +205,7 @@ export default function Encounter_CombatantDetails({ selected, doDamage }) {
                 {tab === 'traits' && <Encounter_CombatantDetails_Traits combatant={combatant} tab={tab} />}
                 {tab === 'actions' && <Encounter_CombatantDetails_Actions combatant={combatant} tab={tab} doDamage={doDamage} />}
                 {tab === 'spells' && <Encounter_CombatantDetails_SpellPane combatant={combatant} addConcentration={addConcentration} removeConcentration={removeConcentration} />}
+                {tab === 'equipment' && <Encounter_CombatantDetails_Equipment combatant={combatant} tab={tab} addConcentration={addConcentration} removeConcentration={removeConcentration} />}
             </div>
 
             

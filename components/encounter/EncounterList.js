@@ -1,10 +1,11 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { EncounterContext } from "../../pages/encounter/[id]";
 import { FaBackward, FaForward  } from 'react-icons/fa';
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { MultiSelect } from 'primereact/multiselect';
 import { PanelMenu } from 'primereact/panelmenu';
+import { Menu } from "primereact/menu";
 import { TreeSelect } from 'primereact/treeselect';
 import { v4 as uuidv4 } from "uuid";
  
@@ -16,6 +17,30 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
     const [ moveDialog, setMoveDialog ] = useState(false);
     const [ encounterTargets, setEncounterTargets ] = useState(null);
     const [ move, setMove ] = useState({execute: false, monsters: [], target: {}});
+    const menu = useRef()
+    const ButtonItems = [
+        {
+            label: 'Notes',
+            icon: 'pi pi-file',
+            command: (e) => context.setModal({on: true, type: 'View Notes'})
+        },
+        {
+            label: 'Add Note',
+            icon: 'pi pi-file-edit',
+            command: (e) => context.setModal({on: true, type: 'Add Note'})
+        },
+        {
+            label: 'Summary',
+            icon: 'pi pi-file-edit',
+            command: (e) => context.setModal({on: true, type: 'Summary'})
+        },
+        {
+            label: 'Move Monsters',
+            icon: 'pi pi-file-edit',
+            command: (e) => setMoveDialog(true)
+        }
+    ]
+
 
     useEffect(() => {
         if (context?.encounter?._id) {
@@ -165,6 +190,8 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
             </Dialog>
 
             <div className="flex-row">
+                <Button label="" icon="pi pi-bars" onClick={e => menu.current.toggle(e)} style={{maxHeight: "2rem"}} />
+                <Menu model={ButtonItems} popup ref={menu} />
                 <h3>{`Round: ${context.encounter.round + 1} Turn: ${
                     context.encounter.turn + 1
                 }`}</h3>
@@ -174,11 +201,6 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                 </button>
                 <button onClick={ () => { editEncounter({mode: 'editing'})}}> Edit </button>
                 <button onClick={() => { incrementInitiative("forward")}}> <FaForward /> </button>
-                <Button
-                    label="Move" 
-                    className="p-button-sm"
-                    onClick={(e) => {e.preventDefault(); setMoveDialog(true)}}
-                />
             </div>
 
             {context?.encounter?.initiative && context?.characters && context.encounter.initiative

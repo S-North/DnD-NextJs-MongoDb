@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     case 'Ordinary': filterQuery = {...filterQuery, magic: false}; break
   }
   switch (query.attunement) {
-    case 'Required': filterQuery = {...filterQuery, magic: true}; break
+    case 'Required': filterQuery = {...filterQuery, attunement: true}; break
     // case 'Ordinary': filterQuery = {...filterQuery, magic: false}; break
   }
   

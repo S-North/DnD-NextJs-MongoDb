@@ -1,0 +1,27 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.container h2 {
+    font-size: 1rem;
+}
+
+.container p {
+    font-size: 0.8rem;
+}
+
+.chip_line {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chip {
+    font-size: 0.7rem;
+    max-width: fit-content;
+    background-color: var(--blue);
+    color: white;
+    padding: 0.3rem;
+    border-radius: 0.2rem;
+}
