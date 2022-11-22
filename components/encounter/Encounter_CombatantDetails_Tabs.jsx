@@ -59,6 +59,15 @@ export default function Encounter_CombatantDetails_Tabs({ combatant, tab, setTab
             >
                 Legendary
             </button>
+            <button
+                className={styles.tab}
+                style={
+                    tab === "equipment" ? { backgroundColor: "white", zIndex: "1" } : {}
+                }
+                onClick={() => setTab("equipment")}
+            >
+                Equipment
+            </button>
         </div>}
         </>
     )

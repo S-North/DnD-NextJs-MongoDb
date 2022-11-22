@@ -18,6 +18,7 @@ export default function Encounter_CombatantDetails_Actions({ combatant, tab, doD
         const damages = Object.keys(action).filter(k => k.includes('damage'))
 
         if (eq.type === 'Melee') {
+            // finesse use highest modifier of dex or str
             if (combatant.enemy === 'monster') action.attack = action.attack + abilityModifier(modifiedAbilityScore('str', combatant)) + calculateProficiencyBonus(combatant.cr)
             // will need to use xp or level for PCs and NPCs
 
