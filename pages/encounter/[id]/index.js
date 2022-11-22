@@ -55,17 +55,24 @@ const Encounter = ({ initialEncounter }) => {
          }
       });
 
-      // document.addEventListener("keydown", function (e) {
-      //    e.preventDefault()
-      //    if (e.altKey && e.key === "s") {
-      //       setModal({ on: true, type: "Summary" });
-      //    }
-      // });
+      document.addEventListener("keydown", function (e) {
+         // e.preventDefault()
+         if (e.altKey && e.ctrlKey && e.key === "s") {
+            setModal({ on: true, type: "Summary" });
+         }
+      });
+
+      document.addEventListener("keydown", function (e) {
+         // e.preventDefault()
+         if (e.altKey && e.ctrlKey && e.key === "n") {
+            setModal({ on: true, type: "View Notes" });
+         }
+      });
 
       // document.addEventListener("keydown", function (e) {
-      //    e.preventDefault()
-      //    if (e.altKey && e.key === "n") {
-      //       setModal({ on: true, type: "View Notes" });
+      //    // e.preventDefault()
+      //    if (e.altKey && e.ctrlKey && e.key === "ArrowRight") {
+      //       incrementInitiative('forward')
       //    }
       // });
 

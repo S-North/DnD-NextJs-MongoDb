@@ -64,19 +64,19 @@ export default function InitiativeList ({displayItem, deleteItem, initiativeItem
         const character = () => {encounter.setModal({ on: true, type: "Add Character" });}
         
 
-        // document.addEventListener("keydown", function (e) {
-        //     e.preventDefault()
-        //     if (e.altKey && e.key === "m") {
-        //        monster()
-        //     }
-        // });
+        document.addEventListener("keydown", function (e) {
+            // e.preventDefault()
+            if (e.altKey && e.ctrlKey && e.key === "m") {
+               monster()
+            }
+        });
 
-        // document.addEventListener("keydown", function (e) {
-        //     e.preventDefault()
-        //     if (e.altKey && e.key === "c") {
-        //         character()
-        // }
-        // });
+        document.addEventListener("keydown", function (e) {
+            // e.preventDefault()
+            if (e.altKey && e.ctrlKey && e.key === "c") {
+                character()
+        }
+        });
     
       return () => {
         document.removeEventListener("keydown", monster)
