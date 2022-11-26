@@ -37,3 +37,5 @@ spells.json
 utils/monsterManual.js
 utils/volos-monsters.json
 spelltest.json
+.env.development
+.env.production
