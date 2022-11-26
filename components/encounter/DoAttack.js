@@ -1,29 +1,32 @@
 import { useEffect, useState, useContext } from "react";
+import React from "react";
 import Id, { EncounterContext } from "../../pages/encounter/[id]";
-import { diceRoll } from "../../utils/utils";
+import { diceRoll, truncate } from "../../utils/utils";
+import { calculateAC } from "../../utils/encounterUtils";
 import styles from './DoAttack.module.css';
 import { Button } from 'primereact/button';
 import { v4 as uuidv4 } from 'uuid'
 
 
-export function ListResults ({ tempCombatant, combatantsHit, targets, toHitRoll, damages, setDamages }) {
+export function ListResults ({ tempCombatant, combatantsHit, targets, toHitRoll, damages, setDamages, combatants }) {
     const context = useContext(EncounterContext);
-    const [ combatants, setCombatants ] = useState([])
+    const [ damageTargets, setDamageTargets ] = useState([])
     
 
     useEffect(() => {
-      if (context?.encounter?.monsters && context.characters && combatantsHit) {
+      if (context?.encounter?.monsters && context.characters && combatantsHit && combatants) {
         const monsters = []
-        combatantsHit.forEach(combatant => {
-            console.log(combatant)
-            console.log(context.getCombatantStats(combatant))
-            monsters.push({...context.getCombatantStats(combatant), advantage: combatant.advantage})
+        targets.forEach(targetId => {
+            console.log(targetId)
+            console.log(combatants)
+            console.log(combatants.filter(c => c._id === targetId)[0])
+            monsters.push(combatants.filter(c => c._id === targetId)[0])
         })
-        setCombatants(monsters)
+        setDamageTargets(monsters)
       }
     
       return () => {}
-    }, [context.encounter.monsters, context.characters, combatantsHit])
+    }, [context.encounter.monsters, context.characters, combatantsHit, combatants])
     
 
     const rollDamage = (damage, target) => {
@@ -52,33 +55,58 @@ export function ListResults ({ tempCombatant, combatantsHit, targets, toHitRoll,
 
     return (
         <section className={styles.section}>
-            {combatantsHit && combatantsHit.length > 0 && targets.length > 0 &&
+            {damageTargets.length > 0 &&
             <>
-            {combatants.map(combatant => (
+            {damageTargets.sort((a,b) => {return a.name > b.name}).map(combatant => (
                 <div key={combatant._id} className={styles.hitList}>
-                    <h2>{combatant.name}</h2>
-                    <p>{combatant.advantage} roll: <strong>{toHitRoll[combatant.advantage] + toHitRoll.bonus}</strong> {toHitRoll[combatant.advantage] === 20 ? <strong>CRITICAL HIT</strong> : ''}</p>
-                    <p>hits AC: <strong>{combatant.ac}</strong></p>
+                    <div className={styles.nameChip}><h2>{combatant.name}</h2></div>
+                    <p>{combatant.advantage} roll: 
+                        <strong>{toHitRoll[combatant.advantage] + toHitRoll.bonus}</strong> 
+                        {toHitRoll[combatant.advantage] === 20 ? <div className={styles.chip} style={{backgroundColor: "var(--green)"}}>CRITICAL HIT</div> : ''}
+                        {toHitRoll[combatant.advantage] === 1 ? <div className={styles.chip}>FUMBLE</div> : ''}
+                    </p>
+                    <div style={{display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap"}}>
+                    <p><strong>Against AC: </strong></p>
+                    <input 
+                        type='number' 
+                        value={combatant.ac}
+                        style={{maxWidth: "2rem"}}
+                        onChange={(e) => setDamageTargets([...damageTargets.filter(t => t._id !== combatant._id), {...combatant, ac: parseInt(e.target.value)}])}     
+                    />
+                    </div>
+                    {/* {combatant.ac < toHitRoll[combatant.advantage] + toHitRoll.bonus &&<p>hits AC: <strong>{combatant.ac}</strong></p>} */}
                     <p>HP: <strong>{combatant.currentHp}</strong></p>
+                    {/* {combatant.ac < toHitRoll[combatant.advantage] + toHitRoll.bonus && <React.Fragment> */}
+                    <div style={{display: "flex", flexDirection: "column", gap: "0.3rem"}}>
                     {tempCombatant.attack.damage1?.enabled && 
                         <Button 
+                            tooltip={`${tempCombatant.attack.damage1.hdDice}d${tempCombatant.attack.damage1.hdSides} + ${tempCombatant.attack.damage1.hdBonus} ${tempCombatant.attack.damage1.type}`}
                             onClick={() => rollDamage(tempCombatant.attack.damage1, combatant)} 
-                            className="p-button-sm">
-                            {tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1?.hdSides} + {tempCombatant.attack.damage1.hdBonus} {tempCombatant.attack.damage1.type}
+                            disabled={combatant.ac > toHitRoll[combatant.advantage] + toHitRoll.bonus || toHitRoll[combatant.advantage] === 1}
+                            className="p-button-sm"
+                            style={{padding: "0.3rem", fontSize: "0.8rem"}}>
+                            {tempCombatant.attack.damage1.hdDice}d{tempCombatant.attack.damage1?.hdSides} + {tempCombatant.attack.damage1.hdBonus} {truncate(tempCombatant.attack.damage1.type, 1)}
                         </Button>}
                     {tempCombatant.attack?.damage2?.enabled && 
                         <Button 
+                            tooltip={`${tempCombatant.attack.damage2.hdDice}d${tempCombatant.attack.damage2.hdSides} + ${tempCombatant.attack.damage2.hdBonus} ${tempCombatant.attack.damage2.type}`}
                             onClick={() => rollDamage(tempCombatant.attack.damage2, combatant)} 
-                            className="p-button-sm">
-                                {tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2?.hdSides} + {tempCombatant.attack.damage2.hdBonus} {tempCombatant.attack.damage2.type}
+                            disabled={combatant.ac > toHitRoll[combatant.advantage] + toHitRoll.bonus || toHitRoll[combatant.advantage] === 1}
+                            className="p-button-sm"
+                            style={{padding: "0.3rem", fontSize: "0.8rem"}}>
+                                {tempCombatant.attack.damage2.hdDice}d{tempCombatant.attack.damage2?.hdSides} + {tempCombatant.attack.damage2.hdBonus} {truncate(tempCombatant.attack.damage2.type, 1)}
                         </Button>}
                     {tempCombatant.attack?.damage3?.enabled && 
                         <Button
-                            onClick={() => rollDamage(tempCombatant.attack.damage3, combatant)} 
-                            className="p-button-sm">
-                                {tempCombatant.attack.damage3.hdDice}d{tempCombatant.attack.damage3.hdSides} + {tempCombatant.attack.damage3.hdBonus} {tempCombatant.attack.damage3.type}
+                            tooltip={`${tempCombatant.attack.damage3.hdDice}d${tempCombatant.attack.damage3.hdSides} + ${tempCombatant.attack.damage3.hdBonus} ${truncate(tempCombatant.attack.damage3.type, 1)}`}
+                            onClick={() => rollDamage(tempCombatant.attack.damage3, combatant)}
+                            disabled={combatant.ac > toHitRoll[combatant.advantage] + toHitRoll.bonus || toHitRoll[combatant.advantage] === 1}
+                            className="p-button-sm"
+                            style={{padding: "0.3rem", fontSize: "0.8rem"}}>
+                                {tempCombatant.attack.damage3.hdDice}d{tempCombatant.attack.damage3.hdSides} + {tempCombatant.attack.damage3.hdBonus} {truncate(tempCombatant.attack.damage3.type, 1)}
                         </Button>}
-                    
+                    </div>
+                    {/* </React.Fragment>} */}
                 </div>
             ))}
             </>
@@ -113,7 +141,7 @@ export default function DoAttack ({tempCombatant}) {
             }
         })
         }
-        setCombatants(combatList)
+        setCombatants(JSON.parse(JSON.stringify(combatList)))
     
         return () => {}
     }, [tempCombatant, encounterContext.encounter, encounterContext.characters])
@@ -137,7 +165,7 @@ export default function DoAttack ({tempCombatant}) {
             }
             else if (parseInt(diceRoll) == 1) {
             }
-            else if (diceRoll >= parseInt(combatant.ac)) {
+            else if (diceRoll >= parseInt(calculateAC(combatant))) {
             storeHits.push(combatant)
             } 
         })
@@ -301,7 +329,7 @@ export default function DoAttack ({tempCombatant}) {
             <div className={styles.main_panel}>
             <details open className={styles.details}>
                 <summary className={styles.summary}>PC Targets</summary>
-                {combatants.filter(i => i.enemy === 'pc').sort((a,b) => (a.name > b.name)).map(target => (
+                {combatants?.filter(i => i.enemy === 'pc').sort((a,b) => (a.name > b.name)).map(target => (
                     <label key={target._id} className={styles.target}>
                         <input type='checkbox' className='target-checkbox'
                         checked={targets.includes(target._id)} 
@@ -309,7 +337,7 @@ export default function DoAttack ({tempCombatant}) {
                         
                         <p>{target.name}</p>
                         <p>{target.conditions?.map(condition => (<button key={condition.name}>{condition.name}</button>))}</p>
-                        <input type='number' value={target.ac} onChange={(e) => setCombatants([...combatants.filter(item => {return item._id !== target._id}), {...target, ac: e.target.value}])}></input>
+                        <input type='number' value={target.ac} onChange={(e) => setCombatants([...combatants.filter(item => {return item._id !== target._id}), {...target, ac: parseInt(e.target.value)}])}></input>
                         <span>
                             {['Disadvantage', 'Normal', 'Advantage'].map(item => (
                                 <input type='radio' id={item.toLowerCase()} name={target._id} title={item} checked={item.toLowerCase() === target.advantage} onChange={() => setCombatants([...combatants.filter(combatant => {return combatant._id !== target._id}), {...target, advantage: item.toLowerCase()}])} />
@@ -330,7 +358,7 @@ export default function DoAttack ({tempCombatant}) {
                     
                     <p>{target.name}</p>
                     <p>{target.conditions?.map(condition => (<button key={condition.name}>{condition.name}</button>))}</p>
-                    <input type='number' value={target.ac} onChange={(e) => setCombatants([...combatants.filter(item => {return item._id !== target._id}), {...target, ac: e.target.value}])}></input>
+                    <input type='number' value={calculateAC(target)} onChange={(e) => setCombatants([...combatants.filter(item => {return item._id !== target._id}), {...target, ac: e.target.value}])}></input>
                     <span>
                             {['Disadvantage', 'Normal', 'Advantage'].map(item => (
                                 <input key={item} type='radio' id={item.toLowerCase()} name={target._id} title={item} checked={item.toLowerCase() === target.advantage} onChange={() => setCombatants([...combatants.filter(combatant => {return combatant._id !== target._id}), {...target, advantage: item.toLowerCase()}])} />
@@ -371,7 +399,8 @@ export default function DoAttack ({tempCombatant}) {
                 targets={targets} 
                 toHitRoll={toHitRoll} 
                 damages={damages} 
-                setDamages={setDamages} 
+                setDamages={setDamages}
+                combatants={combatants}
             />
 
             <section className={styles.section}>

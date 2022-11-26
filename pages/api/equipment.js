@@ -12,16 +12,16 @@ export default async function handler(req, res) {
 
   let sortCriteria
   let filterQuery = {}
-  if (query._id) filterQuery = {...filterQuery, _id: ObjectId(query._id)}
+  if (query?._id) filterQuery = {...filterQuery, _id: ObjectId(query._id)}
 
-  if (query.search) filterQuery = {...filterQuery, name: {$regex: `[\w*]?${query.search}[\w*]?`, $options: "i"}}
-  if (query.type && query.type !== 'Any') filterQuery = {...filterQuery, type: query.type}
-  if (query.rarity && query.rarity !== 'Any') filterQuery = {...filterQuery, rarity: query.rarity}
-  switch (query.magic) {
+  if (query?.search) filterQuery = {...filterQuery, name: {$regex: `[\w*]?${query.search}[\w*]?`, $options: "i"}}
+  if (query?.type && query.type !== 'Any') filterQuery = {...filterQuery, type: query.type}
+  if (query?.rarity && query.rarity !== 'Any') filterQuery = {...filterQuery, rarity: query.rarity}
+  switch (query?.magic) {
     case 'Magic': filterQuery = {...filterQuery, magic: true}; break
     case 'Ordinary': filterQuery = {...filterQuery, magic: false}; break
   }
-  switch (query.attunement) {
+  switch (query?.attunement) {
     case 'Required': filterQuery = {...filterQuery, attunement: true}; break
     // case 'Ordinary': filterQuery = {...filterQuery, magic: false}; break
   }

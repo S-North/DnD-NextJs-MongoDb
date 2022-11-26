@@ -32,6 +32,7 @@ export const calculateAC = (combatant) => {
     const c = JSON.parse(JSON.stringify(combatant))
     let baseAC = 10 + abilityModifier(modifiedAbilityScore('dex', c))
     if (c.enemy === 'monster') baseAC = c.ac
+    if (c.enemy === 'pc') baseAC = combatant.ac
 
     // check armor
     const armorList = c.equipment?.filter(eq => eq.type === 'Light Armor' || eq.type === 'Medium Armor' || eq.type === 'Heavy Armor') || []

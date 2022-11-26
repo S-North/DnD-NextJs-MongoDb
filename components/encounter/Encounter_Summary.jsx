@@ -25,14 +25,16 @@ export default function Encounter_Summary ({}) {
         <div className={styles.section}>
             <h2>Loot</h2>
             {context?.encounter?.monsters?.map(monster => (
-                <details>
+                <>
+                {monster.equipment?.length > 0 && <details>
                     <summary>{monster.name}{monster.equipment?.length > 0 ? ` - (${monster.equipment.length} Items)`: ' - (0 Items)'}</summary>
                     <div>
                         {monster.equipment?.map(eq => (
                             <p onClick={() => {setLoot(eq); setModal({on: true, view: 'Loot'})}}>{eq.name}</p>
                         ))}
                     </div>
-                </details>
+                </details>}
+                </>
             ))}
         </div>
     </div>

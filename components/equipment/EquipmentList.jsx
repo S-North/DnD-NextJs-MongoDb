@@ -77,11 +77,49 @@ export default function EquipmentList ({ user, clickFunction, editFunction, dele
     console.log(`User requested page number ${event.selected}, which is offset ${newOffset}`);
     setItemOffset(newOffset);
   };
+
+  const exportToJson = async (objectData) => {
+    console.log(objectData)
+    const monsters = []
+
+    await objectData.forEach(monster => {
+       const getFullMonster = async () => {
+          const response = await fetch(`/api/equipment`, {
+             method: "POST",
+             body: JSON.stringify({
+                action: "query",
+                data: { _id: monster._id },
+             }),
+             headers: { "Content-type": "application/json; charset=UTF-8" },
+          });
+          const fullMonster = await response.json();
+          monsters.push(fullMonster)
+          // if (fullMonster && fullMonster.length > 0) setMonster(fullMonster[0]);
+       };
+       getFullMonster()
+    })
+
+    let filename = "monsters.json";
+    let contentType = "application/json;charset=utf-8;";
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+      var blob = new Blob([decodeURIComponent(encodeURI(JSON.stringify(monsters, null, 2)))], { type: contentType });
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      var a = document.createElement('a');
+      a.download = filename;
+      a.href = 'data:' + contentType + ',' + encodeURIComponent(JSON.stringify(monsters, null, 2));
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  }
     
 
     return (
         <>
         <div className={styles.filterbox}>
+          <button onClick={e => {e.preventDefault(); exportToJson(equipment)}}>Export</button>
 
           <div className={styles.details}>
             <div>

@@ -86,7 +86,7 @@
 
 .hitList {
     display: grid;
-    grid-template-columns: 1fr 1fr 0.5fr 0.5fr max-content max-content max-content;
+    grid-template-columns: minmax(8rem, max-content) minmax(2rem, auto) minmax(2rem, auto) auto minmax(2rem, 5rem);
     gap: 1rem;
     justify-items: left;
     align-items: center;
@@ -100,4 +100,22 @@
     justify-items: left;
     align-items: center;
     margin-bottom: 0.3rem
+}
+
+.nameChip {
+    display: flex;
+    background-color: rgb(255, 255, 255);
+    height: 100%;
+    padding: 0.3rem;
+    align-items: center;
+    box-shadow: var(--box-shadow);
+    border-radius: 0.2rem;
+}
+
+.chip {
+    background-color: var(--red);
+    color: rgb(246, 241, 241);
+    padding: 0.2rem;
+    border-radius: 0.2rem;
+    text-align: center;
 }
