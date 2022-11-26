@@ -48,6 +48,16 @@ const Encounter = ({ initialEncounter }) => {
 
    useEffect(() => {
       // keybindings for keyboard commands. Needs some more research
+      const popup = (e) => {
+         if (e.altKey && e.key === "s") {
+            e.preventDefault()
+            setModal({ on: true, type: "Summary" });
+         }
+         if (e.altKey && e.key === "n") {
+            e.preventDefault()
+            setModal({ on: true, type: "View Notes" });
+         }
+      }
 
       document.addEventListener("keyup", function (e) {
          if (e.key === "Escape") {
@@ -55,28 +65,11 @@ const Encounter = ({ initialEncounter }) => {
          }
       });
 
-      document.addEventListener("keydown", function (e) {
-         // e.preventDefault()
-         if (e.altKey && e.ctrlKey && e.key === "s") {
-            setModal({ on: true, type: "Summary" });
-         }
-      });
+      document.addEventListener("keydown", e => popup(e));
 
-      document.addEventListener("keydown", function (e) {
-         // e.preventDefault()
-         if (e.altKey && e.ctrlKey && e.key === "n") {
-            setModal({ on: true, type: "View Notes" });
-         }
-      });
-
-      // document.addEventListener("keydown", function (e) {
-      //    // e.preventDefault()
-      //    if (e.altKey && e.ctrlKey && e.key === "ArrowRight") {
-      //       incrementInitiative('forward')
-      //    }
-      // });
-
-      return () => {};
+      return () => {
+         document.removeEventListener('keydown', popup)
+      };
    }, []);
 
    useEffect(() => {
@@ -666,7 +659,7 @@ const Encounter = ({ initialEncounter }) => {
 
             <section>
                {/* the edit list of combatants */}
-               {encounter && encounter.mode === "editing" && (
+               {encounter?.mode === "editing" && (
                   <InitiativeList
                      displayItem={(selected) => {
                         setSelected(selected);
@@ -678,7 +671,7 @@ const Encounter = ({ initialEncounter }) => {
                )}
 
                {/* running initiative list */}
-               {encounter && encounter.mode === "running" && (
+               {(encounter.mode === 'running' || encounter.mode === 'complete') && (
                   <EncounterList
                      incrementInitiative={incrementInitiative}
                      editEncounter={editEncounter}

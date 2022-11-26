@@ -18,28 +18,47 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
     const [ encounterTargets, setEncounterTargets ] = useState(null);
     const [ move, setMove ] = useState({execute: false, monsters: [], target: {}});
     const menu = useRef()
-    const ButtonItems = [
-        {
-            label: 'Notes',
-            icon: 'pi pi-file',
-            command: (e) => context.setModal({on: true, type: 'View Notes'})
-        },
-        {
-            label: 'Add Note',
-            icon: 'pi pi-file-edit',
-            command: (e) => context.setModal({on: true, type: 'Add Note'})
-        },
-        {
-            label: 'Summary',
-            icon: 'pi pi-file-edit',
-            command: (e) => context.setModal({on: true, type: 'Summary'})
-        },
-        {
-            label: 'Move Monsters',
-            icon: 'pi pi-file-edit',
-            command: (e) => setMoveDialog(true)
-        }
-    ]
+    const ButtonItems = () => {
+        if (context.encounter.mode === 'complete') return [
+            {
+                label: 'Notes',
+                icon: 'pi pi-file',
+                command: (e) => context.setModal({on: true, type: 'View Notes'})
+            },
+            {
+                label: 'View Summary',
+                icon: 'pi pi-file-edit',
+                command: (e) => context.setModal({on: true, type: 'Summary'})
+            },
+            {
+                label: 'Edit',
+                icon: 'pi pi-file-edit',
+                command: () => context.editEncounter({mode: 'editing'})
+            }
+        ]
+        else return [
+            {
+                label: 'Notes',
+                icon: 'pi pi-file',
+                command: (e) => context.setModal({on: true, type: 'View Notes'})
+            },
+            {
+                label: 'Summary',
+                icon: 'pi pi-file-edit',
+                command: (e) => context.setModal({on: true, type: 'Summary'})
+            },
+            {
+                label: 'Move Monsters',
+                icon: 'pi pi-file-edit',
+                command: (e) => setMoveDialog(true)
+            },
+            {
+                label: 'Mark Complete',
+                icon: 'pi pi-file-edit',
+                command: () => context.editEncounter({mode: 'complete'})
+            }
+        ]
+    }
 
 
     useEffect(() => {
@@ -189,12 +208,12 @@ export default function EncounterList ({displayCombatant, changeHP, incrementIni
                         </div>
             </Dialog>
 
-            <div className="flex-row">
+            <div className="flex-row" style={context.encounter.mode === 'complete' ? {backgroundColor: "coral", padding: "0.5rem"}: {}}>
                 <Button label="" icon="pi pi-bars" onClick={e => menu.current.toggle(e)} style={{maxHeight: "2rem"}} />
-                <Menu model={ButtonItems} popup ref={menu} />
-                <h3>{`Round: ${context.encounter.round + 1} Turn: ${
+                <Menu model={ButtonItems()} popup ref={menu} />
+                {context.encounter.mode === 'running' ? <h3>{`Round: ${context.encounter.round + 1} Turn: ${
                     context.encounter.turn + 1
-                }`}</h3>
+                }`}</h3> : 'Encounter Complete'}
                 <button onClick={ () => { incrementInitiative("back") } }
                 >
                     <FaBackward />

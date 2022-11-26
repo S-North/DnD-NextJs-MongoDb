@@ -13,22 +13,23 @@ export default withPageAuthRequired(function Toolbar({ user }) {
     const [ diceRoller, setDiceRoller] = useState(false)
 
     useEffect(() => {
+        // set the state of the sidebar
         if (localStorage.sidebar === undefined) {
             localStorage.sidebar = 'open'
         }
-        // console.log(localStorage.sidebar)
-
         if (localStorage.sidebar === 'true') setOpen(true)
         if (localStorage.sidebar === 'false') setOpen(false)
 
-        document.addEventListener("keydown", function (e) {
-            // e.preventDefault()
+        // key command listeners
+        const toolbarPopups = (e) => {
             if (e.altKey && e.key === "d") {
-               setDiceRoller(true);
+                e.preventDefault()
+                setDiceRoller(true);
             }
-         });
+        }
+        document.addEventListener("keydown", e => toolbarPopups(e));
     
-      return
+      return () => document.removeEventListener('keydown', toolbarPopups)
     }, [])
 
     useEffect(() => {

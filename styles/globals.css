@@ -16,7 +16,7 @@
 
 html,
 body {
-  height: 100vh;
+  height: 100%;
   scrollbar-width: none;  /* Firefox */
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;

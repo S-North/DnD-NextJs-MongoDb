@@ -1,3 +1,14 @@
+.notesContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.notesContainer button {
+    max-width: fit-content;
+    padding: 0.3rem 0.5rem;
+}
+
 .header:focus {
     box-shadow: none;
 }
@@ -6,4 +17,8 @@
     box-shadow: none !important;
     padding: 0.4rem !important;
     color: black !important;
+}
+
+.noteContent {
+    font-size: 0.9rem;
 }

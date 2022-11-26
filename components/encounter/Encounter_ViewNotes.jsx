@@ -21,12 +21,14 @@ export default function ViewNotes({ setnote }) {
 
     return (
         <div className={styles.notesContainer}>
+            <Button onClick={e => context.setModal({on: true, type: "Add Note"})}>New</Button>
             <Accordion>
                 {context?.encounter?.notes?.map(note => (
                     <AccordionTab 
                         key={note._id}
                         header={note.title} 
-                        className={styles.header} 
+                        className={styles.header}
+                        contentClassName={styles.noteContent}
                         headerTemplate={
                             <div
                                 style={{display: "flex", gap: "1rem", alignItems: "center", justifyContent: "space-between", width: "100%"}}>
@@ -45,7 +47,11 @@ export default function ViewNotes({ setnote }) {
                                     
                                 </div>
                             </div>}>
-                        <p>{`${note.body}`}</p>                
+                            {note.body?.split('\n')?.map(line => (
+                                <>
+                                {line === "" ? <div style={{height: "1rem"}}></div> : <p style={{fontSize: "0.9rem"}}>{`${line}`}</p> }
+                                </>            
+                            ))}
                     </AccordionTab>
                 ))}
             </Accordion>

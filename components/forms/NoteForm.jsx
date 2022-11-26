@@ -27,7 +27,7 @@ export default function NoteForm({ note, setnote }) {
         context.setModal({on: true, type: 'View Notes'})
       } else {
         setnote()
-        context.setModal({on: false, type: ''})
+        context.setModal({on: true, type: 'View Notes'})
 
       }
     }

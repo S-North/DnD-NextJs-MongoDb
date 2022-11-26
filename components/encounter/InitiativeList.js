@@ -41,47 +41,59 @@ export default function InitiativeList ({displayItem, deleteItem, initiativeItem
     const encounter = useContext(EncounterContext)
     const [ encounterDifficulty, setEncounterDifficulty ] = useState()
     const menu = useRef()
-    const ButtonItems = [
-        {
-            label: 'Notes',
-            icon: 'pi pi-file',
-            command: (e) => encounter.setModal({on: true, type: 'View Notes'})
-        },
-        {
-            label: 'Add Note',
-            icon: 'pi pi-file-edit',
-            command: (e) => encounter.setModal({on: true, type: 'Add Note'})
-        },
-        {
-            label: 'View Summary',
-            icon: 'pi pi-file-edit',
-            command: (e) => encounter.setModal({on: true, type: 'Summary'})
-        }
-    ]
+    const ButtonItems = () => {
+        if (encounter.encounter.mode === 'complete') return [
+            {
+                label: 'Notes',
+                icon: 'pi pi-file',
+                command: (e) => encounter.setModal({on: true, type: 'View Notes'})
+            },
+            {
+                label: 'View Summary',
+                icon: 'pi pi-file-edit',
+                command: (e) => encounter.setModal({on: true, type: 'Summary'})
+            },
+            {
+                label: 'Edit',
+                icon: 'pi pi-file-edit',
+                command: () => encounter.editEncounter({mode: 'editing'})
+            }
+        ]
+        else return [
+            {
+                label: 'Notes',
+                icon: 'pi pi-file',
+                command: (e) => encounter.setModal({on: true, type: 'View Notes'})
+            },
+            {
+                label: 'View Summary',
+                icon: 'pi pi-file-edit',
+                command: (e) => encounter.setModal({on: true, type: 'Summary'})
+            },
+            {
+                label: 'Mark Complete',
+                icon: 'pi pi-file-edit',
+                command: () => encounter.editEncounter({mode: 'complete'})
+            }
+        ]
+    }
 
     useEffect(() => {
-        const monster = () => { encounter.setModal({ on: true, type: "Add Monster" }) }
-        const character = () => { encounter.setModal({ on: true, type: "Add Character" }) }
-        
-
-        document.addEventListener("keydown", function (e) {
-            // e.preventDefault()
-            if (e.altKey && e.ctrlKey && e.key === "m")  {
-               monster()
+        // start event listener for key commands
+        const initiativePopups = (e) => {
+            if (e.altKey && e.key === "m")  {
+                e.preventDefault()
+                encounter.setModal({ on: true, type: "Add Monster" })
             }
-        });
-
-        document.addEventListener("keydown", function (e) {
-            // e.preventDefault()
-            if (e.altKey && e.ctrlKey && e.key === "c") {
-                character()
+            if (e.altKey && e.key === "c")  {
+                e.preventDefault()
+                encounter.setModal({ on: true, type: "Add Character" })
+            }
         }
-        });
-    
-      return () => {
-        document.removeEventListener("keydown", monster)
-        document.removeEventListener("keydown", character)
-      }
+
+        document.addEventListener("keydown", e => initiativePopups(e));
+
+      return () => document.removeEventListener("keydown", initiativePopups)
     }, [])
     
 
@@ -119,7 +131,7 @@ export default function InitiativeList ({displayItem, deleteItem, initiativeItem
 
         {/* the actions for adding new combatants and running the encounter */}
         <div className="flex-row">
-            <Menu model={ButtonItems} popup ref={menu} />
+            <Menu model={ButtonItems()} popup ref={menu} />
             <Button label="" icon="pi pi-bars" onClick={e => menu.current.toggle(e)} style={{maxHeight: "2rem"}}/>
         <div className="flex-row" style={{ justifyContent: "flex-end" }}>
             <button className="blue"

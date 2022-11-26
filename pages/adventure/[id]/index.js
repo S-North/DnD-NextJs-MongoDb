@@ -158,7 +158,7 @@ const Adventure = ({adventure}) => {
                     <button className="green" onClick={() => {setSelected({"name": "", "description": ""}, setModal({"on": true, "type": "encounters"}))}}>New</button>
 
                     {encounters.map(encounter => (
-                        <div key={encounter._id} className="list-item">
+                        <div key={encounter._id} className="list-item" style={encounter?.mode === 'complete' ? {backgroundColor: "coral"} : {}}>
                             <Link href={`/encounter/${encounter._id}`}>
                                 <div className="link">
                                         <h2>{encounter.name}</h2>
