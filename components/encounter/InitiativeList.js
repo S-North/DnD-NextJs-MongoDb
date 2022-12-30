@@ -1,7 +1,8 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import { EncounterContext } from "../../pages/encounter/[id]";
 import { FaWindowClose } from 'react-icons/fa'
-import { xpToLevel, displayCrAsFraction, calculateEncounterDifficulty } from "../../utils/utils";
+import { displayCrAsFraction } from "../../utils/utils";
+import { calculateEncounterDifficulty, xpToLevel } from "../../utils/rules";
 import { Menu } from 'primereact/menu';
 import { Button } from "primereact/button";
 import EditMonsters from "./EditMonsters";

@@ -1,6 +1,49 @@
 import { skillToAbility, calculateProficiencyBonus, abilityModifier, fractionalCrtoNumber } from './utils'
+import { abilityScores } from './Forms'
 import { damageTypes } from './Forms'
 import { v4 as uuidv4 } from 'uuid'
+
+export const parseSpellCastingStats = (traits) => {
+    const levelString = /\d+\w+-level/mi
+    const spellcastingItems = traits?.filter(trait => {return trait.name?.toLowerCase() === 'spellcasting'}) || []
+    console.log(spellcastingItems)
+
+    const spellcastingStats = {caster: false, class: 'monster'}
+
+    if (spellcastingItems.length > 0) {
+        const castingDescription =  spellcastingItems[0].description
+        console.log(castingDescription)
+
+        const DC = parseInt(castingDescription?.toLowerCase()?.split('dc ')[1]?.split(',')[0])
+        console.log(DC)
+        if (DC) spellcastingStats.dc = DC
+
+        const attack = parseInt(castingDescription?.toLowerCase()?.split('+')[1]?.split(' to hit')[0])
+        if (attack) spellcastingStats.attack = attack;
+
+        ['intelligence', 'wisdom', 'charisma'].forEach(score => {
+            if (castingDescription.toLowerCase().includes(score)) spellcastingStats.ability = score.slice(0, 3); spellcastingStats.caster = true
+        })
+
+        const numberRegex = /\d+/mi
+        const levelArr = castingDescription.match(numberRegex)
+        if (levelArr.length > 0) {
+            spellcastingStats.level = parseInt(levelArr[0])
+        }
+
+        // const levelItem = castingDescription.match(levelString)
+        // let levelString
+        // if (levelItem?.length > 0) levelString = levelItem.split('-')[0]
+        // if (levelString && levelString.length > 0) {
+        //     let i = []
+        //     levelString.split('').forEach(letter => {
+
+        //     })
+        // }
+        // if (level) spellcastingStats.level = level
+    }
+    return spellcastingStats
+} 
 
 export const importMonster = (inputFile) => {
     const monster = inputFile.monster

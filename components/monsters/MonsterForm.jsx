@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, spellSlotLevels } from "../../utils/Forms";
-import { abilityModifier, skillToAbility, calculateProficiencyBonus, diceRoll, crToXp } from "../../utils/utils";
+import { sizes, types, crRange, sensesList, abilityList, languagesList, skillList, damageTypes, conditions, spellSlotLevels, spellAbilities } from "../../utils/Forms";
+import { diceRoll } from "../../utils/utils";
+import { calculateSpellDC, calculateSpellAttack, abilityModifier, skillToAbility, calculateProficiencyBonus, crToXp } from "../../utils/rules";
+import { parseSpellCastingStats } from "../../utils/import";
 import { SplitButton } from "primereact/splitbutton";
 import { TieredMenu } from "primereact/tieredmenu";
 import { FaDiceSix, FaWindowClose } from "react-icons/fa";
@@ -57,25 +59,34 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
  
     useEffect(() => {
        // set item to value of selected
-       if (selected && !selected.equipment) setItem({...selected, equipment: []});
-       else if  (selected) setItem(selected);
-       if (selected?.spells) {
-          const getSpells = async () => {
-             const response = await fetch(`${api}spells`, {
-                method: "POST",
-                body: JSON.stringify({
-                   action: "monster",
-                   data: { name: { $in: selected.spells } },
-                   sort: {},
-                }),
-                headers: { "Content-type": "application/json; charset=UTF-8" },
-             });
-             const spellList = await response.json();
-             // setItemOffset(0)
-             setSpells(spellList);
-          };
-          getSpells();
-       }
+        if (selected) {
+            setItem({
+                ...selected, 
+                equipment: selected.equipment ? selected.equipment : [],
+                money: selected.money ? selected.money : {cp: 0, ep: 0, sp: 0, gp: 0, pp: 0},
+                spellcasting: selected.traits ? parseSpellCastingStats(selected.traits) : {caster: false, class: 'monster'}
+            })
+        }
+
+        //    if (selected && !selected.money) setItem({...selected, money: {cp: 0, ep: 0, sp: 0, gp: 0, pp: 0,}});
+        else if  (selected) setItem(selected);
+        if (selected?.spells) {
+            const getSpells = async () => {
+                const response = await fetch(`${api}spells`, {
+                    method: "POST",
+                    body: JSON.stringify({
+                    action: "monster",
+                    data: { name: { $in: selected.spells } },
+                    sort: {},
+                    }),
+                    headers: { "Content-type": "application/json; charset=UTF-8" },
+                });
+                const spellList = await response.json();
+                // setItemOffset(0)
+                setSpells(spellList);
+            };
+            getSpells();
+        }
  
        return () => {};
     }, [selected]);
@@ -233,6 +244,16 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
             ...item,
             equipment: [...item.equipment.filter(eq => eq._id !== equipment._id)],
          });
+    }
+
+    const handleMoney = (coin, e) => {
+        console.log(e.target.value)
+        console.log(parseInt(e.target.value))
+        
+        const currentMoney = JSON.parse(JSON.stringify(item.money))
+        currentMoney[coin] = parseInt(e.target.value)
+        console.log(currentMoney)
+        setItem({...item, money: currentMoney})
     }
  
     return (
@@ -1695,6 +1716,53 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
                             : { display: "none" }
                     }
                 >
+                    {/* casting ability */}
+                    {item &&
+                        <form className={styles.casterAbilityForm}>
+                            <input 
+                                type="checkbox" 
+                                name="" 
+                                id="caster-enabled" 
+                                checked={item.spellcasting.caster}
+                                onChange={e => setItem({...item, spellcasting: {...item.spellcasting, caster: e.target.checked}})} />
+                            <label htmlFor="caster-enabled">Enable Casting</label>
+
+                            {/* <label htmlFor="caster-ability">Caster Ability</label> */}
+                            <select 
+                                disabled={!item.spellcasting.caster}
+                                name=""
+                                id="caster-ability"
+                                value={item.spellcasting.ability}
+                                onChange={e => setItem({...item, spellcasting: {...item.spellcasting, ability: e.target.value}})}>
+
+                                    {['', ...spellAbilities].map(ability => (
+                                        <option value={ability.slice(0,3).toLowerCase()}>{ability}</option>
+                                    ))}
+                            </select>
+
+                            <select
+                                disabled={!item.spellcasting.caster}
+                                name=""
+                                id="caster-level"
+                                value={item.spellcasting.level}
+                                onChange={e => setItem({...item, spellcasting: {...item.spellcasting, level: parseInt(e.target.value)}})}>
+                                {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].map(level => (
+                                    <option value={level}>{level}</option>
+                                ))}
+                            </select>
+
+                            
+                        </form>
+                    }
+                    {item?.spellcasting?.caster &&
+                        <div className={styles.spellAbilityContainer}>
+                            <p><strong>Level {item.spellcasting.level} Spellcaster</strong></p> 
+                            <p>Spellcasting Ability: <strong>{item.spellcasting.ability?.toUpperCase()}</strong></p>
+                            <p>Spell DC: <strong>{calculateSpellDC(item)}</strong></p> 
+                            <p>To Hit: <strong>{calculateSpellAttack(item)}</strong></p>
+                        </div>
+                    }
+
                     {/* spell slots */}
                     <form className={styles.spellsContainer}>
                         <div className={styles.spellSlotsContainer}>
@@ -1758,7 +1826,23 @@ export default function MonsterForm ({ selected, setSelected, update, saveAsNew,
                             ? { display: "flex" }
                             : { display: "none" }
                     }>
-                    <button onClick={e => {e.preventDefault(); setModal({ on: true, view: "equipment" })}}>Add Equipment</button>
+                    <div className={styles.moneyRow}>
+                        <div className={styles.coinEdit}>
+                            {Object.keys(item.money).map(coin => (
+                                <div className={styles.coinContainer}>
+                                <label className={styles.coinLabel} htmlFor={coin}>{coin.toUpperCase()}:</label>
+                                <input
+                                    id={coin} 
+                                    type='number'
+                                    min={0}
+                                    className={styles.coinInput}
+                                    value={item.money[coin]}
+                                    onChange={e => handleMoney(coin, e)} />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <button className={styles.addEquipmentButton} onClick={e => {e.preventDefault(); setModal({ on: true, view: "equipment" })}}>Add Equipment</button>
                     {item?.equipment && <div className={styles.equipmentList}>
                         {item.equipment.sort((a,b) => {return a.name > b.name}).map(equipment => (
                             <div key={equipment._id} className={styles.equipmentLine}>

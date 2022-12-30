@@ -1,4 +1,5 @@
 export const abilityScores = ['Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha']
+export const spellAbilities = ['Intelligence', 'Wisdom', 'Charisma']
 export const abilityToSkills = {
     str: ['Athletics'],
     dex: ["Acrobatics", "Sleight of Hand", "Stealth"],

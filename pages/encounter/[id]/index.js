@@ -6,8 +6,8 @@ import { withPageAuthRequired, useUser } from "@auth0/nextjs-auth0";
 import React, { useState, useEffect, createContext, useContext, useRef } from "react";
 import encounterStyle from "../../../styles/Encounter.module.css";
 
-import { calculateConcentrationRemaining } from "../../../utils/encounterUtils";
-// import monsters, { MonsterForm } from "../../monsters";
+import { calculateConcentrationRemaining } from "../../../utils/rules"; 
+
 import MonsterForm from "../../../components/monsters/MonsterForm";
 import InitiativeList from "../../../components/encounter/InitiativeList";
 import Encounter_CombatantDetails, { EncounterDetailsContext } from "../../../components/encounter/Encounter_CombatantDetails";
@@ -25,6 +25,8 @@ import Nav from "../../../components/Nav";
 import Encounter_Summary from "../../../components/encounter/Encounter_Summary";
 
 import { Dialog } from 'primereact/dialog';
+import { Toast } from 'primereact/toast';
+
 
 export const EncounterContext = createContext();
 
@@ -44,6 +46,8 @@ const Encounter = ({ initialEncounter }) => {
    // used during mode: 'running' as temporary storage when adjusting a combatant e.g. changing HP, conditions, etc
    const [tempCombatant, setTempCombatant] = useState();
    const [modal, setModal] = useState({ type: "none", on: false });
+
+   const toast = useRef(null);
 
 
    useEffect(() => {
@@ -545,6 +549,10 @@ const Encounter = ({ initialEncounter }) => {
       console.log(monsterList)
    };
 
+   const handleToast = ( {summary, detail, severity = 'info', sticky = false, life = 5000} ) => {
+      toast.current.show( { severity, summary, detail, life, sticky } );
+  }
+
    const contextValue = {
       campaign,
       encounter,
@@ -561,13 +569,16 @@ const Encounter = ({ initialEncounter }) => {
       initiativeItemToFullStats,
       saveMonster,
       getCombatantStats,
-      saveCustomMonster
+      saveCustomMonster,
+      handleToast
    }
 
 
    return (
       <EncounterContext.Provider value={contextValue} >
          <>
+            <Toast ref={toast} position="top-right" />
+
             <Nav
                location="encounter"
                user={user}

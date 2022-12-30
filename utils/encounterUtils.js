@@ -1,7 +1,7 @@
-import { stringify } from "uuid"
 import { abilityModifier } from "./utils"
 
 export const calculateConcentrationRemaining = (combatant, round) => combatant.concentration.duration - (round - combatant.concentration.round)
+
 export const modifiedAbilityScore = (stat, combatant) => {
     const newCombatant = JSON.parse(JSON.stringify(combatant))
     // console.log(stat)
@@ -14,7 +14,7 @@ export const modifiedAbilityScore = (stat, combatant) => {
         if (eq.modifiers?.length > 0) {
             eq.modifiers.forEach(mod => {
                 if (mod.category === 'ability score' && mod.type === stat) {
-                    console.log(mod)
+                    // console.log(mod)
                     mods.push(mod)
                 }
             })
@@ -37,19 +37,19 @@ export const calculateAC = (combatant) => {
     // check armor
     const armorList = c.equipment?.filter(eq => eq.type === 'Light Armor' || eq.type === 'Medium Armor' || eq.type === 'Heavy Armor') || []
     const armorEquiped = armorList.filter(armor => (armor.equiped)).sort((a,b) => {return a.ac > b.ac})[0] || [] // there shouldn't be more than 1 armor equiped. But if there is, choose the best one :)
-    console.log(armorEquiped)
+    // console.log(armorEquiped)
     const armorAc = armorEquiped?.ac || baseAC 
     switch (armorEquiped.type) {
         case 'Light Armor': armorAc += abilityModifier(modifiedAbilityScore('dex', c)); console.log('light armor dex bonus'); break
         case 'Medium Armor': if (abilityModifier(modifiedAbilityScore('dex', c)) <= 2) armorAc += abilityModifier(modifiedAbilityScore('dex', c)); else armorAc += 2; console.log('light armor dex bonus'); break
         default: break
     }
-    console.log(armorAc)
+    // console.log(armorAc)
 
     // check shield
     const shieldList = c.equipment?.filter(eq => eq.type === 'Shield') || []
     const shieldEquiped = shieldList.filter(armor => (armor.equiped)).sort((a,b) => {return a.ac > b.ac})[0] || [] // there shouldn't be more than 1 shield equiped. But if there is, choose the best one :)
-    console.log(shieldEquiped)
+    // console.log(shieldEquiped)
     if (shieldEquiped?.ac) armorAc += shieldEquiped.ac
 
     // check equipment for magic modifiers e.g. modifier {category: 'bonus', type: 'ac', bonus: 1}
@@ -63,10 +63,10 @@ export const calculateAC = (combatant) => {
             })
         }
     })
-    console.log(mods)
+    // console.log(mods)
 
     const newAC = mods.reduce((total, mod) => {return total + mod.bonus}, 0) + armorAc
-    console.log(newAC)
+    // console.log(newAC)
 
     return newAC
 }

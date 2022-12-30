@@ -1,7 +1,7 @@
 import styles from './Encounter_CombatantDetails_Actions.module.css'
-import { abilityModifier, diceRoll, calculateProficiencyBonus } from '../../utils/utils';
+import { diceRoll } from '../../utils/utils';
+import { calculateProficiencyBonus, abilityModifier, modifiedAbilityScore } from '../../utils/rules';
 import { SplitButton } from 'primereact/splitbutton';
-import { modifiedAbilityScore } from '../../utils/encounterUtils';
 import { useContext } from 'react';
 import { EncounterContext } from '../../pages/encounter/[id]';
 import { UserContext } from '@auth0/nextjs-auth0';

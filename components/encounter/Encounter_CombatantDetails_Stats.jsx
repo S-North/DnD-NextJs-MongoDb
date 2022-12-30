@@ -1,8 +1,8 @@
 import React from 'react'
 import { useRef, useContext } from 'react';
 import { conditions, abilityScores, abilityToSkills } from '../../utils/Forms';
-import { modifiedAbilityScore, calculateAC } from '../../utils/encounterUtils';
-import { abilityModifier, crToXp, calculateProficiencyBonus, diceRoll } from '../../utils/utils';
+import { modifiedAbilityScore, calculateAC, calculateProficiencyBonus, abilityModifier, crToXp } from '../../utils/rules';
+import { diceRoll } from '../../utils/utils';
 import styles from './Encounter_CombatantDetails_Stats.module.css'
 import { EncounterContext } from '../../pages/encounter/[id]';
 import Select from 'react-select'

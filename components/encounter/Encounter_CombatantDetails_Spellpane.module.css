@@ -1,6 +1,29 @@
 .container {
     width: 100%;
-    padding: 0.5rem;
+    /* padding: 0.5rem; */
+}
+
+.spellAbilityContainer {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    /* background-color: rgb(226, 228, 241); */
+    /* padding: 0.5rem; */
+}
+
+.spellAbilityContainer p {
+    background-color: var(--blue);
+    color: white;
+    padding: 0.3rem;
+    border-radius: 0.3rem;
+}
+
+.spellAttackButton {
+    background-color: var(--blue);
+    color: white;
+    padding: 0.3rem;
+    border-radius: 0.3rem;
+    font-size: 0.7rem;
 }
 
 .spellslots {

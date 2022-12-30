@@ -1,5 +1,8 @@
 import { useState, useEffect, useContext } from "react"
 import { EncounterContext } from "../../pages/encounter/[id]"
+
+import { diceRoll } from "../../utils/utils"
+
 import { Dialog } from "primereact/dialog"
 import styles from './Encounter_CombatantDetails_Spellpane.module.css'
 
@@ -101,7 +104,17 @@ export default function Encounter_CombatantDetails_SpellPane({ combatant, addCon
         change.spellSlots = spellSlots
         console.log(change)
         // problem is here, running multible calls to editMonster()
-        if (combatant?.enemy === 'monster') context.editMonster(combatant, change)
+        if (combatant?.enemy === 'monster') {
+            context.editMonster(combatant, change)
+            context.handleToast(
+                {
+                    summary: `${combatant.name} cast ${spell.name}`, 
+                    detail: `At level ${slot}. Spell slot consumed`, 
+                    severity: 'success', 
+                    sticky: true
+                }
+            )
+        }
         if (combatant?.enemy === 'pc') context.editCharacter(combatant, change)
     }
   
@@ -125,6 +138,20 @@ export default function Encounter_CombatantDetails_SpellPane({ combatant, addCon
                 </div>}
                 
             </Dialog>
+            {combatant?.spellcasting && 
+                <div className={styles.spellAbilityContainer}>
+                    <p><strong>Level {combatant.spellcasting?.level} Spellcaster</strong></p> 
+                    <p>Spellcasting Ability: <strong>{combatant.spellcasting.ability?.toUpperCase()}</strong></p>
+                    <p>Spell DC: <strong>{combatant.spellcasting.dc}</strong></p> 
+                    <button 
+                        className={styles.spellAttackButton}
+                        onClick={e => {
+                        let roll = diceRoll(1, 20, combatant.spellcasting.attack)
+                        window.alert(`Roll: ${roll[0]}\nTotal: ${roll[2]}`)
+                    }}
+                    >To Hit: <strong>{combatant.spellcasting.attack}</strong></button>
+                </div>
+            }
             {combatant?.spellSlots?.length > 0 ? <><div id="spellslots" className={styles.spellslots}>
             {combatant.spellSlots.map((slot, index) => (
                 <label key={index} htmlFor={index}>

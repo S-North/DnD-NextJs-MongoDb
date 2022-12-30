@@ -102,6 +102,25 @@
     gap: 0.5rem;
 }
 
+.casterAbilityForm {
+    padding: 0;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.spellAbilityContainer {
+    display: flex;
+    gap: 0.5rem;
+    /* background-color: rgb(226, 228, 241); */
+    /* padding: 0.5rem; */
+}
+
+.spellAbilityContainer p {
+    background-color: var(--blue);
+    color: white;
+    padding: 0.3rem;
+    border-radius: 0.3rem;
+}
 
 .spellsContainer {
     width: 100%;
@@ -179,7 +198,7 @@
     gap: 0.5rem;
 }
 
-.equipmentContainer button:first-child {
+.addEquipmentButton {
     background-color: green;
     color: white;
     border: 0;
@@ -205,4 +224,36 @@
 
 .equipmentLine strong:first-child {
     cursor: pointer;
+}
+
+.moneyRow {
+    display: flex;
+    gap: 2rem;
+    padding: 0.5rem;
+    background-color: rgb(212, 228, 212);
+    border-radius: 0.3rem;
+}
+
+.coinEdit {
+    /* width: 100%; */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    /* justify-content:; */
+}
+
+.coinContainer {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.coinLabel {
+    font-size: 0.8rem;
+}
+
+
+.coinInput {
+    max-width: 2rem;
 }
